@@ -1,4 +1,17 @@
-# docusaurus-plugin-typedoc-api
+# Apify's fork of `docusaurus-plugin-typedoc-api`
+
+This is a fork of [docusaurus-plugin-typedoc-api](https://github.com/milesj/docusaurus-plugin-typedoc-api)
+adjusted for our usecases with rendering library documentation in [Apify Docs](https://docs.apify.com).
+
+## Publishing
+
+There is no CI yet, so you have to publish updated versions of the package manually.
+
+1. bump version in `packages/plugin/package.json`
+2. `yarn build` in root
+3. `cd packages/plugin && npm publish`
+
+# Original readme
 
 ![Build](https://github.com/milesj/docusaurus-plugin-typedoc-api/actions/workflows/build.yml/badge.svg?branch=master)
 [![npm version](https://badge.fury.io/js/docusaurus-plugin-typedoc-api.svg)](https://www.npmjs.com/package/docusaurus-plugin-typedoc-api)

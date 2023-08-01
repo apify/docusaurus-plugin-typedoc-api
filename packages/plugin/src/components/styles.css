@@ -68,6 +68,12 @@
 	float: right;
 }
 
+.tsd-header-member-fullname {
+	display: inline-block;
+	margin-top: -1rem;
+	margin-bottom: 1.5rem;
+}
+
 .tsd-footer {
 	text-align: center;
 }
@@ -187,7 +193,19 @@ html[data-theme='light'] .tsd-panel-content {
 	opacity: 0.35;
 }
 
+.tsd-signature-default-value {
+	margin-left: 0.2rem;
+}
+
 /* FLAGS */
+
+.tsd-flag-group:first-child {
+	margin-right: 0.5rem;
+}
+
+.tsd-flag-group:last-child {
+	margin-left: 0.5rem;
+}
 
 .tsd-flag {
 	display: inline-block;
@@ -199,9 +217,12 @@ html[data-theme='light'] .tsd-panel-content {
 	font-size: var(--tsd-font-small);
 	font-weight: normal;
 	margin-top: -1px;
-	margin-right: 0.5rem;
 	opacity: 0.65;
 	vertical-align: middle;
+}
+
+.tsd-flag:not(:first-child) {
+	margin-left: 0.25rem;
 }
 
 /* MODIFIERS */

@@ -41,6 +41,7 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	onlyIncludeVersions: [],
 	packageJsonName: 'package.json',
 	packages: [],
+	pathToCurrentVersionTypedocJSON: '',
 	projectRoot: '.',
 	sortPackages: (a, d) => a.packageName.localeCompare(d.packageName),
 	sortSidebar: (a, d) => a.localeCompare(d),
@@ -188,7 +189,14 @@ export default function typedocApiPlugin(
 						if (metadata.versionName === CURRENT_VERSION_NAME) {
 							const outFile = path.join(context.generatedFilesDir, `api-typedoc-${pluginId}.json`);
 
-							await generateJson(projectRoot, entryPoints, outFile, options);
+							if (options.pathToCurrentVersionTypedocJSON) {
+								if (!fs.existsSync(context.generatedFilesDir)){
+									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
+								}
+								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
+							} else {
+								await generateJson(projectRoot, entryPoints, outFile, options);
+							}
 
 							packages = flattenAndGroupPackages(
 								packageConfigs,

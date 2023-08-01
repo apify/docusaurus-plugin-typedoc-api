@@ -86,6 +86,8 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 					{item.name} <TypeParametersGeneric params={item.typeParameters} />
 				</>
 			}
+			module={(item as unknown as { module: string }).module}
+			name={item.name}
 			pageMetadata={
 				<PageMetadata
 					description={item.comment?.summary ? displayPartsToMarkdown(item.comment.summary) : ''}

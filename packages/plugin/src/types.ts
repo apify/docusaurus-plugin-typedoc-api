@@ -20,6 +20,7 @@ export interface DocusaurusPluginTypeDocApiOptions
 	minimal?: boolean;
 	packageJsonName?: string;
 	packages: (PackageConfig | string)[];
+	pathToCurrentVersionTypedocJSON?: string;
 	projectRoot: string;
 	readmeName?: string;
 	readmes?: boolean;

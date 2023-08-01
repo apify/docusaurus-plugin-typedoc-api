@@ -2,21 +2,34 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/member.signature.title.hbs
 
 import React from 'react';
-import type { JSONOutput } from 'typedoc';
+import { JSONOutput } from 'typedoc';
 import { Type } from './Type';
 import { TypeParametersGeneric } from './TypeParametersGeneric';
 
 export interface MemberSignatureTitleProps {
 	useArrow?: boolean;
 	hideName?: boolean;
-	sig: JSONOutput.SignatureReflection;
+	sig: JSONOutput.SignatureReflection & { modifiers?: string[] };
 }
 
 export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatureTitleProps) {
+	// add `*` before the first keyword-only parameter
+	const parametersCopy = sig.parameters?.slice() ?? [];
+	const firstKeywordOnlyIndex = parametersCopy.findIndex((param) => Object.keys(param.flags).includes('keyword-only'));
+	if (firstKeywordOnlyIndex >= 0) {
+		parametersCopy.splice(firstKeywordOnlyIndex, 0, {
+			id: 999_999,
+			name: '*',
+			kind: 32_768,
+			flags: { },
+			permalink: '',
+		});
+	}
+
 	return (
 		<>
 			{!hideName && sig.name !== '__type' ? (
-				sig.name
+				<span>{sig.modifiers ? `${sig.modifiers.join(' ')} ` : ''}<b>{sig.name}</b></span>
 			) : sig.kindString === 'Constructor signature' ? (
 				<>
 					{sig.flags?.isAbstract && <span className="tsd-signature-symbol">abstract </span>}
@@ -28,20 +41,13 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 
 			<span className="tsd-signature-symbol">(</span>
 
-			{sig.parameters?.map((param, index) => (
+			{parametersCopy.map((param, index) => (
 				<React.Fragment key={param.id}>
 					{index > 0 && <span className="tsd-signature-symbol">, </span>}
 
 					<span>
 						{param.flags?.isRest && <span className="tsd-signature-symbol">...</span>}
 						{param.name}
-
-						<span className="tsd-signature-symbol">
-							{(param.flags?.isOptional || 'defaultValue' in param) && '?'}
-							{': '}
-						</span>
-
-						<Type type={param.type} />
 					</span>
 				</React.Fragment>
 			))}

@@ -15,7 +15,6 @@ import TOC from '@theme/TOC';
 import TOCCollapsible from '@theme/TOCCollapsible';
 import { useBreadcrumbs } from '../hooks/useBreadcrumbs';
 import type { TOCItem } from '../types';
-import { Footer } from './Footer';
 import { VersionBanner } from './VersionBanner';
 
 export interface ApiItemLayoutProps extends Pick<DocItemProps, 'route'> {
@@ -24,6 +23,8 @@ export interface ApiItemLayoutProps extends Pick<DocItemProps, 'route'> {
 	toc: readonly TOCItem[];
 	pageMetadata?: React.ReactNode;
 	pagingMetadata?: PropNavigation;
+	name: string;
+	module?: string;
 }
 
 export default function ApiItemLayout({
@@ -32,6 +33,8 @@ export default function ApiItemLayout({
 	pageMetadata,
 	pagingMetadata,
 	toc,
+	name,
+	module,
 }: ApiItemLayoutProps) {
 	const windowSize = useWindowSize();
 	const breadcrumbs = useBreadcrumbs();
@@ -66,12 +69,11 @@ export default function ApiItemLayout({
 							<div className={`${ThemeClassNames.docs.docMarkdown ?? ''} markdown`}>
 								<header>
 									<Heading as="h1">{heading}</Heading>
+									{module && <code className="tsd-header-member-fullname">{`${module}.${name}`}</code>}
 								</header>
 
 								<MDXContent>{children}</MDXContent>
 							</div>
-
-							<Footer />
 						</article>
 
 						{pagingMetadata && <DocPaginator {...pagingMetadata} />}

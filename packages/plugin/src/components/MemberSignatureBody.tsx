@@ -87,7 +87,6 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 						{sig.parameters?.map((param) => (
 							<li key={param.id}>
 								<h5>
-									<Flags flags={param.flags} />
 									{param.flags?.isRest && <span className="tsd-signature-symbol">...</span>}
 									{`${param.name}: `}
 									<Type type={param.type} />
@@ -96,6 +95,7 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 										type={param.type}
 										value={param.defaultValue}
 									/>
+									<Flags flags={param.flags} />
 								</h5>
 
 								<Comment comment={param.comment} />
