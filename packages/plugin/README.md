@@ -13,8 +13,8 @@ package's entry point), so any private, protected, or internal code will not be 
 ## Requirements
 
 - `typescript` >= v4
-- `@docusaurus/core` >= v2.0.0-beta.18
-- `@docusaurus/preset-classic` >= v2.0.0-beta.18
+- `@docusaurus/core` >= v2.0.0
+- `@docusaurus/preset-classic` >= v2.0.0
 
 ## Examples
 
@@ -95,6 +95,10 @@ The following options are available to the plugin:
 - `readmeName` (`string`) - Name of the readme file within a package. Defaults to `README.md`.
 - `readmes` (`boolean`) - Include and render the readme file from every package. Defaults to
   `false`.
+- `rehypePlugins` (`MDXPlugin[]`) - List of rehype plugins to use for
+  [MDX compilation](https://mdxjs.com/docs/extending-mdx).
+- `remarkPlugins` (`MDXPlugin[]`) - List of remark plugins to use for
+  [MDX compilation](https://mdxjs.com/docs/extending-mdx).
 - `removeScopes` (`string[]`) - Package scopes and prefixes to remove when displaying the package
   name in the sidebar and index. For example, `boost` will remove `@boost/` and `boost-`.
 - `sortPackages` (`(a, d) => number`) - Function to sort the package list in the sidebar and on the
@@ -159,11 +163,11 @@ module.exports = {
         // import {} from 'package'
         index: 'src/index.tsx',
         // import {} from 'package/client'
-        client: { file: 'src/client.tsx', label: 'Client' },
+        client: { path: 'src/client.tsx', label: 'Client' },
         // import {} from 'package/server'
-        server: { file: 'src/server.tsx', label: 'Server' },
+        server: { path: 'src/server.tsx', label: 'Server' },
         // import {} from 'package/server/test'
-        'server/test': { file: 'src/server/test-utils.tsx', label: 'Server test utils' },
+        'server/test': { path: 'src/server/test-utils.tsx', label: 'Server test utils' },
       },
     },
   ],
@@ -265,6 +269,24 @@ module.exports = {
 ```
 
 > This workaround isn't perfect and may be buggy. Use at your own risk!
+
+### Sidebars
+
+When we generate API routes, we also dynamically generate and associate a sidebar with each route.
+This cannot be overridden, but can be customized with some basic options (like categories and
+sorting).
+
+If you'd like to reference the generated sidebar in your `sidebars.ts`, we write the sidebar to a
+file located at `.docusaurus/api-sidebar-<id>-<version>.js`. The `<id>` token defaults to "default"
+and `<version>` to "current".
+
+```ts
+import apiSidebar from './.docusaurus/api-sidebar-default-current';
+
+export default {
+  api: apiSidebar,
+};
+```
 
 ### Caveats
 

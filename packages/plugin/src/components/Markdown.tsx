@@ -1,9 +1,11 @@
-/* eslint-disable unicorn/no-unsafe-regex */
 /* eslint-disable react/no-array-index-key */
 
-import React, { useState } from 'react';
-import { marked } from 'marked';
+import { Fragment, useState } from 'react';
+import { marked, type Tokens } from 'marked';
+import { markedSmartypants } from 'marked-smartypants';
+import { useDocsData } from '@docusaurus/plugin-content-docs/client';
 import { useDocsVersion } from '@docusaurus/theme-common/internal';
+import CodeBlock from '@theme/CodeBlock';
 import MDX from '@theme/MDXComponents';
 import { useReflectionMap } from '../hooks/useReflectionMap';
 import { replaceLinkTokens } from '../utils/markdown';
@@ -14,30 +16,48 @@ interface Admonition {
 	title?: string;
 	keyword?: string;
 	text: string;
-	tokens: marked.Token[];
+	tokens: Token[];
 }
 
-type TokensList = (Admonition | marked.Token)[];
-
-marked.setOptions({
-	gfm: true,
-	headerIds: false,
-	mangle: false,
-	smartLists: true,
-	smartypants: true,
-});
+type Token =
+	| Admonition
+	| Tokens.Blockquote
+	| Tokens.Br
+	| Tokens.Code
+	| Tokens.Codespan
+	| Tokens.Def
+	| Tokens.Del
+	| Tokens.Em
+	| Tokens.Escape
+	| Tokens.Heading
+	| Tokens.Hr
+	| Tokens.HTML
+	| Tokens.Image
+	| Tokens.Link
+	| Tokens.List
+	| Tokens.ListItem
+	| Tokens.Paragraph
+	| Tokens.Space
+	| Tokens.Strong
+	| Tokens.Table
+	| Tokens.Tag
+	| Tokens.Text;
+type TokensList = Token[];
 
 const ADMONITION_START = /^:{3}([a-z]+)? *(.*)\n/;
 const ADMONITION_END = '\n:::';
 
+marked.setOptions({
+	gfm: true,
+});
+marked.use(markedSmartypants());
 marked.use({
 	extensions: [
 		{
 			name: 'admonition',
 			level: 'block',
 			start(src) {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-				return src.match(ADMONITION_START)?.index!;
+				return src.match(ADMONITION_START)?.index;
 			},
 			tokenizer(src, tokens) {
 				const match = ADMONITION_START.exec(src);
@@ -100,9 +120,12 @@ function convertAstToElements(ast: TokensList): React.ReactNode[] | undefined {
 		switch (token.type) {
 			case 'code':
 				elements.push(
-					<MDX.pre key={counter} className={token.lang && `language-${token.lang}`}>
+					/* <MDX.pre key={counter} className={token.lang && `language-${token.lang}`}>
 						{token.text}
-					</MDX.pre>,
+					</MDX.pre>, */
+					<CodeBlock key={counter} language={token.lang}>
+						{token.text}
+					</CodeBlock>,
 				);
 				break;
 
@@ -119,12 +142,12 @@ function convertAstToElements(ast: TokensList): React.ReactNode[] | undefined {
 			}
 
 			case 'image':
-				elements.push(<MDX.img key={counter} alt={token.title} src={token.href} />);
+				elements.push(<MDX.img key={counter} alt={token.title ?? ''} src={token.href} />);
 				break;
 
 			case 'link':
 				elements.push(
-					<MDX.a key={counter} href={token.href} title={token.title}>
+					<MDX.a key={counter} href={token.href} title={token.title ?? ''}>
 						{convertAstToElements(children) ?? token.text}
 					</MDX.a>,
 				);
@@ -163,7 +186,7 @@ function convertAstToElements(ast: TokensList): React.ReactNode[] | undefined {
 						<thead>
 							<tr>
 								{token.header.map((h, i) => (
-									<th key={i} align={token.align[i]!}>
+									<th key={i} align={token.align[i] ?? 'left'}>
 										{convertAstToElements(h.tokens as TokensList)}
 									</th>
 								))}
@@ -173,7 +196,7 @@ function convertAstToElements(ast: TokensList): React.ReactNode[] | undefined {
 							{token.rows.map((cells, i) => (
 								<tr key={i}>
 									{cells.map((c, i2) => (
-										<td key={i2} align={token.align[i]!}>
+										<td key={i2} align={token.align[i] ?? 'left'}>
 											{convertAstToElements(c.tokens as TokensList)}
 										</td>
 									))}
@@ -189,7 +212,7 @@ function convertAstToElements(ast: TokensList): React.ReactNode[] | undefined {
 					children.length === 0 ? (
 						token.text
 					) : (
-						<React.Fragment key={counter}>{convertAstToElements(children)}</React.Fragment>
+						<Fragment key={counter}>{convertAstToElements(children)}</Fragment>
 					),
 				);
 				break;
@@ -203,7 +226,9 @@ function convertAstToElements(ast: TokensList): React.ReactNode[] | undefined {
 				break;
 
 			default: {
-				const Comp = TOKEN_TO_TAG[token.type] || token.type;
+				const Comp = (TOKEN_TO_TAG[token.type] || token.type) as unknown as React.ComponentType<{
+					children: React.ReactNode;
+				}>;
 				const innerText = 'text' in token ? token.text : '';
 
 				elements.push(<Comp key={counter}>{convertAstToElements(children) ?? innerText}</Comp>);
@@ -229,8 +254,12 @@ export interface MarkdownProps {
 export function Markdown({ content }: MarkdownProps) {
 	const reflections = useReflectionMap();
 	const version = useDocsVersion();
-	const [ast] = useState<TokensList>(() =>
-		marked.lexer(replaceLinkTokens(content, reflections, version)),
+	const docsData = useDocsData(version.pluginId);
+	const [ast] = useState<TokensList>(
+		() =>
+			marked.lexer(
+				replaceLinkTokens(content, reflections, version, docsData.path),
+			) as unknown as TokensList,
 	);
 
 	if (!content) {

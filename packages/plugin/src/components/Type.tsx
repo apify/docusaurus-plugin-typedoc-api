@@ -1,12 +1,22 @@
 /* eslint-disable react/no-array-index-key */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-// https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/type.hbs
 
-import React from 'react';
+// https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/type.hbs
+import { Fragment } from 'react';
 import type { JSONOutput } from 'typedoc';
 import Link from '@docusaurus/Link';
 import { useReflectionMap } from '../hooks/useReflectionMap';
+import type { TSDDeclarationReflection } from '../types';
 import { MemberSignatureTitle } from './MemberSignatureTitle';
+
+export function extractDeclarationFromType(
+	type?: JSONOutput.Reflection | JSONOutput.SomeType,
+): TSDDeclarationReflection | undefined {
+	if (!type) {
+		return undefined;
+	}
+
+	return (type as unknown as { declaration?: TSDDeclarationReflection })?.declaration;
+}
 
 function parens(element: JSX.Element, needsParens: boolean): JSX.Element {
 	if (!needsParens) {
@@ -95,10 +105,10 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 			return parens(
 				<>
 					{type.types.map((t, i) => (
-						<React.Fragment key={t.type + i}>
+						<Fragment key={t.type + i}>
 							{i > 0 && <span className="tsd-signature-symbol"> &amp; </span>}
 							<Type needsParens type={t} />
-						</React.Fragment>
+						</Fragment>
 					))}
 				</>,
 				needsParens,
@@ -193,7 +203,7 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 
 		case 'reference': {
 			const type = base as JSONOutput.ReferenceType;
-			const ref = type.id ? reflections[type.id] : null;
+			const ref = type.target ? reflections[Number(type.target)] : null;
 			const genericClass = ref?.id && !ref.sources ? 'tsd-signature-type-generic' : '';
 
 			return (
@@ -201,7 +211,7 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 					{ref?.permalink ? (
 						<Link
 							className={`tsd-signature-type ${genericClass}`}
-							data-tsd-kind={ref.kindString}
+							data-tsd-kind={ref.kind}
 							to={ref.permalink}
 						>
 							{type.name}
@@ -213,10 +223,10 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 						<>
 							<span className="tsd-signature-symbol">&lt;</span>
 							{type.typeArguments.map((t, i) => (
-								<React.Fragment key={t.type + i}>
+								<Fragment key={t.type + i}>
 									{i > 0 && <span className="tsd-signature-symbol">, </span>}
 									<Type type={t} />
-								</React.Fragment>
+								</Fragment>
 							))}
 							<span className="tsd-signature-symbol">&gt;</span>
 						</>
@@ -235,14 +245,14 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 					<>
 						<span className="tsd-signature-symbol">{'{ '}</span>
 						{decl.children.map((child, i) => (
-							<React.Fragment key={child.id ?? i}>
+							<Fragment key={child.id ?? i}>
 								{i > 0 && <span className="tsd-signature-symbol">; </span>}
 								<span>
 									{child.name}
 									<span className="tsd-signature-symbol">{child.flags?.isOptional && '?'}: </span>
 									{child.type ? <Type type={child.type} /> : 'any'}
 								</span>
-							</React.Fragment>
+							</Fragment>
 						))}
 						<span className="tsd-signature-symbol">{' }'}</span>
 					</>
@@ -258,10 +268,10 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 					<>
 						<span className="tsd-signature-symbol">{'{ '}</span>
 						{decl.signatures.map((sig, i) => (
-							<React.Fragment key={sig.id ?? i}>
+							<Fragment key={sig.id ?? i}>
 								{i > 0 && <span className="tsd-signature-symbol">; </span>}
 								<MemberSignatureTitle sig={sig} />
-							</React.Fragment>
+							</Fragment>
 						))}
 						<span className="tsd-signature-symbol">{' }'}</span>
 					</>,
@@ -290,10 +300,10 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 				<>
 					<span className="tsd-signature-symbol">[</span>
 					{type.elements?.map((t, i) => (
-						<React.Fragment key={t.type + i}>
+						<Fragment key={t.type + i}>
 							{i > 0 && <span className="tsd-signature-symbol">, </span>}
 							<Type type={t} />
-						</React.Fragment>
+						</Fragment>
 					))}
 					<span className="tsd-signature-symbol">]</span>
 				</>
@@ -323,10 +333,10 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 			return parens(
 				<>
 					{type.types.map((t, i) => (
-						<React.Fragment key={t.type + i}>
+						<Fragment key={t.type + i}>
 							{i > 0 && <span className="tsd-signature-symbol"> | </span>}
 							<Type needsParens type={t} />
-						</React.Fragment>
+						</Fragment>
 					))}
 				</>,
 				needsParens,
@@ -339,7 +349,8 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 			return <span className="tsd-signature-type">{type.name}</span>;
 		}
 
-		case 'named-tuple-member': {
+		case 'named-tuple-member':
+		case 'namedTupleMember': {
 			const type = base as unknown as JSONOutput.NamedTupleMemberType;
 
 			return (
@@ -351,7 +362,8 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 			);
 		}
 
-		case 'template-literal': {
+		case 'template-literal':
+		case 'templateLiteral': {
 			const type = base as unknown as JSONOutput.TemplateLiteralType;
 
 			return (
@@ -359,12 +371,12 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 					<span className="tsd-signature-symbol">`</span>
 					{type.head && <span className="tsd-signature-type">{type.head}</span>}
 					{type.tail.map((t, i) => (
-						<React.Fragment key={i}>
+						<Fragment key={i}>
 							<span className="tsd-signature-symbol">{'${'}</span>
-							{typeof t[0] !== 'string' && <Type type={t[0]!} />}
+							{typeof t[0] !== 'string' && <Type type={t[0]} />}
 							<span className="tsd-signature-symbol">{'}'}</span>
 							{typeof t[1] === 'string' && <span className="tsd-signature-type">{t[1]}</span>}
-						</React.Fragment>
+						</Fragment>
 					))}
 					<span className="tsd-signature-symbol">`</span>
 				</>
