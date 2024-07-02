@@ -1,4 +1,5 @@
 import type { JSONOutput, TypeDocOptions } from 'typedoc';
+import type { MDXPlugin } from '@docusaurus/mdx-loader';
 import type {
 	PropSidebarItem,
 	VersionBanner,
@@ -28,26 +29,10 @@ export interface DocusaurusPluginTypeDocApiOptions
 	sortPackages?: (a: PackageReflectionGroup, d: PackageReflectionGroup) => number;
 	sortSidebar?: (a: string, d: string) => number;
 	tsconfigName?: string;
-	typedocOptions?: Partial<
-		Pick<
-			TypeDocOptions,
-			| 'commentStyle'
-			| 'disableSources'
-			| 'emit'
-			| 'excludeExternals'
-			| 'excludeInternal'
-			| 'excludeNotDocumented'
-			| 'excludePrivate'
-			| 'excludeProtected'
-			| 'excludeTags'
-			| 'externalPattern'
-			| 'logger'
-			| 'logLevel'
-			| 'sort'
-			| 'treatWarningsAsErrors'
-			| 'validation'
-		>
-	>;
+	typedocOptions?: Partial<TypeDocOptions>;
+
+	remarkPlugins: MDXPlugin[];
+	rehypePlugins: MDXPlugin[];
 
 	// Versioning, based on Docusaurus
 	disableVersioning?: boolean;
@@ -70,6 +55,7 @@ export interface PackageConfig {
 
 export interface ResolvedPackageConfig {
 	entryPoints: Record<string, PackageEntryConfig>;
+	packageRoot: string;
 	packagePath: string;
 	packageSlug: string;
 	packageName: string;
@@ -123,7 +109,7 @@ export interface TOCItem {
 export interface PackageReflectionGroupEntry {
 	index: boolean;
 	label: string;
-	reflection: JSONOutput.ProjectReflection;
+	reflection: TSDDeclarationReflection;
 	urlSlug: string;
 }
 
@@ -143,20 +129,25 @@ export interface ApiMetadata {
 	nextId?: number;
 }
 
-export type DeclarationReflectionMap = Record<number, JSONOutput.DeclarationReflection>;
+// TYPEDOC COMPAT
 
-declare module 'typedoc/dist/lib/serialization/schema' {
-	interface Reflection extends ApiMetadata {
-		// Not typed but used in the templates
-		declaration?: DeclarationReflection;
-		// Added by us for convenience
-		parentId?: number;
-	}
+export interface TSDReflection extends Omit<JSONOutput.Reflection, 'signatures'>, ApiMetadata {
+	signatures: TSDSignatureReflection[];
+	// Added by us for convenience
+	parentId?: number;
+}
 
-	interface Type {
-		// Not typed but used in the templates
-		declaration?: DeclarationReflection;
-	}
+export interface TSDDeclarationReflection
+	extends Omit<JSONOutput.DeclarationReflection, 'children' | 'signatures'>,
+		ApiMetadata {
+	children?: TSDDeclarationReflection[];
+	signatures: TSDSignatureReflection[];
+}
+
+export type TSDDeclarationReflectionMap = Record<number, TSDDeclarationReflection>;
+
+export interface TSDSignatureReflection extends JSONOutput.SignatureReflection {
+	// declaration: TSDDeclarationReflection;
 }
 
 declare global {

@@ -1,7 +1,8 @@
-import React from 'react';
-import type { JSONOutput } from 'typedoc';
+import { Fragment } from 'react';
 import Link from '@docusaurus/Link';
-import { useReflection } from '../hooks/useReflection';
+import { useRequiredReflection } from '../hooks/useReflection';
+import type { TSDDeclarationReflection } from '../types';
+import { escapeMdx } from '../utils/helpers';
 import { AnchorLink } from './AnchorLink';
 import { Icon } from './Icon';
 
@@ -10,20 +11,20 @@ export interface IndexChildProps {
 }
 
 function IndexChild({ id }: IndexChildProps) {
-	const reflection = useReflection(id)!;
+	const reflection = useRequiredReflection(id);
 
 	return (
 		<li>
 			<Link className="tsd-kind-icon" to={reflection.permalink ?? `#${reflection.name}`}>
 				<Icon reflection={reflection} />
-				{reflection.name ?? <em>{reflection.kindString}</em>}
+				{escapeMdx(reflection.name)}
 			</Link>
 		</li>
 	);
 }
 
 export interface IndexProps {
-	reflection: JSONOutput.DeclarationReflection;
+	reflection: TSDDeclarationReflection;
 }
 
 export function Index({ reflection }: IndexProps) {
@@ -39,14 +40,12 @@ export function Index({ reflection }: IndexProps) {
 						{reflection.categories.map((category) => (
 							<section key={category.title} className="tsd-index-section">
 								<h3 className="tsd-panel-header">
-									{category.title === 'CATEGORY' ? 'Other' : category.title}
+									{category.title === '__CATEGORY__' ? 'Other' : category.title}
 								</h3>
 
 								<div className="tsd-panel-content">
 									<ul className="tsd-index-list">
-										{category.children?.map((child) => (
-											<IndexChild key={child} id={child} />
-										))}
+										{category.children?.map((child) => <IndexChild key={child} id={child} />)}
 									</ul>
 								</div>
 							</section>
@@ -70,19 +69,17 @@ export function Index({ reflection }: IndexProps) {
 							<section key={group.title} className="tsd-index-section">
 								{group.categories && group.categories.length > 0 ? (
 									group.categories.map((category) => (
-										<React.Fragment key={category.title}>
+										<Fragment key={category.title}>
 											<h3 className="tsd-panel-header">
-												{category.title === 'CATEGORY' ? group.title : category.title}
+												{category.title === '__CATEGORY__' ? group.title : category.title}
 											</h3>
 
 											<div className="tsd-panel-content">
 												<ul className="tsd-index-list">
-													{category.children?.map((child) => (
-														<IndexChild key={child} id={child} />
-													))}
+													{category.children?.map((child) => <IndexChild key={child} id={child} />)}
 												</ul>
 											</div>
-										</React.Fragment>
+										</Fragment>
 									))
 								) : (
 									<>
@@ -90,9 +87,7 @@ export function Index({ reflection }: IndexProps) {
 
 										<div className="tsd-panel-content">
 											<ul className="tsd-index-list">
-												{group.children?.map((child) => (
-													<IndexChild key={child} id={child} />
-												))}
+												{group.children?.map((child) => <IndexChild key={child} id={child} />)}
 											</ul>
 										</div>
 									</>

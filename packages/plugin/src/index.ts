@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { JSONOutput } from 'typedoc';
+import type { Options as MDXLoaderOptions } from '@docusaurus/mdx-loader';
 import type { PropVersionDocs, PropVersionMetadata } from '@docusaurus/plugin-content-docs';
 import { CURRENT_VERSION_NAME } from '@docusaurus/plugin-content-docs/server';
 import type { LoadContext, Plugin, RouteConfig } from '@docusaurus/types';
@@ -22,6 +22,7 @@ import type {
 	PackageEntryConfig,
 	PackageReflectionGroup,
 	ResolvedPackageConfig,
+	TSDDeclarationReflection,
 	VersionMetadata,
 } from './types';
 
@@ -51,6 +52,8 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	routeBasePath: 'api',
 	tsconfigName: 'tsconfig.json',
 	typedocOptions: {},
+	remarkPlugins: [],
+	rehypePlugins: [],
 	versions: {},
 };
 
@@ -96,7 +99,7 @@ export default function typedocApiPlugin(
 		if (!pkgConfig.entry || typeof pkgConfig.entry === 'string') {
 			entries.index = {
 				label: 'Index',
-				path: pkgConfig.entry ?? 'src/index.ts',
+				path: pkgConfig.entry ? String(pkgConfig.entry) : 'src/index.ts',
 			};
 		} else {
 			Object.entries(pkgConfig.entry).forEach(([importPath, entryConfig]) => {
@@ -105,7 +108,7 @@ export default function typedocApiPlugin(
 						? {
 								label: 'Index',
 								path: entryConfig,
-						  }
+							}
 						: entryConfig;
 			});
 		}
@@ -116,6 +119,7 @@ export default function typedocApiPlugin(
 
 		return {
 			entryPoints: entries,
+			packageRoot: path.normalize(path.join(projectRoot, pkgConfig.path || '.')),
 			packagePath: pkgConfig.path || '.',
 			packageSlug: pkgConfig.slug ?? path.basename(pkgConfig.path),
 			// Load later on
@@ -220,15 +224,34 @@ export default function typedocApiPlugin(
 
 						packages.sort((a, d) => options.sortPackages(a, d));
 
+						// Generate sidebars (this runs before the main sidebar is loaded)
+						const sidebars = extractSidebar(
+							packages,
+							removeScopes,
+							changelogs,
+							options.sortSidebar,
+						);
+
+						await fs.promises.writeFile(
+							path.join(
+								context.generatedFilesDir,
+								`api-sidebar-${pluginId}-${metadata.versionName}.js`,
+							),
+							`module.exports = ${JSON.stringify(sidebars, null, 2)};`,
+						);
+
+						await fs.promises.writeFile(
+							path.join(
+								context.generatedFilesDir,
+								`api-sidebar-${pluginId}-${metadata.versionName}.d.ts`,
+							),
+							`import type { SidebarConfig } from '@docusaurus/plugin-content-docs';\nexport = Array<SidebarConfig>;`,
+						);
+
 						return {
 							...metadata,
 							packages,
-							sidebars: await extractSidebar(
-								packages,
-								removeScopes,
-								changelogs,
-								options.sortSidebar,
-							),
+							sidebars,
 						};
 					}),
 				),
@@ -240,7 +263,6 @@ export default function typedocApiPlugin(
 				return;
 			}
 
-			const { createData, addRoute } = actions;
 			const docs: PropVersionDocs = {};
 
 			// Create an index of versions for quick lookups.
@@ -255,14 +277,14 @@ export default function typedocApiPlugin(
 				}
 			});
 
-			await Promise.all(
+			const rootRoutes = await Promise.all(
 				content.loadedVersions.map(async (loadedVersion) => {
 					const version = loadedVersion.versionName;
 
 					// Define version metadata for all pages. We need to use the same structure as
 					// "docs" so that we can utilize the same React components.
 					// https://github.com/facebook/docusaurus/blob/master/packages/docusaurus-plugin-content-docs/src/index.ts#L337
-					const versionMetadata = await createData(
+					const versionMetadata = await actions.createData(
 						`version-${version}.json`,
 						JSON.stringify({
 							badge: loadedVersion.versionBadge,
@@ -275,26 +297,28 @@ export default function typedocApiPlugin(
 							noIndex: false,
 							pluginId,
 							version: loadedVersion.versionName,
-						} as PropVersionMetadata),
+						} satisfies PropVersionMetadata),
 					);
 
-					const packagesData = await createData(
+					const packagesData = await actions.createData(
 						`packages-${version}.json`,
 						JSON.stringify(formatPackagesWithoutHostInfo(loadedVersion.packages)),
 					);
 
-					const optionsContextData: ApiOptions = {
-						banner,
-						breadcrumbs,
-						gitRefName,
-						minimal,
-						pluginId,
-						scopes: removeScopes,
-					};
-					const optionsData = await createData('options.json', JSON.stringify(optionsContextData));
+					const optionsData = await actions.createData(
+						'options.json',
+						JSON.stringify({
+							banner,
+							breadcrumbs,
+							gitRefName,
+							minimal,
+							pluginId,
+							scopes: removeScopes,
+						} satisfies ApiOptions),
+					);
 
 					function createRoute(
-						info: JSONOutput.Reflection,
+						info: TSDDeclarationReflection,
 						modules?: Record<string, string>,
 					): RouteConfig {
 						return {
@@ -319,7 +343,7 @@ export default function typedocApiPlugin(
 							// Map a route for every declaration in the package (the exported APIs)
 							const subRoutes = children.map((child) => createRoute(child));
 
-							// Map a top-level package route, otherwise `DocPage` shows a page not found
+							// Map a top-level package route, otherwise `DocRoot` shows a page not found
 							subRoutes.push(
 								createRoute(
 									entry.reflection,
@@ -359,20 +383,40 @@ export default function typedocApiPlugin(
 						});
 					}
 
-					addRoute({
+					// Wrap in the `DocVersionRoot` component:
+					// https://github.com/facebook/docusaurus/blob/main/packages/docusaurus-plugin-content-docs/src/routes.ts#L192
+					return {
 						path: indexPermalink,
 						exact: false,
-						component: path.join(__dirname, './components/ApiPage.js'),
-						routes,
+						component: '@theme/DocVersionRoot',
+						routes: [
+							{
+								path: indexPermalink,
+								exact: false,
+								component: path.join(__dirname, './components/ApiPage.js'),
+								routes,
+								modules: {
+									options: optionsData,
+									packages: packagesData,
+								},
+							},
+						],
 						modules: {
-							options: optionsData,
-							packages: packagesData,
-							versionMetadata,
+							version: versionMetadata,
 						},
 						priority: loadedVersion.routePriority,
-					});
+					};
 				}),
 			);
+
+			// Wrap in the `DocsRoot` component:
+			// https://github.com/facebook/docusaurus/blob/main/packages/docusaurus-plugin-content-docs/src/routes.ts#L232
+			actions.addRoute({
+				path: normalizeUrl([context.baseUrl, options.routeBasePath ?? 'api']),
+				exact: false,
+				component: '@theme/DocsRoot',
+				routes: rootRoutes,
+			});
 		},
 
 		configureWebpack(config, isServer, utils) {
@@ -383,10 +427,16 @@ export default function typedocApiPlugin(
 			// Whitelist the folders that this webpack rule applies to, otherwise we collide with the native
 			// docs/blog plugins. We need to include the specific files only, as in polyrepo mode, the `cfg.packagePath`
 			// can be project root (where the regular docs are too).
-			const include = packageConfigs.flatMap((cfg) => [
-				path.join(options.projectRoot, cfg.packagePath, options.readmeName),
-				path.join(options.projectRoot, cfg.packagePath, options.changelogName),
-			]);
+			const include = packageConfigs.flatMap((cfg) => {
+				const list: string[] = [];
+				if (readmes) {
+					list.push(path.join(options.projectRoot, cfg.packagePath, options.readmeName));
+				}
+				if (changelogs) {
+					list.push(path.join(options.projectRoot, cfg.packagePath, options.changelogName));
+				}
+				return list;
+			});
 
 			return {
 				module: {
@@ -400,12 +450,15 @@ export default function typedocApiPlugin(
 									loader: require.resolve('@docusaurus/mdx-loader'),
 									options: {
 										admonitions: true,
-										staticDir: path.join(context.siteDir, 'static'),
-										// Since this isnt a doc/blog page, we can get
+										remarkPlugins: options.remarkPlugins,
+										rehypePlugins: options.rehypePlugins,
+										siteDir: context.siteDir,
+										staticDirs: [...context.siteConfig.staticDirectories, path.join(context.siteDir, 'static')],
+										// Since this isn't a doc/blog page, we can get
 										// away with it being a partial!
 										isMDXPartial: () => true,
 										markdownConfig: context.siteConfig.markdown,
-									},
+									} satisfies MDXLoaderOptions,
 								},
 								{
 									loader: path.resolve(__dirname, './markdownLoader.js'),

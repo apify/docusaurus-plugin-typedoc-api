@@ -1,8 +1,7 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/members.hbs
 
-import React from 'react';
-import type { JSONOutput } from 'typedoc';
 import { useReflectionMap } from '../hooks/useReflectionMap';
+import type { TSDDeclarationReflection } from '../types';
 import {
 	allCategoryChildrenHaveOwnDocument,
 	allGroupChildrenHaveOwnDocument,
@@ -13,7 +12,7 @@ import { Member } from './Member';
 import { MembersGroup } from './MembersGroup';
 
 export interface MembersProps {
-	reflection: JSONOutput.DeclarationReflection;
+	reflection: TSDDeclarationReflection;
 }
 
 export function Members({ reflection }: MembersProps) {
@@ -30,7 +29,7 @@ export function Members({ reflection }: MembersProps) {
 					return (
 						<section key={category.title} className="tsd-panel-group tsd-member-group">
 							<h2>
-								{category.title === 'CATEGORY' ? 'Other' : category.title}{' '}
+								{category.title === '__CATEGORY__' ? 'Other' : category.title}{' '}
 								<AnchorLink id={category.title} />
 							</h2>
 

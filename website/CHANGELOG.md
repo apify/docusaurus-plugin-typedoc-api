@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### 0.5.1 - 2024-01-24
+
+#### 📦 Dependencies
+
+- **[docusaurus]** Update to v3.1. ([2b42b17](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/2b42b17))
+- **[marked]** Update to v9 latest. ([93c9df6](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/93c9df6))
+- **[prettier]** Update to v3.2. ([889c44d](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/889c44d))
+
+**Note:** Version bump only for package website
+
+
+
+
+
+# 0.5.0 - 2023-11-01
+
+#### 💥 Breaking
+
+- Upgrade to Docusaurus v3. Drop Node.js v16 and TypeScript v4. (#115) ([c7594b8](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/c7594b8)), closes [#115](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/115)
+
+#### 📦 Dependencies
+
+- **[marked]** Update to v9 (from v4). (#118) ([cace409](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/cace409)), closes [#118](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/118)
+
+**Note:** Version bump only for package website
+
+
+
+
+
+### 0.4.10 - 2023-09-26
+
+#### 📦 Dependencies
+
+- **[clsx]** Update to v2. ([0287720](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/0287720))
+- **[docusaurus]** Update to v2.4.1. ([52b6236](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/52b6236))
+- **[react]** Update to v18. ([e9f784d](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/e9f784d))
+- **[typedoc]** Update to v0.25. (#105) ([a06d10f](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/a06d10f)), closes [#105](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/105)
+
+**Note:** Version bump only for package website
+
+
+
+
+
 ### 0.4.9 - 2023-03-26
 
 #### 📦 Dependencies

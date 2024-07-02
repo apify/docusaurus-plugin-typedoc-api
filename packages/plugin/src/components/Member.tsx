@@ -1,9 +1,10 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/members.hbs
 
-import React from 'react';
+import { Fragment } from 'react';
 import type { JSONOutput } from 'typedoc';
-import { useReflection } from '../hooks/useReflection';
+import { useRequiredReflection } from '../hooks/useReflection';
 import { useReflectionMap } from '../hooks/useReflectionMap';
+import { escapeMdx } from '../utils/helpers';
 import { hasOwnDocument } from '../utils/visibility';
 import { AnchorLink } from './AnchorLink';
 import { CommentBadges, isCommentWithModifiers } from './CommentBadges';
@@ -20,7 +21,7 @@ export interface MemberProps {
 
 export function Member({ id }: MemberProps) {
 	const reflections = useReflectionMap();
-	const reflection = useReflection(id)!;
+	const reflection = useRequiredReflection(id);
 	const { comment } = reflection;
 	let content: React.ReactNode = null;
 
@@ -46,18 +47,18 @@ export function Member({ id }: MemberProps) {
 				<AnchorLink id={reflection.name} />
 				<SourceLink sources={reflection.sources} />
 				<Flags flags={reflection.flags} />
-				{reflection.name}
+				{escapeMdx(reflection.name)}
 				{isCommentWithModifiers(comment) && <CommentBadges comment={comment} />}
 			</h3>
 
 			{content}
 
 			{reflection.groups?.map((group) => (
-				<React.Fragment key={group.title}>
+				<Fragment key={group.title}>
 					{group.children?.map((child) =>
 						hasOwnDocument(child, reflections) ? null : <Member key={child} id={child} />,
 					)}
-				</React.Fragment>
+				</Fragment>
 			))}
 		</section>
 	);

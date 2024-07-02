@@ -5,10 +5,12 @@ import { JSONOutput, ReflectionKind } from 'typedoc';
 import ts from 'typescript';
 import { normalizeUrl } from '@docusaurus/utils';
 import type {
-	DeclarationReflectionMap,
 	DocusaurusPluginTypeDocApiOptions,
+	PackageEntryConfig,
 	PackageReflectionGroup,
 	ResolvedPackageConfig,
+	TSDDeclarationReflection,
+	TSDDeclarationReflectionMap,
 } from '../types';
 import { migrateToVersion0230 } from './structure/0.23';
 import { getKindSlug, getPackageSlug, joinUrl } from './url';
@@ -52,43 +54,45 @@ export async function generateJson(
 		return true;
 	}
 
-	const app = new TypeDoc.Application();
-	const tsconfig = path.join(projectRoot, options.tsconfigName!);
+	const tsconfig = path.join(projectRoot, options.tsconfigName ?? 'tsconfig.json');
 
-	app.options.addReader(new TypeDoc.TSConfigReader());
-	app.options.addReader(new TypeDoc.TypeDocReader());
+	const app = await TypeDoc.Application.bootstrapWithPlugins(
+		{
+			gitRevision: options.gitRefName,
+			includeVersion: true,
+			skipErrorChecking: true,
+			// stripYamlFrontmatter: true,
+			// Only emit when using project references
+			emit: shouldEmit(projectRoot, tsconfig),
+			// Only document the public API by default
+			excludeExternals: true,
+			excludeInternal: true,
+			excludePrivate: true,
+			excludeProtected: true,
+			// Enable verbose logging when debugging
+			logLevel: options.debug ? 'Verbose' : 'Info',
+			inlineTags: [
+				'@link',
+				'@inheritDoc',
+				'@label',
+				'@linkcode',
+				'@linkplain',
+				'@apilink',
+				'@doclink',
+			] as `@${string}`[],
+			...options.typedocOptions,
+			// Control how config and packages are detected
+			tsconfig,
+			entryPoints: entryPoints.map((ep) => path.join(projectRoot, ep)),
+			entryPointStrategy: 'expand',
+			exclude: options.exclude,
+			// We use a fake category title so that we can fallback to the parent group
+			defaultCategory: '__CATEGORY__',
+		},
+		[new TypeDoc.TSConfigReader(), new TypeDoc.TypeDocReader()],
+	);
 
-	app.bootstrap({
-		skipErrorChecking: true,
-		// Only emit when using project references
-		emit: shouldEmit(projectRoot, tsconfig),
-		// Only document the public API by default
-		excludeExternals: true,
-		excludeInternal: true,
-		excludePrivate: true,
-		excludeProtected: true,
-		// Enable verbose logging when debugging
-		logLevel: options.debug ? 'Verbose' : 'Info',
-		inlineTags: [
-			'@link',
-			'@inheritDoc',
-			'@label',
-			'@linkcode',
-			'@linkplain',
-			'@apilink',
-			'@doclink',
-		] as `@${string}`[],
-		...options.typedocOptions,
-		// Control how config and packages are detected
-		tsconfig,
-		entryPoints: entryPoints.map((ep) => path.join(projectRoot, ep)),
-		entryPointStrategy: 'expand',
-		exclude: options.exclude,
-		// We use a fake category title so that we can fallback to the parent group
-		defaultCategory: 'CATEGORY',
-	});
-
-	const project = app.convert();
+	const project = await app.convert();
 
 	if (project) {
 		await app.generateJson(project, outFile);
@@ -102,9 +106,9 @@ export async function generateJson(
 }
 
 export function createReflectionMap(
-	items: JSONOutput.DeclarationReflection[] = [],
-): DeclarationReflectionMap {
-	const map: DeclarationReflectionMap = {};
+	items: TSDDeclarationReflection[] = [],
+): TSDDeclarationReflectionMap {
+	const map: TSDDeclarationReflectionMap = {};
 
 	items.forEach((item) => {
 		map[item.id] = item;
@@ -139,10 +143,10 @@ export function loadPackageJsonAndDocs(
 }
 
 export function addMetadataToReflections(
-	project: JSONOutput.ProjectReflection,
+	project: JSONOutput.DeclarationReflection,
 	packageSlug: string,
 	urlPrefix: string,
-): JSONOutput.ProjectReflection {
+): TSDDeclarationReflection {
 	const permalink = `/${joinUrl(urlPrefix, packageSlug)}`;
 
 	if (project.children) {
@@ -170,13 +174,14 @@ export function addMetadataToReflections(
 		});
 	}
 
+	// @ts-expect-error Not sure why this fails
 	return {
 		...project,
 		permalink: normalizeUrl([permalink]),
 	};
 }
 
-function mergeReflections(base: JSONOutput.ProjectReflection, next: JSONOutput.ProjectReflection) {
+function mergeReflections(base: TSDDeclarationReflection, next: TSDDeclarationReflection) {
 	if (Array.isArray(base.children) && Array.isArray(next.children)) {
 		base.children.push(...next.children);
 	}
@@ -198,7 +203,7 @@ function mergeReflections(base: JSONOutput.ProjectReflection, next: JSONOutput.P
 	}
 }
 
-function sortReflectionGroups(reflections: JSONOutput.ProjectReflection[]) {
+function sortReflectionGroups(reflections: TSDDeclarationReflection[]) {
 	reflections.forEach((reflection) => {
 		const map = createReflectionMap(reflection.children);
 		const sort = (a: number, b: number) => (map[a].name < map[b].name ? -1 : 1);
@@ -217,7 +222,7 @@ function sortReflectionGroups(reflections: JSONOutput.ProjectReflection[]) {
 	});
 }
 
-function matchesEntryPoint(
+function sourceFileMatchesEntryPoint(
 	sourceFile: string,
 	entryPoint: string,
 	{ deep, single }: { deep: boolean; single: boolean },
@@ -244,11 +249,51 @@ function matchesEntryPoint(
 	);
 }
 
+function modContainsEntryPoint(
+	mod: JSONOutput.DeclarationReflection,
+	entry: PackageEntryConfig,
+	meta: {
+		allSourceFiles: Record<string, boolean>;
+		packagePath: string;
+		packageRoot: string;
+		isSinglePackage: boolean;
+		isUsingDeepImports: boolean;
+	},
+) {
+	const relModSources = mod.sources ?? [];
+	const relModSourceFile = relModSources.find((sf) => !!sf.fileName)?.fileName ?? '';
+	const relEntryPoint = joinUrl(meta.packagePath, entry.path);
+
+	// Monorepos of 1 package don't have sources, so use the child sources.
+	// They also don't use full paths like "package/src/index.ts" and simply use "index.ts",
+	// so account for those entry points also.
+	if (!relModSourceFile) {
+		const absEntryPoint = path.normalize(path.join(meta.packageRoot, entry.path));
+		const relEntryPointName = path.basename(relEntryPoint);
+		const entryPointInSourceFiles =
+			!!meta.allSourceFiles[absEntryPoint] ||
+			!!meta.allSourceFiles[relEntryPoint] ||
+			(relEntryPointName.startsWith('index.') && !!meta.allSourceFiles[relEntryPointName]);
+
+		if (entryPointInSourceFiles) {
+			return sourceFileMatchesEntryPoint(relEntryPoint, relEntryPoint, {
+				deep: meta.isUsingDeepImports,
+				single: meta.isSinglePackage,
+			});
+		}
+	}
+
+	return sourceFileMatchesEntryPoint(relModSourceFile, relEntryPoint, {
+		deep: meta.isUsingDeepImports,
+		single: meta.isSinglePackage,
+	});
+}
+
 function extractReflectionModules(
 	project: JSONOutput.ProjectReflection,
 	isSinglePackage: boolean,
-): JSONOutput.ProjectReflection[] {
-	const modules: JSONOutput.ProjectReflection[] = [];
+): JSONOutput.DeclarationReflection[] {
+	const modules: JSONOutput.DeclarationReflection[] = [];
 
 	const inheritChildren = () => {
 		project.children?.forEach((child) => {
@@ -267,7 +312,7 @@ function extractReflectionModules(
 			// No "module" children:
 			//	- Polyrepos
 			//	- Monorepos with 1 package
-			modules.push(project);
+			modules.push(project as unknown as JSONOutput.DeclarationReflection);
 		} else {
 			// Has "module" children:
 			//	- Polyrepos with deep imports
@@ -285,6 +330,28 @@ function extractReflectionModules(
 	return modules;
 }
 
+function buildSourceFileNameMap(
+	project: JSONOutput.ProjectReflection,
+	modChildren: JSONOutput.DeclarationReflection[],
+) {
+	const map: Record<string, boolean> = {};
+	const cwd = process.cwd();
+
+	Object.values(project.symbolIdMap).forEach((symbol) => {
+		// absolute
+		map[path.normalize(path.join(cwd, symbol.sourceFileName))] = true;
+	});
+
+	modChildren.forEach((child) => {
+		child.sources?.forEach((sf) => {
+			// relative
+			map[sf.fileName] = true;
+		});
+	});
+
+	return map;
+}
+
 export function flattenAndGroupPackages(
 	packageConfigs: ResolvedPackageConfig[],
 	project: JSONOutput.ProjectReflection,
@@ -297,20 +364,22 @@ export function flattenAndGroupPackages(
 
 	// Loop through every TypeDoc module and group based on package and entry point
 	const packages: Record<string, PackageReflectionGroup> = {};
-	const packagesWithDeepImports: JSONOutput.ProjectReflection[] = [];
+	const packagesWithDeepImports: TSDDeclarationReflection[] = [];
 
 	modules.forEach((mod) => {
-		const relSourceFile = mod.sources?.[0]?.fileName ?? '';
+		const allSourceFiles = buildSourceFileNameMap(project, mod.children ?? []);
 
 		packageConfigs.some((cfg) =>
 			Object.entries(cfg.entryPoints).some(([importPath, entry]) => {
-				const relEntryPoint = joinUrl(cfg.packagePath, entry.path);
 				const isUsingDeepImports = !entry.path.match(/\.tsx?$/);
 
 				if (
-					!matchesEntryPoint(relSourceFile, relEntryPoint, {
-						deep: isUsingDeepImports,
-						single: isSinglePackage,
+					!modContainsEntryPoint(mod, entry, {
+						allSourceFiles,
+						isSinglePackage,
+						isUsingDeepImports,
+						packagePath: cfg.packagePath,
+						packageRoot: cfg.packageRoot,
 					})
 				) {
 					return false;

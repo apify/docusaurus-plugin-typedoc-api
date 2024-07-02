@@ -1,6 +1,5 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/members.group.hbs
 
-import React from 'react';
 import type { JSONOutput } from 'typedoc';
 import { useReflectionMap } from '../hooks/useReflectionMap';
 import { hasOwnDocument } from '../utils/visibility';
@@ -20,7 +19,7 @@ export function MembersGroup({ group }: MembersGroupProps) {
 				{group.categories.map((category) => (
 					<section key={category.title} className="tsd-panel-group tsd-member-group">
 						<h2>
-							{category.title === 'CATEGORY' ? 'Other' : category.title}{' '}
+							{category.title === '__CATEGORY__' ? 'Other' : category.title}{' '}
 							<AnchorLink id={category.title} />
 						</h2>
 

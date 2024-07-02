@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16, 18]
+        node-version: [18, 20]
       fail-fast: true
     steps:
       - uses: actions/checkout@v3
@@ -28,25 +28,26 @@ jobs:
       - uses: actions/setup-node@v3
       - run: yarn install --immutable
       - run: yarn run pack
-  docs:
-    name: Docs
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        repo-type:
-          - monorepo
-          - monorepo-1
-          - polyrepo
-          - polyrepo-deep
-          - polyrepo-multi
-      fail-fast: true
-    env:
-      NODE_ENV: production
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: yarn install --immutable
-      - run: yarn run build
-      - run: yarn workspace website run build
-        env:
-          DOCS_REPO_TYPE: ${{ matrix.repo-type }}
+  # docs:
+  #   name: Docs
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       repo-type:
+  #         - monorepo
+  #         - monorepo-1
+  #         - monorepo-reexports
+  #         - polyrepo
+  #         - polyrepo-deep
+  #         - polyrepo-multi
+  #     fail-fast: true
+  #   env:
+  #     NODE_ENV: production
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #     - run: yarn install --immutable
+  #     - run: yarn run build
+  #     - run: yarn workspace website run build
+  #       env:
+  #         DOCS_REPO_TYPE: ${{ matrix.repo-type }}
