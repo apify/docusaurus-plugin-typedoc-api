@@ -88,8 +88,8 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 			name={item.name}
 			pageMetadata={
 				<PageMetadata
-					description={item.comment?.summary ? displayPartsToMarkdown(item.comment.summary) : ''}
-					title={`${item.name} | API`}
+					description={item?.comment?.summary ? displayPartsToMarkdown(item.comment.summary) : ''}
+					title={`${item?.name ? `${item.name} | ` : ''}API`}
 				/>
 			}
 			pagingMetadata={pagingMetadata}

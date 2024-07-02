@@ -30,7 +30,7 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 	return (
 		<>
 			{!hideName && sig.name !== '__type' ? (
-				<span>{sig.modifiers ? `${sig.modifiers.join(' ')} ` : ''}<b>{sig.name}</b></span>
+				<span>{sig.modifiers ? `${sig.modifiers.join(' ')} ` : ''}<b>{escapeMdx(sig.name)}</b></span>
 			) : // Constructor signature
 			sig.kind === 16_384 ? (
 				<>
@@ -49,7 +49,7 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 
 					<span>
 						{param.flags?.isRest && <span className="tsd-signature-symbol">...</span>}
-						{param.name}
+						{escapeMdx(param.name)}
 					</span>
 				</Fragment>
 			))}
