@@ -26,7 +26,7 @@ function extractTOC(item: TSDDeclarationReflection, map: TSDDeclarationReflectio
 
 			if (!child.permalink || child.permalink.includes('#')) {
 				const iconHtml = getKindIconHtml(child.kind, child.name);
-				const value = escapeMdx(child.name);
+				const value = escapeMdx(child.name) ?? '';
 
 				toc.push({
 					// @ts-expect-error Not typed upstream
@@ -61,13 +61,13 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 			next: nextItem
 				? {
 						permalink: nextItem.permalink,
-						title: escapeMdx(nextItem.name),
+						title: escapeMdx(nextItem.name) ?? '',
 					}
 				: undefined,
 			previous: prevItem
 				? {
 						permalink: prevItem.permalink,
-						title: escapeMdx(prevItem.name),
+						title: escapeMdx(prevItem.name) ?? '',
 					}
 				: undefined,
 		}),

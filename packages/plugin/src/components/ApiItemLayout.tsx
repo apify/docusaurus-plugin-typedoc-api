@@ -22,7 +22,7 @@ export interface ApiItemLayoutProps extends Pick<DocItemProps, 'route'> {
 	toc: readonly TOCItem[];
 	pageMetadata?: React.ReactNode;
 	pagingMetadata?: PropNavigation;
-	name: string;
+	name?: string;
 	module?: string;
 }
 

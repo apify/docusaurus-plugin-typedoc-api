@@ -23,7 +23,7 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 			name: '*',
 			kind: 32_768,
 			flags: { },
-			permalink: '',
+			variant: 'param',
 		});
 	}
 
