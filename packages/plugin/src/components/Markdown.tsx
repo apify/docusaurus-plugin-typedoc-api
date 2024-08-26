@@ -3,8 +3,7 @@
 import { Fragment, useState } from 'react';
 import { marked, type Tokens } from 'marked';
 import { markedSmartypants } from 'marked-smartypants';
-import { useDocsData } from '@docusaurus/plugin-content-docs/client';
-import { useDocsVersion } from '@docusaurus/theme-common/internal';
+import { useDocsData, useDocsVersion } from '@docusaurus/plugin-content-docs/client';
 import CodeBlock from '@theme/CodeBlock';
 import MDX from '@theme/MDXComponents';
 import { useReflectionMap } from '../hooks/useReflectionMap';
