@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import Link from '@docusaurus/Link';
-import { useDocVersionSuggestions } from '@docusaurus/plugin-content-docs/client';
-import { ThemeClassNames, useDocsPreferredVersion } from '@docusaurus/theme-common';
-import { useDocsVersion } from '@docusaurus/theme-common/internal';
+import { useDocsPreferredVersion, useDocsVersion, useDocVersionSuggestions } from '@docusaurus/plugin-content-docs/client';
+import { ThemeClassNames } from '@docusaurus/theme-common';
 
 export function VersionBanner(): JSX.Element | null {
 	const { banner, docs, pluginId, version } = useDocsVersion();
