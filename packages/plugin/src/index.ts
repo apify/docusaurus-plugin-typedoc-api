@@ -324,7 +324,7 @@ export default function typedocApiPlugin(
 						return {
 							path: info.permalink,
 							exact: true,
-							component: path.join(__dirname, './components/ApiItem.tsx'),
+							component: path.join(__dirname, `./components/ApiItem.${process.env.DEV ? 'tsx' : 'js'}`),
 							modules,
 							sidebar: 'api',
 							// Map the ID here instead of creating a JSON data file,
@@ -393,7 +393,7 @@ export default function typedocApiPlugin(
 							{
 								path: indexPermalink,
 								exact: false,
-								component: path.join(__dirname, './components/ApiPage.tsx'),
+								component: path.join(__dirname, `./components/ApiPage.${process.env.DEV ? 'tsx' : 'js'}`),
 								routes,
 								modules: {
 									options: optionsData,

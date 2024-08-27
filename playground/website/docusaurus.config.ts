@@ -44,21 +44,15 @@ const config: Config = {
   ],
 
   plugins: [
-    // (context, options) => typedocApiPlugin(
-    //   context,
-    //   {
-    //     ...options,
-    //     projectRoot: __dirname + '/../../',
-    //     packages: ['playground/js'],
-        
-    //   },
-    // ),
-    ['../../packages/plugin',
+    (context, options) => typedocApiPlugin(
+      context,
       {
+        ...options as any,
         projectRoot: __dirname + '/../',
         packages: ['js'],
-      }
-    ]
+        
+      },
+    ),
   ],
 
   themeConfig: {

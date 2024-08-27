@@ -39,7 +39,7 @@ jobs:
               run: yarn
 
             - name: Build
-              run: yarn build
+              run: yarn build:deploy
 
             - name: Setup git user and npm
               run: |
