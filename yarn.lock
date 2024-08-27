@@ -2002,7 +2002,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/core@npm:3.5.2, @docusaurus/core@npm:^3.1.0":
+"@docusaurus/core@npm:3.5.2":
   version: 3.5.2
   resolution: "@docusaurus/core@npm:3.5.2"
   dependencies:
@@ -2319,7 +2319,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/preset-classic@npm:^3.1.0":
+"@docusaurus/preset-classic@npm:3.5.2":
   version: 3.5.2
   resolution: "@docusaurus/preset-classic@npm:3.5.2"
   dependencies:
@@ -2440,7 +2440,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/tsconfig@npm:^3.1.0, @docusaurus/tsconfig@npm:^3.5.2":
+"@docusaurus/tsconfig@npm:3.5.2, @docusaurus/tsconfig@npm:^3.5.2":
   version: 3.5.2
   resolution: "@docusaurus/tsconfig@npm:3.5.2"
   checksum: 808a17eaf422ae9a948c6558dd1e92d4700b067ead3a63a84049c6845bf94f84e311cd0e4d517047fe9ea057efe393bb22c2d5c92d727d06c9f895e971f2c3ea
@@ -6254,7 +6254,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^2.0.0, clsx@npm:^2.1.0":
+"clsx@npm:^2.0.0":
   version: 2.1.1
   resolution: "clsx@npm:2.1.1"
   checksum: cdfb57fa6c7649bbff98d9028c2f0de2f91c86f551179541cf784b1cfdc1562dcb951955f46d54d930a3879931a980e32a46b598acaea274728dbe068deca919
@@ -14913,7 +14913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prism-react-renderer@npm:^2.3.0, prism-react-renderer@npm:^2.3.1":
+"prism-react-renderer@npm:^2.3.0":
   version: 2.3.1
   resolution: "prism-react-renderer@npm:2.3.1"
   dependencies:
@@ -15201,7 +15201,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.2.0":
+"react-dom@npm:^18.0.0, react-dom@npm:^18.2.0":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:
@@ -15350,7 +15350,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.2.0":
+"react@npm:^18.0.0, react@npm:^18.2.0":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:
@@ -17660,7 +17660,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:>=3 < 6":
+"typescript@npm:>=3 < 6, typescript@npm:~5.5.2":
   version: 5.5.4
   resolution: "typescript@npm:5.5.4"
   bin:
@@ -17680,7 +17680,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A~5.5.2#optional!builtin<compat/typescript>":
   version: 5.5.4
   resolution: "typescript@patch:typescript@npm%3A5.5.4#optional!builtin<compat/typescript>::version=5.5.4&hash=29ae49"
   bin:
@@ -18331,18 +18331,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"website@workspace:website":
+"website@workspace:playground/website":
   version: 0.0.0-use.local
-  resolution: "website@workspace:website"
+  resolution: "website@workspace:playground/website"
   dependencies:
-    "@docusaurus/core": "npm:^3.1.0"
-    "@docusaurus/preset-classic": "npm:^3.1.0"
-    "@docusaurus/tsconfig": "npm:^3.1.0"
+    "@docusaurus/core": "npm:3.5.2"
+    "@docusaurus/module-type-aliases": "npm:3.5.2"
+    "@docusaurus/preset-classic": "npm:3.5.2"
+    "@docusaurus/tsconfig": "npm:3.5.2"
+    "@docusaurus/types": "npm:3.5.2"
     "@mdx-js/react": "npm:^3.0.0"
-    clsx: "npm:^2.1.0"
-    prism-react-renderer: "npm:^2.3.1"
-    react: "npm:^18.2.0"
-    react-dom: "npm:^18.2.0"
+    clsx: "npm:^2.0.0"
+    prism-react-renderer: "npm:^2.3.0"
+    react: "npm:^18.0.0"
+    react-dom: "npm:^18.0.0"
+    typescript: "npm:~5.5.2"
   languageName: unknown
   linkType: soft
 
