@@ -2,7 +2,7 @@ module.exports = {
 	root: true,
 	extends: ['moon', 'moon/react', 'moon/node'],
 	parserOptions: {
-		project: ['packages/plugin/tsconfig.json', 'website/tsconfig.json'],
+		project: ['packages/plugin/tsconfig.json'],
 		tsconfigRootDir: __dirname,
 	},
 	rules: {
