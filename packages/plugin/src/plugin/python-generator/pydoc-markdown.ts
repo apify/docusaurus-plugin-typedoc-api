@@ -57,7 +57,7 @@ export async function parseWithPydocMarkdown({
         json = json.replaceAll(path.resolve(projectRoot), 'REPO_ROOT_PLACEHOLDER');
     
         return json;
-    } catch (error) {
+    } catch (error: any) {
         throw new Error(`Failed to generate JSON file from Python project:\n\t${error.stderr.split('\n').slice(-2).join('\n')}`);
     }
 }

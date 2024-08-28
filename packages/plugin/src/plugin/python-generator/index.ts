@@ -4,8 +4,7 @@ import { pydocToTypedoc } from "./transform-docs";
 export async function generateJsonFromPythonProject({
     projectRoot,
     outFile,
-}
-): Promise<void> {
+} : { projectRoot: string, outFile: string }): Promise<void> {
     const pydoc = await parseWithPydocMarkdown({ projectRoot });
 
     await pydocToTypedoc({

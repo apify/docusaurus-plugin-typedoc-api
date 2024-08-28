@@ -15,10 +15,10 @@ const REPO_URL_PER_PACKAGE = {
     'apify_client': APIFY_CLIENT_REPO_URL,
     'apify_shared': APIFY_SHARED_REPO_URL,
     'crawlee': CRAWLEE_PYTHON_REPO_URL,
-};
+} as const;
 
 const TAG_PER_PACKAGE: Record<string, string> = {};
-let MODULE_SHORTCUTS = {};
+let MODULE_SHORTCUTS: Record<string, string> = {};
 
 async function initPackageTags({
     moduleName
@@ -26,7 +26,6 @@ async function initPackageTags({
     moduleName?: string,
 }) {
     // For each package, get the installed version, and set the tag to the corresponding version
-    const TAG_PER_PACKAGE = {};
     for (const pkg of ['apify', 'apify_client', 'apify_shared']) {
         try {
             const packageVersion = await $`python -c 'import ${pkg}; print(${pkg}.__version__)'`;
@@ -40,11 +39,11 @@ async function initPackageTags({
 
     if(!moduleName) {
         const thisPackagePyprojectToml = fs.readFileSync('../pyproject.toml', 'utf8');
-        moduleName = thisPackagePyprojectToml.match(/^name = "(.+)"$/m)[1];
+        moduleName = thisPackagePyprojectToml.match(/^name = "(.+)"$/m)?.[1];
     }
 
     // For the current package, set the tag to 'master'
-    TAG_PER_PACKAGE[moduleName] = 'master';
+    TAG_PER_PACKAGE[moduleName!] = 'master';
 
     return TAG_PER_PACKAGE;
 }
@@ -90,17 +89,20 @@ const GROUP_ORDER = [
     'Properties',
     'Constants',
     'Enumeration Members'
-];
+] as const;
 
-const groupSort = (g1, g2) => {
+const groupSort = (g1: typeof GROUP_ORDER[number], g2: typeof GROUP_ORDER[number]) => {
     if(GROUP_ORDER.includes(g1) && GROUP_ORDER.includes(g2)){
         return GROUP_ORDER.indexOf(g1) - GROUP_ORDER.indexOf(g2)
     }
     return g1.localeCompare(g2);
 };
 
-function getGroupName(object) {
-    const groupPredicates = {
+function getGroupName(object: any) {
+    const groupPredicates: Record<
+        typeof GROUP_ORDER[number],  
+        (object: any) => boolean
+    > = {
         'Errors': (x) => x.name.toLowerCase().includes('error'),
         'Main Classes': (x) => ['Dataset', 'KeyValueStore', 'RequestQueue'].includes(x.name) || x.name.endsWith('Crawler'),
         'Helper Classes': (x) => x.kindString === 'Class',
@@ -113,23 +115,23 @@ function getGroupName(object) {
 
     const [group] = Object.entries(groupPredicates).find(
         ([_, predicate]) => predicate(object)
-    );
+    )!;
 
     return group;
 }
 
 // Strips the Optional[] type from the type string, and replaces generic types with just the main type
-function getBaseType(type) {
+function getBaseType(type: any) {
     return type?.replace(/Optional\[(.*)\]/g, '$1').replace('ListPage[Dict]', 'ListPage');
 }
 
 // Returns whether a type is a custom class, or a primitive type
-function isCustomClass(type) {
+function isCustomClass(type: string) {
     return !['dict', 'list', 'str', 'int', 'float', 'bool'].includes(type.toLowerCase());
 }
 
 // Infer the Typedoc type from the docspec type
-function inferTypedocType(docspecType) {
+function inferTypedocType(docspecType: any): Record<string, any> | undefined {
     const typeWithoutOptional = getBaseType(docspecType);
     if (!typeWithoutOptional) {
         return undefined;
@@ -146,20 +148,20 @@ function inferTypedocType(docspecType) {
 }
 
 // Sorts the groups of a Typedoc member, and sorts the children of each group
-function sortChildren(typedocMember) {
+function sortChildren(typedocMember: any) {
     for (let group of typedocMember.groups) {
         group.children
-            .sort((a, b) => {
-                const firstName = typedocMember.children.find(x => x.id === a).name;
-                const secondName = typedocMember.children.find(x => x.id === b).name;
+            .sort((a: any, b: any) => {
+                const firstName = typedocMember.children.find((x: any) => x.id === a).name;
+                const secondName = typedocMember.children.find((x: any) => x.id === b).name;
                 return firstName.localeCompare(secondName);
             });
     }
-    typedocMember.groups.sort((a, b) => groupSort(a.title, b.title));
+    typedocMember.groups.sort((a: { title: typeof GROUP_ORDER[number] }, b: { title: typeof GROUP_ORDER[number] }) => groupSort(a.title, b.title));
 }
 
 // Parses the arguments and return value description of a method from its docstring
-function extractArgsAndReturns(docstring) {
+function extractArgsAndReturns(docstring: string) {
     const parameters = (docstring
         .split('Args:')[1] ?? '').split('Returns:')[0] // Get the part between Args: and Returns:
         .split(/(^|\n)\s*([\w]+)\s*\(.*?\)\s*:\s*/) // Magic regex which splits the arguments into an array, and removes the argument types
@@ -169,7 +171,7 @@ function extractArgsAndReturns(docstring) {
                 return {...acc, [curr]: arr[idx+1]} // If the index is even, the current string is an argument name, and the next string is its type
             }
             return acc;
-        }, {});
+        }, {} as Record<string, string>);
 
     const returns = (docstring
         .split('Returns:')[1] ?? '').split('Raises:')[0] // Get the part between Returns: and Raises:
@@ -180,21 +182,21 @@ function extractArgsAndReturns(docstring) {
 }
 
 // Objects with decorators named 'ignore_docs' or with empty docstrings will be ignored
-function isHidden(member) {
-    return member.decorations?.some(d => d.name === 'ignore_docs') || member.name === 'ignore_docs';
+function isHidden(member: any) {
+    return member.decorations?.some((d: { name: string }) => d.name === 'ignore_docs') || member.name === 'ignore_docs';
 }
 
 // Each object in the Typedoc structure has an unique ID,
 // we'll just increment it for each object we convert
 let oid = 1;
 
-const symbolIdMap = [];
+const symbolIdMap: { qualifiedName: string, sourceFileName: string }[]  = [];
 
 // Converts a docspec object to a Typedoc object, including all its children
-function convertObject(obj, parent, module) {
-    const rootModuleName = module.name.split('.')[0];
+function convertObject(obj: any, parent: any, module: any) {
+    const rootModuleName: string = module.name.split('.')[0];
     for (let member of obj.members ?? []) {
-        let typedocKind = TYPEDOC_KINDS[member.type];
+        let typedocKind = TYPEDOC_KINDS[member.type as keyof typeof TYPEDOC_KINDS];
 
         if(member.bases?.includes('Enum')) {
             typedocKind = TYPEDOC_KINDS['enum'];
@@ -202,7 +204,7 @@ function convertObject(obj, parent, module) {
 
         let typedocType = inferTypedocType(member.datatype);
         
-        if (member.decorations?.some(d => ['property', 'dualproperty'].includes(d.name))) {
+        if (member.decorations?.some((d: { name: string }) => ['property', 'dualproperty'].includes(d.name))) {
             typedocKind = TYPEDOC_KINDS['data'];
             typedocType = inferTypedocType(member.return_type ?? member.datatype);
         }
@@ -217,7 +219,7 @@ function convertObject(obj, parent, module) {
 
         if(member.type in TYPEDOC_KINDS && !isHidden(member)) {
             // Get the URL of the member in GitHub
-            const repoBaseUrl = `${REPO_URL_PER_PACKAGE[rootModuleName]}/blob/${TAG_PER_PACKAGE[rootModuleName] ?? 'master'}`;
+            const repoBaseUrl = `${REPO_URL_PER_PACKAGE[rootModuleName as keyof typeof REPO_URL_PER_PACKAGE]}/blob/${TAG_PER_PACKAGE[rootModuleName] ?? 'master'}`;
             const filePathInRepo = member.location.filename.replace(REPO_ROOT_PLACEHOLDER, '');
             const fileGitHubUrl = member.location.filename.replace(REPO_ROOT_PLACEHOLDER, repoBaseUrl);
             const memberGitHubUrl = `${fileGitHubUrl}#L${member.location.lineno}`;
@@ -256,6 +258,7 @@ function convertObject(obj, parent, module) {
                     character: 1,
                     url: memberGitHubUrl,
                 }],
+                signatures: [] as any[],
             };
 
             if(typedocMember.kindString === 'Method') {
@@ -279,24 +282,26 @@ function convertObject(obj, parent, module) {
                         ] : undefined,
                     } : undefined,
                     type: inferTypedocType(member.return_type),
-                    parameters: member.args.filter((arg) => (arg.name !== 'self' && arg.name !== 'cls')).map((arg) => ({
-                        id: oid++,
-                        name: arg.name,
-                        kind: 32768,
-                        kindString: 'Parameter',
-                        flags: {
-                            isOptional: arg.datatype?.includes('Optional') ? 'true' : undefined,
-                            'keyword-only': arg.type === 'KEYWORD_ONLY' ? 'true' : undefined,
-                        },
-                        type: inferTypedocType(arg.datatype),
-                        comment: parameters[arg.name] ? {
-                            summary: [{
-                                kind: 'text',
-                                text: parameters[arg.name]
-                            }]
-                        } : undefined,
-                        defaultValue: arg.default_value,
-                    })),
+                    parameters: member.args
+                        .filter((arg: any) => (arg.name !== 'self' && arg.name !== 'cls'))
+                        .map((arg: any) => ({
+                            id: oid++,
+                            name: arg.name,
+                            kind: 32768,
+                            kindString: 'Parameter',
+                            flags: {
+                                isOptional: arg.datatype?.includes('Optional') ? 'true' : undefined,
+                                'keyword-only': arg.type === 'KEYWORD_ONLY' ? 'true' : undefined,
+                            },
+                            type: inferTypedocType(arg.datatype),
+                            comment: parameters[arg.name] ? {
+                                summary: [{
+                                    kind: 'text',
+                                    text: parameters[arg.name]
+                                }]
+                            } : undefined,
+                            defaultValue: arg.default_value,
+                        })),
                 }];
             }
 
@@ -309,7 +314,7 @@ function convertObject(obj, parent, module) {
 
             const groupName = getGroupName(typedocMember);
 
-            const group = parent.groups.find((g) => g.title === groupName);
+            const group = parent.groups.find((g: { title: string }) => g.title === groupName);
             if (group) {
                 group.children.push(typedocMember.id);
             } else {
@@ -356,11 +361,12 @@ export async function pydocToTypedoc({
                 'character': 0,
                 'url': `http://example.com/blob/123456/src/dummy.py`,
             }
-        ]
+        ],
+        'symbolIdMap': {},
     };
 
     // Load the docspec dump files of this module and of apify-shared
-    const thisPackageDocspecDump = pydocJson ?? fs.readFileSync(pydocFile, 'utf8');
+    const thisPackageDocspecDump = pydocJson ?? fs.readFileSync(pydocFile!, 'utf8');
     const thisPackageModules = thisPackageDocspecDump.split('\n').filter((line) => line !== '');
 
     // Convert all the modules, store them in the root object
@@ -370,8 +376,8 @@ export async function pydocToTypedoc({
     };
 
     // Recursively fix references (collect names->ids of all the named entities and then inject those in the reference objects)
-    const namesToIds = {};
-    function collectIds(obj) {
+    const namesToIds: Record<string, string> = {};
+    function collectIds(obj: Record<string, any>) {
         for (const child of obj.children ?? []) {
             namesToIds[child.name] = child.id;
             collectIds(child);
@@ -379,7 +385,7 @@ export async function pydocToTypedoc({
     }
     collectIds(typedocApiReference);
 
-    function fixRefs(obj) {
+    function fixRefs(obj: Record<string, any>) {
         for (const child of obj.children ?? []) {
             if (child.type?.type === 'reference') {
                 child.type.id = namesToIds[child.type.name];
