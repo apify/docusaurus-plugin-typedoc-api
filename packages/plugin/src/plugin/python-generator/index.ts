@@ -9,7 +9,7 @@ export async function generateJsonFromPythonProject({
     const pydoc = await parseWithPydocMarkdown({ projectRoot });
 
     await pydocToTypedoc({
-        moduleName: 'python',
+        moduleName: 'python', // TODO: get from project config files or passed options
         pydocJson: pydoc,
         outFile,
     });
