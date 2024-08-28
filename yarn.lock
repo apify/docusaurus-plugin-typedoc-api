@@ -232,6 +232,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     typedoc: "npm:^0.25.7"
     typescript: "npm:^5.3.3"
+    zx: "npm:^8.1.4"
   peerDependencies:
     "@docusaurus/core": ^3.5.2
     "@docusaurus/mdx-loader": ^3.5.2
@@ -4047,6 +4048,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/fs-extra@npm:>=11":
+  version: 11.0.4
+  resolution: "@types/fs-extra@npm:11.0.4"
+  dependencies:
+    "@types/jsonfile": "npm:*"
+    "@types/node": "npm:*"
+  checksum: acc4c1eb0cde7b1f23f3fe6eb080a14832d8fa9dc1761aa444c5e2f0f6b6fa657ed46ebae32fb580a6700fc921b6165ce8ac3e3ba030c3dd15f10ad4dd4cae98
+  languageName: node
+  linkType: hard
+
 "@types/gtag.js@npm:^0.0.12":
   version: 0.0.12
   resolution: "@types/gtag.js@npm:0.0.12"
@@ -4139,6 +4150,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jsonfile@npm:*":
+  version: 6.1.4
+  resolution: "@types/jsonfile@npm:6.1.4"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 309fda20eb5f1cf68f2df28931afdf189c5e7e6bec64ac783ce737bb98908d57f6f58757ad5da9be37b815645a6f914e2d4f3ac66c574b8fe1ba6616284d0e97
+  languageName: node
+  linkType: hard
+
 "@types/marked@npm:^6.0.0":
   version: 6.0.0
   resolution: "@types/marked@npm:6.0.0"
@@ -4201,7 +4221,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:>=20":
   version: 22.5.0
   resolution: "@types/node@npm:22.5.0"
   dependencies:
@@ -18795,5 +18815,22 @@ __metadata:
   version: 2.0.4
   resolution: "zwitch@npm:2.0.4"
   checksum: f22ec5fc2d5f02c423c93d35cdfa83573a3a3bd98c66b927c368ea4d0e7252a500df2a90a6b45522be536a96a73404393c958e945fdba95e6832c200791702b6
+  languageName: node
+  linkType: hard
+
+"zx@npm:^8.1.4":
+  version: 8.1.4
+  resolution: "zx@npm:8.1.4"
+  dependencies:
+    "@types/fs-extra": "npm:>=11"
+    "@types/node": "npm:>=20"
+  dependenciesMeta:
+    "@types/fs-extra":
+      optional: true
+    "@types/node":
+      optional: true
+  bin:
+    zx: build/cli.js
+  checksum: 1ffa4c51a1edad25de0729d09667b3d1b7b4f9c8f6b4300e34d85f8f18c2e768f7e297b9bfad4d3b8a24792b3f14085f229933d0a224febba49ac2588ed155b1
   languageName: node
   linkType: hard

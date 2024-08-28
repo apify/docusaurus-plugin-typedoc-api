@@ -23,5 +23,6 @@ module.exports = {
 
 		// We import from the default theme but its not a dep
 		'import/no-extraneous-dependencies': 'off',
+		'unicorn/prefer-ternary': 'only-single-line',
 	},
 };

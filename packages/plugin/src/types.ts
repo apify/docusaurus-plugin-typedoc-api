@@ -30,6 +30,7 @@ export interface DocusaurusPluginTypeDocApiOptions
 	sortSidebar?: (a: string, d: string) => number;
 	tsconfigName?: string;
 	typedocOptions?: Partial<TypeDocOptions>;
+	python: boolean;
 
 	remarkPlugins: MDXPlugin[];
 	rehypePlugins: MDXPlugin[];
