@@ -13,6 +13,7 @@ import {
 	generateJson,
 	loadPackageJsonAndDocs,
 } from './plugin/data';
+import { generateJsonFromPythonProject } from './plugin/python-generator';
 import { extractSidebar } from './plugin/sidebar';
 import { getVersionedDocsDirPath, readVersionsMetadata } from './plugin/version';
 import type {
@@ -55,6 +56,7 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	remarkPlugins: [],
 	rehypePlugins: [],
 	versions: {},
+	python: false,
 };
 
 async function importFile<T>(file: string): Promise<T> {
@@ -147,12 +149,19 @@ export default function typedocApiPlugin(
 
 					console.log(`[${prefix}]:`, 'Generating docs...');
 
-					await generateJson(
-						projectRoot,
-						entryPoints,
-						path.join(outDir, 'api-typedoc.json'),
-						options,
-					);
+					if (options.python) {
+						await generateJsonFromPythonProject({
+							projectRoot,
+							outFile: path.join(outDir, 'api-typedoc.json'),
+						});
+					} else {
+						await generateJson(
+							projectRoot,
+							entryPoints,
+							path.join(outDir, 'api-typedoc.json'),
+							options,
+						);
+					}
 
 					console.log(`[${prefix}]:`, 'Persisting packages...');
 
@@ -198,6 +207,11 @@ export default function typedocApiPlugin(
 									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 								}
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
+							} else if (options.python) {
+								await generateJsonFromPythonProject({
+									projectRoot,
+									outFile,
+								});
 							} else {
 								await generateJson(projectRoot, entryPoints, outFile, options);
 							}

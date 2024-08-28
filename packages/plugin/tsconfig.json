@@ -3,5 +3,8 @@
   "include": [
     "src/**/*",
     "types/**/*"
-  ]
+  ],
+  "compilerOptions": {
+    "lib": ["es2021"],
+  }
 }
