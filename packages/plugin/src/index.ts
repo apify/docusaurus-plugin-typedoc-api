@@ -13,6 +13,7 @@ import {
 	generateJson,
 	loadPackageJsonAndDocs,
 } from './plugin/data';
+import { generateJsonFromPythonProject } from './plugin/python-generator';
 import { extractSidebar } from './plugin/sidebar';
 import { getVersionedDocsDirPath, readVersionsMetadata } from './plugin/version';
 import type {
@@ -25,7 +26,6 @@ import type {
 	TSDDeclarationReflection,
 	VersionMetadata,
 } from './types';
-import { generateJsonFromPythonProject } from './plugin/python-generator';
 
 const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	banner: '',

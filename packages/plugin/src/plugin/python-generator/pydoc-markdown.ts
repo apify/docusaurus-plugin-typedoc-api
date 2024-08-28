@@ -57,7 +57,9 @@ export async function parseWithPydocMarkdown({
         json = json.replaceAll(path.resolve(projectRoot), 'REPO_ROOT_PLACEHOLDER');
     
         return json;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
+        // eslint-disable-next-line 
         throw new Error(`Failed to generate JSON file from Python project:\n\t${error.stderr.split('\n').slice(-2).join('\n')}`);
     }
 }
