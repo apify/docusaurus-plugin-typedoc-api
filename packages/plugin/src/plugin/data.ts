@@ -136,6 +136,7 @@ export function loadPackageJsonAndDocs(
 	}
 
 	if(!found) {
+		// TODO: load the actual package information from pyproject.toml or similar
 		return {
 			packageJson: {
 				name: 'crawlee',
