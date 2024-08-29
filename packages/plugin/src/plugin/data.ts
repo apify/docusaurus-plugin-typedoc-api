@@ -124,9 +124,27 @@ export function loadPackageJsonAndDocs(
 	changelogFileName: string = 'CHANGELOG.md',
 ) {
 	let currentDir = initialDir;
+	let found = true;
 
 	while (!fs.existsSync(path.join(currentDir, pkgFileName))) {
-		currentDir = path.dirname(currentDir);
+		if (currentDir === path.dirname(currentDir)) {
+			found = false;
+			break;
+		} else {
+			currentDir = path.dirname(currentDir);
+		}
+	}
+
+	if(!found) {
+		// TODO: load the actual package information from pyproject.toml or similar
+		return {
+			packageJson: {
+				name: 'crawlee',
+				version: '1.0.0',
+			},
+			readmePath: '',
+			changelogPath: '',
+		}
 	}
 
 	const readmePath = path.join(currentDir, readmeFileName);
