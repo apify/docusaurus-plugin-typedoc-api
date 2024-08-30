@@ -43,11 +43,6 @@ export interface DocusaurusPluginTypeDocApiOptions
 	disableVersioning?: boolean;
 	includeCurrentVersion?: boolean;
 	routeBasePath?: string;
-
-	/**
-	 * Rebuild the API reference when the source files change.
-	 */
-	watchSources: boolean;
 }
 
 // CONFIG

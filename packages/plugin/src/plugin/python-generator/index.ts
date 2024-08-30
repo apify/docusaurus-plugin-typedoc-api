@@ -1,6 +1,6 @@
+import { spinner } from 'zx';
 import { parseWithPydocMarkdown } from "./pydoc-markdown";
 import { pydocToTypedoc } from "./transform-docs";
-import { spinner } from 'zx';
 
 export async function generateJsonFromPythonProject({
     outFile,
