@@ -56,7 +56,8 @@ export async function parseWithPydocMarkdown({
 
         rmSync(configPath);
 
-        let json = await pydoc.text();
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        let json = await pydoc!.text();
     
         json = json.replaceAll(path.resolve(projectRoot), 'REPO_ROOT_PLACEHOLDER');
     
