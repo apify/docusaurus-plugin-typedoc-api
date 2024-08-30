@@ -30,6 +30,10 @@ export interface DocusaurusPluginTypeDocApiOptions
 	sortSidebar?: (a: string, d: string) => number;
 	tsconfigName?: string;
 	typedocOptions?: Partial<TypeDocOptions>;
+
+	/**
+	 * Switches the processing mode to Python-specific pipeline.
+	 */
 	python: boolean;
 
 	remarkPlugins: MDXPlugin[];

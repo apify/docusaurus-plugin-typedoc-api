@@ -1,6 +1,6 @@
 import { rmSync, writeFileSync } from 'fs';
 import path from 'path';
-import { $ } from 'zx';
+import { $, ProcessOutput, spinner } from 'zx';
 
 /**
  * Generates the pydoc-markdown configuration file
@@ -36,7 +36,7 @@ export async function parseWithPydocMarkdown({
     for (const cmd of ['python', 'pydoc-markdown']) {
         try {
             // eslint-disable-next-line no-await-in-loop
-            await $`${cmd} --version`;
+            await spinner(`Checking for ${cmd}...`, () => $`${cmd} --version`);
         } catch {
             throw new Error(`Please install ${cmd} to use this plugin with Python projects.`);
         }
@@ -48,11 +48,16 @@ export async function parseWithPydocMarkdown({
         const configPath = path.join(__dirname, 'pydoc-markdown.temp.yml');
         writeFileSync(configPath, configYml);
 
-        const pydoc = await $`pydoc-markdown --quiet --dump ${configPath}`;
+        let pydoc: ProcessOutput | null = null;
+
+        await spinner('Parsing the Python project into a JSON AST...', async () => {
+            pydoc = await $`pydoc-markdown --quiet --dump ${configPath}`;
+        });
 
         rmSync(configPath);
 
-        let json = await pydoc.text();
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        let json = await pydoc!.text();
     
         json = json.replaceAll(path.resolve(projectRoot), 'REPO_ROOT_PLACEHOLDER');
     
