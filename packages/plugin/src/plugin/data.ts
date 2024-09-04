@@ -355,10 +355,13 @@ function buildSourceFileNameMap(
 	const map: Record<string, boolean> = {};
 	const cwd = process.cwd();
 
-	Object.values(project.symbolIdMap).forEach((symbol) => {
-		// absolute
-		map[path.normalize(path.join(cwd, symbol.sourceFileName))] = true;
-	});
+	if(project.symbolIdMap) {
+		Object.values(project.symbolIdMap).forEach((symbol) => {
+			// absolute
+			map[path.normalize(path.join(cwd, symbol.sourceFileName))] = true;
+		});
+	}
+
 
 	modChildren.forEach((child) => {
 		child.sources?.forEach((sf) => {
