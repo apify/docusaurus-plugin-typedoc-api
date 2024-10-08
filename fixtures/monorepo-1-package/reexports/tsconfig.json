@@ -1,17 +1,19 @@
 {
-  "compilerOptions": {
-    "declarationDir": "dts",
-    "outDir": "dts",
-    "rootDir": "src",
-    "emitDeclarationOnly": true
-  },
+  "extends": "@docusaurus/tsconfig",
   "exclude": [
     "dts",
     "tests"
   ],
+<<<<<<<< HEAD:fixtures/monorepo-1-package/reexports/tsconfig.json
   "extends": "../../../tsconfig.options.json",
   "include": [
     "src/**/*"
+========
+  "include": [
+    "*.ts",
+    "src/**/*",
+    "types/**/*"
+>>>>>>>> milesj/master:website/tsconfig.json
   ],
   "references": []
 }
