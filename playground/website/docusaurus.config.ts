@@ -48,9 +48,8 @@ const config: Config = {
       context,
       {
         ...options as any,
-        projectRoot: __dirname + '/../python',
-        python: true,
-        packages: ['.']
+        projectRoot: __dirname + '/../',
+        packages: ['/js'],
       },
     ),
   ],
