@@ -13,12 +13,12 @@ import {
 	generateJson,
 	loadPackageJsonAndDocs,
 } from './plugin/data';
-import { generateJsonFromPythonProject } from './plugin/python-generator';
 import { extractSidebar } from './plugin/sidebar';
 import { getVersionedDocsDirPath, readVersionsMetadata } from './plugin/version';
 import type {
 	ApiOptions,
 	DocusaurusPluginTypeDocApiOptions,
+	GlobalData,
 	LoadedContent,
 	PackageEntryConfig,
 	PackageReflectionGroup,
@@ -149,19 +149,12 @@ export default function typedocApiPlugin(
 
 					console.log(`[${prefix}]:`, 'Generating docs...');
 
-					if (options.python) {
-						await generateJsonFromPythonProject({
-							projectRoot,
-							outFile: path.join(outDir, 'api-typedoc.json'),
-						});
-					} else {
-						await generateJson(
-							projectRoot,
-							entryPoints,
-							path.join(outDir, 'api-typedoc.json'),
-							options,
-						);
-					}
+					await generateJson(
+						projectRoot,
+						entryPoints,
+						path.join(outDir, 'api-typedoc.json'),
+						options,
+					);
 
 					console.log(`[${prefix}]:`, 'Persisting packages...');
 
@@ -207,11 +200,6 @@ export default function typedocApiPlugin(
 									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 								}
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
-							} else if (options.python) {
-								await generateJsonFromPythonProject({
-									projectRoot,
-									outFile,
-								});
 							} else {
 								await generateJson(projectRoot, entryPoints, outFile, options);
 							}
@@ -276,6 +264,10 @@ export default function typedocApiPlugin(
 			if (!content) {
 				return;
 			}
+
+			actions.setGlobalData({
+				isPython: !!options.python,
+			} as GlobalData);
 
 			const docs: PropVersionDocs = {};
 

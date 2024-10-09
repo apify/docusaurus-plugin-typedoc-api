@@ -32,7 +32,7 @@ export interface DocusaurusPluginTypeDocApiOptions
 	typedocOptions?: Partial<TypeDocOptions>;
 
 	/**
-	 * Switches the processing mode to Python-specific pipeline.
+	 * Enables the Python-specific rendering patches.
 	 */
 	python: boolean;
 
@@ -43,6 +43,10 @@ export interface DocusaurusPluginTypeDocApiOptions
 	disableVersioning?: boolean;
 	includeCurrentVersion?: boolean;
 	routeBasePath?: string;
+}
+
+export interface GlobalData {
+	isPython: boolean;
 }
 
 // CONFIG
