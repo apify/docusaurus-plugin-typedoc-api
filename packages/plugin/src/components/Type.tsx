@@ -203,7 +203,9 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 
 		case 'reference': {
 			const type = base as JSONOutput.ReferenceType;
-			const ref = type.target ? reflections[Number(type.target)] : null;
+			// eslint-disable-next-line
+			const reflectionIdentifier = type.target ?? (type as any).id;
+			const ref = reflectionIdentifier ? reflections[Number(reflectionIdentifier)] : null;
 			const genericClass = ref?.id && !ref.sources ? 'tsd-signature-type-generic' : '';
 
 			return (
