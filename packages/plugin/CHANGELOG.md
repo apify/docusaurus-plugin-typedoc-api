@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 4.4.0 - 2024-09-08
+
+#### 🚀 Updates
+
+- Support and require Docusaurus 3.5 (#156) ([5a3824a](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/5a3824a)), closes [#156](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/156)
+
+**Note:** Version bump only for package docusaurus-plugin-typedoc-api
+
+
+
+
+
+## 4.3.0 - 2024-09-02
+
+#### 🚀 Updates
+
+- Support for Page Options - Hide Inherited [#150] (#151) ([19c8bff](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/19c8bff)), closes [#150](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/150) [#151](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/151)
+- Support for reference tag [#153] (#154) ([6cea7f9](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/6cea7f9)), closes [#153](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/153) [#154](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/154)
+
+**Note:** Version bump only for package docusaurus-plugin-typedoc-api
+
+
+
+
+
+### 4.2.1 - 2024-08-04
+
+#### 🐞 Fixes
+
+- Support for Object Literals and Destructed Parameters in [@param](https://github.com/param) [#147] (#148) ([d613725](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/d613725)), closes [#147](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/147) [#148](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/148) [#147](https://github.com/milesj/docusaurus-plugin-typedoc-api/issues/147)
+
+#### 📦 Dependencies
+
+- **[docusaurus]** Update to v3.4. ([a0bc748](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/a0bc748))
+- Update prettier and typescript. ([1319b7f](https://github.com/milesj/docusaurus-plugin-typedoc-api/commit/1319b7f))
+
+**Note:** Version bump only for package docusaurus-plugin-typedoc-api
+
+
+
+
+
 ## 4.2.0 - 2024-02-11
 
 #### 🚀 Updates
