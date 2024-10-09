@@ -22,8 +22,8 @@ export class Foo {
      * Set the name of the class.
      * @param {string} name
      */
-    setName(name: string): void {
-        this.name = name;
+    setName(name: string | Foo): void {
+        this.name = typeof name === 'string' ? name : name.getName();
     }
 
     /**

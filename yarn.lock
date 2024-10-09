@@ -225,6 +225,7 @@ __metadata:
     "@docusaurus/tsconfig": "npm:^3.5.2"
     "@docusaurus/types": "npm:^3.5.2"
     "@docusaurus/utils": "npm:^3.5.2"
+    "@types/react": "npm:^18.3.11"
     "@vscode/codicons": "npm:^0.0.35"
     marked: "npm:^9.1.6"
     marked-smartypants: "npm:^1.1.5"
@@ -4321,7 +4322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18.3.3":
+"@types/react@npm:^18.3.11, @types/react@npm:^18.3.3":
   version: 18.3.11
   resolution: "@types/react@npm:18.3.11"
   dependencies:
