@@ -4,7 +4,7 @@
 import { Fragment } from 'react';
 import type { JSONOutput } from 'typedoc';
 import Link from '@docusaurus/Link';
-import { GlobalData } from '@docusaurus/types';
+import { type GlobalData } from '@docusaurus/types';
 import { usePluginData } from '@docusaurus/useGlobalData';
 import { useReflectionMap } from '../hooks/useReflectionMap';
 import type { TSDDeclarationReflection } from '../types';

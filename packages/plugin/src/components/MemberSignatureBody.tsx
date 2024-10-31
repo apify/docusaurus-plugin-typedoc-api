@@ -2,7 +2,7 @@
 
 import { Fragment, useContext } from 'react'
 import type { JSONOutput, Models } from 'typedoc';
-import { GlobalData } from '@docusaurus/types';
+import { type GlobalData } from '@docusaurus/types';
 import { usePluginData } from '@docusaurus/useGlobalData';
 import { useMinimalLayout } from '../hooks/useMinimalLayout';
 import type { TSDSignatureReflection } from '../types';
@@ -169,8 +169,8 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 								)}
 
 								{param.type?.type === 'union' && (
-									(((param.type as unknown as Models.UnionType).types.filter(
-										(unionType) => unionType.type === 'reflection'))).map(
+									((param.type.types.filter(
+										(unionType) => unionType.type === 'reflection')) as unknown as Models.ReflectionType[]).map(
 										(unionReflectionType) => (
 											<ul key={unionReflectionType.declaration.id}>
 												{unionReflectionType.declaration?.children?.map((unionChild) => (
