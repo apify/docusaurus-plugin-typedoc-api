@@ -1,9 +1,12 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/member.signature.body.hbs
 
-import { Fragment } from 'react'
+import { Fragment, useContext } from 'react'
 import type { JSONOutput, Models } from 'typedoc';
+import { GlobalData } from '@docusaurus/types';
+import { usePluginData } from '@docusaurus/useGlobalData';
 import { useMinimalLayout } from '../hooks/useMinimalLayout';
 import type { TSDSignatureReflection } from '../types';
+import { ApiDataContext } from './ApiDataContext';
 import { Comment, hasComment } from './Comment';
 import { CommentBadges, isCommentWithModifiers } from './CommentBadges';
 import { DefaultValue } from './DefaultValue';
@@ -60,6 +63,46 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 	const showTypes = sig.typeParameter && sig.typeParameter.length > 0;
 	const showParams = !minimal && sig.parameters && sig.parameters.length > 0;
 	const showReturn = !minimal && sig.type;
+
+	const { reflections } = useContext(ApiDataContext);
+	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;
+
+
+	if (isPython) {
+		// eslint-disable-next-line
+		sig.parameters = sig.parameters?.reduce<typeof sig.parameters>((acc, param) => {
+			// @ts-expect-error Silence ts errors
+			switch (param.type?.name) {
+				case 'Unpack':
+					// @ts-expect-error Silence ts errors
+					// eslint-disable-next-line
+					acc.push(...reflections[param.type.typeArguments[0].target].children.map(x => ({...x, flags: {'keyword-only': true}})));
+					break;
+				default:
+					acc.push(param);
+					break;
+			}
+	
+			return acc;
+		}, []);
+		
+		// eslint-disable-next-line
+		sig.parameters = sig.parameters?.reduce<typeof sig.parameters>((acc, param) => {
+			// @ts-expect-error Silence ts errors
+			switch (param.type?.name) {
+				case 'NotRequired':
+					// @ts-expect-error Silence ts errors
+					// eslint-disable-next-line
+					acc.push({...param, type: param.type.typeArguments[0]});
+					break;
+				default:
+					acc.push(param);
+					break;
+			}
+	
+			return acc;
+		}, []);
+	}
 
 	return (
 		<>
@@ -127,7 +170,7 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 
 								{param.type?.type === 'union' && (
 									(((param.type as unknown as Models.UnionType).types.filter(
-										(unionType) => unionType.type === 'reflection')) as Models.ReflectionType[]).map(
+										(unionType) => unionType.type === 'reflection'))).map(
 										(unionReflectionType) => (
 											<ul key={unionReflectionType.declaration.id}>
 												{unionReflectionType.declaration?.children?.map((unionChild) => (
