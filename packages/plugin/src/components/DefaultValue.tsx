@@ -30,12 +30,8 @@ export function DefaultValue({ comment, value, type }: DefaultValueProps) {
 	let defaultTag = extractDefaultTag(comment);
 
 	if (typeof defaultTag === 'string') {
-		defaultTag = decode(marked(defaultTag, {
-			// @ts-expect-error `marked`'s types are wrong
-			renderer: {
-				code: (code: string) => code,
-			},
-		}));
+		marked.use({ renderer: { code: (text) => text } });
+		defaultTag = decode(marked(defaultTag));
 	}
 
 
