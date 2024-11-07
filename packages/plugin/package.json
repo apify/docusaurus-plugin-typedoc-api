@@ -50,7 +50,7 @@
     "html-entities": "2.3.2",
     "marked": "^9.1.6",
     "marked-smartypants": "^1.1.5",
-    "typedoc": "^0.25.7",
+    "typedoc": "^0.26.11",
     "zx": "^8.1.4"
   },
   "devDependencies": {
