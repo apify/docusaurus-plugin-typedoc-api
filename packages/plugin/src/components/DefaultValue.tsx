@@ -1,5 +1,7 @@
 /* eslint-disable react-perf/jsx-no-new-object-as-prop */
 
+import { decode } from 'html-entities';
+import { marked } from 'marked';
 import type { JSONOutput } from 'typedoc';
 import { displayPartsToMarkdown } from './Comment';
 import { Type } from './Type';
@@ -25,7 +27,17 @@ export function DefaultValue({ comment, value, type }: DefaultValueProps) {
 		return null;
 	}
 
-	const defaultTag = extractDefaultTag(comment);
+	let defaultTag = extractDefaultTag(comment);
+
+	if (typeof defaultTag === 'string') {
+		defaultTag = decode(marked(defaultTag, {
+			// @ts-expect-error `marked`'s types are wrong
+			renderer: {
+				code: (code: string) => code,
+			},
+		}));
+	}
+
 
 	if (!defaultTag && !value) {
 		return null;

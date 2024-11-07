@@ -227,6 +227,7 @@ __metadata:
     "@docusaurus/utils": "npm:^3.5.2"
     "@types/react": "npm:^18.3.11"
     "@vscode/codicons": "npm:^0.0.35"
+    html-entities: "npm:2.3.2"
     marked: "npm:^9.1.6"
     marked-smartypants: "npm:^1.1.5"
     react: "npm:^18.2.0"
@@ -9808,6 +9809,13 @@ __metadata:
     readable-stream: "npm:^2.0.1"
     wbuf: "npm:^1.1.0"
   checksum: 6910e4b9d943a78fd8e84ac42729fdab9bd406789d6204ad160af9dc5aa4750fc01f208249bf7116c11dc0678207a387b4ade24e4b628b95385b251ceeeb719c
+  languageName: node
+  linkType: hard
+
+"html-entities@npm:2.3.2":
+  version: 2.3.2
+  resolution: "html-entities@npm:2.3.2"
+  checksum: c2a3ae9553419401afe5df500c658d32b419ce82ebf4a4379b07c04d76a10a3691423f6ff81a5dd7edd6be7c34b133daa082d2ad8aa6a642834e9740bfa12c61
   languageName: node
   linkType: hard
 

@@ -47,6 +47,7 @@
     "@docusaurus/utils": "^3.5.2",
     "@types/react": "^18.3.11",
     "@vscode/codicons": "^0.0.35",
+    "html-entities": "2.3.2",
     "marked": "^9.1.6",
     "marked-smartypants": "^1.1.5",
     "typedoc": "^0.25.7",
