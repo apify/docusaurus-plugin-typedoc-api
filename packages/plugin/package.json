@@ -1,6 +1,6 @@
 {
   "name": "@apify/docusaurus-plugin-typedoc-api",
-  "version": "4.2.7",
+  "version": "4.2.8",
   "description": "Docusaurus plugin that provides source code API documentation powered by TypeDoc. ",
   "keywords": [
     "docusaurus",
@@ -47,6 +47,7 @@
     "@docusaurus/utils": "^3.5.2",
     "@types/react": "^18.3.11",
     "@vscode/codicons": "^0.0.35",
+    "html-entities": "2.3.2",
     "marked": "^9.1.6",
     "marked-smartypants": "^1.1.5",
     "typedoc": "^0.25.7",

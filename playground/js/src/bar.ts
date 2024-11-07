@@ -1,7 +1,16 @@
 export interface BarOptions {
-    foo: string;
-    bar: number;
-    xyz: boolean;
+    /**
+     * The name of the `Bar` instance.
+     * 
+     * @default 'Karl'
+     */
+    name: string;
+    /**
+     * The age of the `Bar` instance.
+     * 
+     * @default 0
+     */
+    age: number;
 }
 
 /**
