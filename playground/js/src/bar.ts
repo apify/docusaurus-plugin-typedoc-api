@@ -11,6 +11,18 @@ export interface BarOptions {
      * @default 0
      */
     age: number;
+    /**
+     * Favourite numbers of the `Bar` instance.
+     * 
+     * @default [1, 2, Infinity]
+     */
+    numbers: number[];
+    /**
+     * Favourite words of the `Bar` instance.
+     * 
+     * @default ['foo', 'bar', 'jabberwocky']
+     */
+    strings: string[];
 }
 
 /**
