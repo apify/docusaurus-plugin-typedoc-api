@@ -155,7 +155,18 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
         parentTypeDoc, 
         moduleName,
     }: TransformObjectOptions) {
-        if (isHidden(currentDocspecNode)) return;
+        if (isHidden(currentDocspecNode)) {
+            for (const docspecMember of currentDocspecNode.members ?? []) {
+                this.walkAndTransform({
+                    currentDocspecNode: docspecMember,
+                    moduleName,
+                    // Skips the hidden member, i.e. its children will be appended to the parent of the hidden member
+                    parentTypeDoc,
+                });
+            }
+
+            return;
+        }
 
         const { typedocType, typedocKind } = this.getTypedocType(currentDocspecNode, parentTypeDoc);
         const { filePathInRepo, memberGitHubUrl } = this.getGitHubUrls(currentDocspecNode, moduleName);
@@ -341,6 +352,7 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
         try {
             const parsedDocstring = JSON.parse(docstring.text) as DocspecDocstring;
 
+            docstring.text = parsedDocstring.text;
             const parsedArguments = (
                 parsedDocstring.sections
                     .find((section) => Object.keys(section)[0] === 'Arguments').Arguments

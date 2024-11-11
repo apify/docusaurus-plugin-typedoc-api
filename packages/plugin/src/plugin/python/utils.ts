@@ -2,7 +2,7 @@ import { GROUP_ORDER, TYPEDOC_KINDS } from "./consts";
 import { DocspecObject, OID, TypeDocObject } from "./types";
 
 function* generateOID() {
-    let id = 0;
+    let id = 1;
     while (true) {
         yield id++;
     }
@@ -55,7 +55,7 @@ export function getGroupName(object: TypeDocObject): { groupName: string, source
  * @param member The member to check.
  */
 export function isHidden(member: DocspecObject): boolean {
-    return member.type in TYPEDOC_KINDS ||
+    return !(member.type in TYPEDOC_KINDS) ||
         member.decorations?.some(d => d.name === 'ignore_docs') || 
         member.name === 'ignore_docs';
 }
