@@ -13,14 +13,17 @@ export function processPythonDocs(
     {
         pydocMarkdownDumpPath,
         moduleShortcutsPath,
+        pyprojectTomlPath,
         outPath,
     } : { 
     pydocMarkdownDumpPath: string, 
     moduleShortcutsPath: string, 
     outPath: string 
+    pyprojectTomlPath?: string,
 }) {
     const githubTags = getPackageGitHubTags(['apify', 'apify_client', 'apify_shared']);
-    const currentPackage = getCurrentPackageName();
+
+    const currentPackage = getCurrentPackageName(pyprojectTomlPath);
     githubTags[currentPackage] = 'master';
 
     const moduleShortcuts = JSON.parse(

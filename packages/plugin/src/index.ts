@@ -26,6 +26,7 @@ import type {
 	TSDDeclarationReflection,
 	VersionMetadata,
 } from './types';
+import { processPythonDocs } from './plugin/python';
 
 const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	banner: '',
@@ -57,6 +58,7 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	rehypePlugins: [],
 	versions: {},
 	python: false,
+	pythonOptions: undefined,
 };
 
 async function importFile<T>(file: string): Promise<T> {
@@ -200,6 +202,13 @@ export default function typedocApiPlugin(
 									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 								}
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
+							} else if (options.pythonOptions) {
+								processPythonDocs({
+									moduleShortcutsPath: options.pythonOptions.moduleShortcutsPath,
+									pydocMarkdownDumpPath: options.pythonOptions.pydocMarkdownDumpPath,
+									pyprojectTomlPath: options.pythonOptions.pyprojectTomlPath,
+									outPath: outFile,
+								});
 							} else {
 								await generateJson(projectRoot, entryPoints, outFile, options);
 							}
@@ -266,7 +275,7 @@ export default function typedocApiPlugin(
 			}
 
 			actions.setGlobalData({
-				isPython: !!options.python,
+				isPython: !!(options.python || options.pythonOptions),
 			} as GlobalData);
 
 			const docs: PropVersionDocs = {};

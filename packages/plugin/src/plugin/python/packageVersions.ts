@@ -35,9 +35,9 @@ function findNearestInParent(currentPath: string, filename: string) {
     }
 }
 
-export function getCurrentPackageName() {
+export function getCurrentPackageName(pyprojectTomlPath?: string) {
     const currentPath = path.dirname(__dirname);
-    const pyprojectTomlPath = findNearestInParent(currentPath, 'pyproject.toml');
+    pyprojectTomlPath ??= findNearestInParent(currentPath, 'pyproject.toml');
     const pyprojectToml = fs.readFileSync(pyprojectTomlPath, 'utf8');
     
     return pyprojectToml.match(/^name = "(.+)"$/m)[1];
