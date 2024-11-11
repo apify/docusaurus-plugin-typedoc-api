@@ -1,17 +1,10 @@
 /* eslint-disable complexity */
 
 import { REPO_ROOT_PLACEHOLDER, REPO_URL_PER_PACKAGE, TYPEDOC_KINDS } from "./consts";
+import { resolveInheritedSymbols } from "./inheritance";
 import { PythonTypeResolver } from "./type-parsing";
 import { DocspecDocstring, DocspecObject, TypeDocDocstring, TypeDocObject, TypeDocType } from "./types";
-import { getOID, groupSort, isHidden } from "./utils";
-
-const contextStack: TypeDocDocstring[] = [];
-const getContext = () => contextStack[contextStack.length - 1];
-const popContext = () => contextStack.pop();
-const newContext = (context: TypeDocDocstring) => contextStack.push(context);
-
-const forwardAncestorRefs = new Map();
-const backwardAncestorRefs = new Map();
+import { getGroupName, getOID, groupSort, isHidden } from "./utils";
 
 interface TransformObjectOptions {
     /**
@@ -30,222 +23,289 @@ interface TransformObjectOptions {
 
 interface DocspecTransformerOptions {
     /**
-     * The {@link PythonTypeResolver} instance.
+     * A map of module shortcuts, where the key is the full name of the module, and the value is the shortened name.
      */
-    pythonTypeResolver: PythonTypeResolver
+    moduleShortcuts?: Record<string, string>;
+
+    /**
+     * A map of package tags, where the key is the package name, and the value is the tag.
+     */
+    githubTags: Record<string, string>;
 }
 
 export class DocspecTransformer {
     private pythonTypeResolver: PythonTypeResolver;
-    
-    constructor({ pythonTypeResolver }: DocspecTransformerOptions) {
-        this.pythonTypeResolver = pythonTypeResolver;
-    }
+
+    private symbolIdMap: Record<number, { qualifiedName: string, sourceFileName: string }> = {};
+
+    private namesToIds: Record<string, number> = {};
+
+    private moduleShortcuts: Record<string, string>;
+
+    private githubTags: Record<string, string>;
 
     /**
- * Given a docspec object outputted by `pydoc-markdown`, retusn a  
+     * Maps the name of the class to the list of Typedoc objects representing the classes that extend it.
+     * 
+     * This is used for resolving the references to the base classes - in case the base class is encountered after the class that extends it.
+     */
+    private forwardAncestorRefs = new Map<string, TypeDocObject[]>();
+    
+    /**
+     * Maps the name of the class to the reference to the Typedoc object representing the class.
+     * 
+     * This is used to resolve the references to the base classes of a class using the name.
+     */
+    private backwardAncestorRefs = new Map<string, TypeDocObject>();
+
+    /**
+     * Stack of the docstrings of the current context.
+     * 
+     * Used to read the class Google-style docstrings from the class' properties and methods.
+     */
+    private contextStack: TypeDocDocstring[] = [];
+    
+    constructor({ githubTags, moduleShortcuts }: DocspecTransformerOptions) {
+        this.pythonTypeResolver = new PythonTypeResolver();
+        this.moduleShortcuts = moduleShortcuts ?? {};
+        this.githubTags = githubTags ?? {};
+    }
+
+    transform(docspecModules: DocspecObject[]): TypeDocObject {
+        // Root object of the Typedoc structure, accumulator for the recursive walk
+        const typedocApiReference: TypeDocObject = {
+            children: [],
+            flags: {},
+            groups: [],
+            id: 0,
+            kind: 1,
+            kindString: 'Project',
+            name: 'apify-client',
+            sources: [
+                {
+                    character: 0,
+                    fileName: 'src/index.ts',
+                    line: 1,
+                    url: `http://example.com/blob/123456/src/dummy.py`,
+                }
+            ],
+            symbolIdMap: this.symbolIdMap,
+        };
+
+        // Convert all the modules, store them in the root object
+        for (const module of docspecModules) {
+            this.walkAndTransform({
+                currentDocspecNode: module, 
+                moduleName: module.name,
+                parentTypeDoc: typedocApiReference, 
+            });
+        };
+
+        this.pythonTypeResolver.resolveTypes();
+
+        this.namesToIds = Object.entries(this.symbolIdMap).reduce((acc, [id, { qualifiedName }]) => {
+            acc[qualifiedName] = id;
+            return acc;
+        }, {});
+
+        this.fixRefs(typedocApiReference);
+        this.sortChildren(typedocApiReference);
+
+        return typedocApiReference;
+    }
+
+    private getContext() {
+        return this.contextStack[this.contextStack.length - 1]
+    };
+
+    private popContext() {
+        this.contextStack.pop();
+    }
+
+    private newContext(context: TypeDocDocstring) {
+        this.contextStack.push(context);
+    }
+
+/**
+ * Recursively traverse the Typedoc structure and fix the references to the named entities.
+ * 
+ * Searches for the {@link TypeDocType} structure with the `type` property set to `reference`, and replaces the `target` property
+ * with the corresponding ID of the named entity.
+ */
+private fixRefs(obj: TypeDocObject | TypeDocType) {
+    for (const key of Object.keys(obj)) {
+        if (key === 'name' && obj?.type === 'reference' && this.namesToIds[obj?.name]) {
+            obj.target = this.namesToIds[obj?.name];
+        }
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+            this.fixRefs(obj[key] as TypeDocObject);
+        }
+    }
+}
+
+/**
+ * Given a docspec object outputted by `pydoc-markdown`, transforms this object into the Typedoc structure,
+ * and appends it as a child of the `parentTypeDoc` Typedoc object (which serves as an accumulator for the recursion).
  * @param obj 
  * @param parent 
  * @param module 
  */
-    transformObject({
+    private walkAndTransform({
         currentDocspecNode, 
         parentTypeDoc, 
         moduleName,
     }: TransformObjectOptions) {
-        for (const docspecMember of currentDocspecNode.members ?? []) {
-            if (!isHidden(docspecMember)) {
-                const { typedocType, typedocKind } = this.getTypedocType(docspecMember, parentTypeDoc);
-                const { filePathInRepo, memberGitHubUrl } = this.getGitHubUrls(docspecMember, moduleName);
+        if (isHidden(currentDocspecNode)) return;
 
-                const docstring = this.parseDocstring(docspecMember);
+        const { typedocType, typedocKind } = this.getTypedocType(currentDocspecNode, parentTypeDoc);
+        const { filePathInRepo, memberGitHubUrl } = this.getGitHubUrls(currentDocspecNode, moduleName);
 
-                symbolIdMap.push({
-                    qualifiedName: docspecMember.name,
-                    sourceFileName: filePathInRepo,
-                });
+        const docstring = this.parseDocstring(currentDocspecNode);
+        const currentId = getOID();
 
-                // Get the module name of the member, and check if it has a shortcut (reexport from an ancestor module)
-                const fullName = `${moduleName}.${docspecMember.name}`;
-                if (fullName in moduleShortcuts) {
-                    moduleName = moduleShortcuts[fullName].replace(`.${docspecMember.name}`, '');
-                }
+        this.symbolIdMap[currentId] = { qualifiedName: currentDocspecNode.name, sourceFileName: filePathInRepo };
 
-                if (docspecMember.name === '_ActorType') {
-                    docspecMember.name = 'Actor';
-                }
+        // Get the module name of the member, and check if it has a shortcut (reexport from an ancestor module)
+        const fullName = `${moduleName}.${currentDocspecNode.name}`;
+        if (fullName in this.moduleShortcuts) {
+            moduleName = this.moduleShortcuts[fullName].replace(`.${currentDocspecNode.name}`, '');
+        }
 
-                // Create the Typedoc member object
-                const typedocMember: TypeDocObject = {
-                    ...typedocKind,
-                    children: [],
-                    comment: docstring ? {
+        // TODO: SDK-specific case, remove when the SDK is refactored
+        if (currentDocspecNode.name === '_ActorType') {
+            currentDocspecNode.name = 'Actor';
+        }
+
+        // Create the Typedoc member object
+        const currentTypedocNode: TypeDocObject = {
+            ...typedocKind,
+            children: [],
+            comment: docstring ? {
+                summary: [{
+                    kind: 'text',
+                    text: docstring.text,
+                }],
+            } : undefined,
+            decorations: currentDocspecNode.decorations?.map(({ name, args }) => ({ args, name })),
+            flags: {},
+            groups: [],
+            id: currentId,
+            module: moduleName, // This is an extension to the original Typedoc structure, to support showing where the member is exported from
+            name: currentDocspecNode.name,
+            sources: [{
+                character: 1,
+                fileName: filePathInRepo,
+                line: currentDocspecNode.location.lineno,
+                url: memberGitHubUrl,
+            }],
+            type: typedocType,
+        };
+
+        if(currentTypedocNode.kindString === 'Method') {
+            currentTypedocNode.signatures = [{
+                id: getOID(),
+                name: currentDocspecNode.name,
+                modifiers: currentDocspecNode.modifiers ?? [],
+                kind: 4096,
+                kindString: 'Call signature',
+                flags: {},
+                comment: docstring.text ? {
+                    summary: [{
+                        kind: 'text',
+                        text: docstring?.text,
+                    }],
+                    blockTags: docstring?.returns ? [
+                        { tag: '@returns', content: [{ kind: 'text', text: docstring.returns }] },
+                    ] : undefined,
+                } : undefined,
+                type: this.pythonTypeResolver.registerType(currentDocspecNode.return_type),
+                parameters: currentDocspecNode.args.filter((arg) => (arg.name !== 'self' && arg.name !== 'cls')).map((arg) => ({
+                    id: getOID(),
+                    name: arg.name,
+                    kind: 32_768,
+                    kindString: 'Parameter',
+                    flags: {
+                        isOptional: arg.datatype?.includes('Optional') ? true : undefined,
+                        'keyword-only': arg.type === 'KEYWORD_ONLY' ? true : undefined,
+                    },
+                    type: this.pythonTypeResolver.registerType(arg.datatype),
+                    comment: docstring.args?.[arg.name] ? {
                         summary: [{
                             kind: 'text',
-                            text: docstring.text,
-                        }],
+                            text: docstring.args[arg.name]
+                        }]
                     } : undefined,
-                    decorations: docspecMember.decorations?.map(({ name, args }) => ({ args, name })),
-                    flags: {},
-                    groups: [],
-                    id: getOID(),
-                    module: moduleName, // This is an extension to the original Typedoc structure, to support showing where the member is exported from
-                    name: docspecMember.name,
-                    sources: [{
-                        character: 1,
-                        filename: filePathInRepo,
-                        line: docspecMember.location.lineno,
-                        url: memberGitHubUrl,
-                    }],
-                    type: typedocType,
+                    defaultValue: arg.default_value,
+                })),
+            }];
+        }
+
+        if (currentTypedocNode.kindString === 'Class') {
+            this.newContext(docstring);
+
+            this.backwardAncestorRefs.set(currentDocspecNode.name, currentTypedocNode);
+
+            if (currentDocspecNode.bases?.length > 0) {
+                for (const base of currentDocspecNode.bases) {
+                    const canonicalAncestorType = this.pythonTypeResolver.getBaseType(base);
+
+                    const baseTypedocMember = this.backwardAncestorRefs.get(canonicalAncestorType);
+                    if (baseTypedocMember) {
+                        resolveInheritedSymbols(baseTypedocMember, currentTypedocNode);
+                    } else {
+                        this.forwardAncestorRefs.set(
+                            canonicalAncestorType, 
+                            [...(this.forwardAncestorRefs.get(canonicalAncestorType) ?? []), currentTypedocNode],
+                        );
+                    }
                 };
+            }
+        }
 
-                if(typedocMember.kindString === 'Method') {
-                    typedocMember.signatures = [{
-                        id: getOID(),
-                        name: docspecMember.name,
-                        modifiers: docspecMember.modifiers ?? [],
-                        kind: 4096,
-                        kindString: 'Call signature',
-                        flags: {},
-                        comment: docstring.text ? {
-                            summary: [{
-                                kind: 'text',
-                                text: docstring?.text,
-                            }],
-                            blockTags: docstring?.returns ? [
-                                { tag: '@returns', content: [{ kind: 'text', text: docstring.returns }] },
-                            ] : undefined,
-                        } : undefined,
-                        type: pythonTypeResolver.registerType(docspecMember.return_type),
-                        parameters: docspecMember.args.filter((arg) => (arg.name !== 'self' && arg.name !== 'cls')).map((arg) => ({
-                            id: getOID(),
-                            name: arg.name,
-                            kind: 32_768,
-                            kindString: 'Parameter',
-                            flags: {
-                                isOptional: arg.datatype?.includes('Optional') ? 'true' : undefined,
-                                'keyword-only': arg.type === 'KEYWORD_ONLY' ? 'true' : undefined,
-                            },
-                            type: pythonTypeResolver.registerType(arg.datatype),
-                            comment: docstring.args?.[arg.name] ? {
-                                summary: [{
-                                    kind: 'text',
-                                    text: docstring.args[arg.name]
-                                }]
-                            } : undefined,
-                            defaultValue: arg.default_value,
-                        })),
-                    }];
-                }
+        for (const docspecMember of currentDocspecNode.members ?? []) {
+            this.walkAndTransform({
+                currentDocspecNode: docspecMember,
+                moduleName,
+                parentTypeDoc: currentTypedocNode,
+            });
+        }
 
-                if(typedocMember.name === '__init__') {
-                    typedocMember.kind = 512;
-                    typedocMember.kindString = 'Constructor';
-                }
+        if (currentTypedocNode.kindString === 'Class') {
+            this.popContext();
+        }
 
-                this.transformObject({
-                    currentDocspecNode: docspecMember,
-                    moduleName,
-                    parentTypeDoc: typedocMember,
-                });
-                
-                if (typedocMember.kindString === 'Class') {
-                    newContext(docstring);
+        const { groupName, source: groupSource } = getGroupName(currentTypedocNode);
 
-                    backwardAncestorRefs.set(docspecMember.name, typedocMember);
-
-                    if (docspecMember.bases?.length > 0) {
-                        docspecMember.bases.forEach((base) => {
-                            const unwrappedBaseType = pythonTypeResolver.getBaseType(base);
-
-                            const baseTypedocMember = backwardAncestorRefs.get(unwrappedBaseType);
-                            if (baseTypedocMember) {
-                                typedocMember.extendedTypes = [
-                                    ...typedocMember.extendedTypes ?? [],
-                                    {
-                                        type: 'reference',
-                                        name: baseTypedocMember.name,
-                                        target: baseTypedocMember.id,
-                                    }
-                                ];
-
-                                baseTypedocMember.extendedBy = [
-                                    ...baseTypedocMember.extendedBy ?? [],
-                                    {
-                                        type: 'reference',
-                                        name: typedocMember.name,
-                                        target: typedocMember.id,
-                                    }
-                                ];
-
-                                injectInheritedChildren(baseTypedocMember, typedocMember);
-                            } else {
-                                forwardAncestorRefs.set(
-                                    unwrappedBaseType, 
-                                    [...(forwardAncestorRefs.get(unwrappedBaseType) ?? []), typedocMember],
-                                );
-                            }
-                        });
-                    }
-                }
-
-                if (typedocMember.kindString === 'Class') {
-                    popContext();
-                }
-
-                const { groupName, source: groupSource } = getGroupName(typedocMember);
-
-                if (groupName && // Use the decorator classes everytime, but don't render the class-level groups for the root project
-                    (groupSource === 'decorator' || parentTypeDoc.kindString !== 'Project')) {
-                        const group = parentTypeDoc.groups.find((g) => g.title === groupName);
-                        if (group) {
-                            group.children.push(typedocMember.id);
-                        } else {
-                            parentTypeDoc.groups.push({
-                                title: groupName,
-                                children: [typedocMember.id],
-                            });
-                        }
-                    }
-
-                parentTypeDoc.children.push(typedocMember);
-
-                sortChildren(typedocMember);
-
-                if (typedocMember.kindString === 'Class') {
-                    forwardAncestorRefs.get(typedocMember.name)?.forEach((descendant) => {
-                        descendant.extendedTypes = [
-                            ...descendant.extendedTypes ?? [],
-                            {
-                                type: 'reference',
-                                name: typedocMember.name,
-                                target: typedocMember.id,
-                            }
-                        ];
-
-                        typedocMember.extendedBy = [
-                            ...typedocMember.extendedBy ?? [],
-                            {
-                                type: 'reference',
-                                name: descendant.name,
-                                target: descendant.id,
-                            }
-                        ]
-
-                        injectInheritedChildren(typedocMember, descendant);
-
-                        sortChildren(descendant);
+        if (groupName && // Use the decorator classes everytime, but don't render the class-level groups for the root project
+            (groupSource === 'decorator' || parentTypeDoc.kindString !== 'Project')) {
+                const group = parentTypeDoc.groups.find((g) => g.title === groupName);
+                if (group) {
+                    group.children.push(currentTypedocNode.id);
+                } else {
+                    parentTypeDoc.groups.push({
+                        children: [currentTypedocNode.id],
+                        title: groupName,
                     });
                 }
             }
+
+        parentTypeDoc.children.push(currentTypedocNode);
+
+        this.sortChildren(currentTypedocNode);
+
+        if (currentTypedocNode.kindString === 'Class') {
+            for (const descendant of this.forwardAncestorRefs.get(currentTypedocNode.name) ?? []) {
+                resolveInheritedSymbols(currentTypedocNode, descendant);
+
+                this.sortChildren(descendant);
+            };
         }
     }
 
     private getGitHubUrls(docspecMember: DocspecObject, moduleName: string): { filePathInRepo: string, memberGitHubUrl: string } {
         const rootModuleName = moduleName.split('.')[0];
         // Get the URL of the member in GitHub
-        const repoBaseUrl = `${REPO_URL_PER_PACKAGE[rootModuleName]}/blob/${TAG_PER_PACKAGE[rootModuleName]}`;
+        const repoBaseUrl = `${REPO_URL_PER_PACKAGE[rootModuleName]}/blob/${this.githubTags[rootModuleName]}`;
         const filePathInRepo = docspecMember.location.filename.replace(REPO_ROOT_PLACEHOLDER, '');
         const fileGitHubUrl = docspecMember.location.filename.replace(REPO_ROOT_PLACEHOLDER, repoBaseUrl);
         const memberGitHubUrl = `${fileGitHubUrl}#L${docspecMember.location.lineno}`;
@@ -268,6 +328,13 @@ export class DocspecTransformer {
        typedocMember.groups.sort((a, b) => groupSort(a.title, b.title));
    }
 
+   /**
+    * If possible, parses the `.docstring` property of the passed object. If the docstring is a stringified JSON object,
+    * it extracts the `args` and `returns` sections and adds them to the returned object.
+    * 
+    * TODO
+    * This structure is created in the `google` docstring format, which is a JSON object with the following structure:
+    */
     private parseDocstring(docspecMember: DocspecObject): TypeDocDocstring {
         const docstring: TypeDocDocstring = { text: docspecMember.docstring?.content ?? '' };
 
@@ -293,7 +360,7 @@ export class DocspecTransformer {
         }
 
         if (!docstring.text) {
-            docstring.text = getContext()?.args?.[docspecMember.name] ?? '';
+            docstring.text = this.getContext()?.args?.[docspecMember.name] ?? '';
         }
 
         return docstring;

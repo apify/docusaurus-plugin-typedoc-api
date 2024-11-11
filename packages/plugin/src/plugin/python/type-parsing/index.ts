@@ -4,7 +4,7 @@ import path from 'path';
 import { DocspecType, TypeDocType } from '../types';
 
 const RAW_TYPES_JSON_FILEPATH = path.join(__dirname, 'typedoc-types.raw');
-const PARSED_TYPES_JSON_FILEPATH = path.join(__dirname, 'typedoc-types-parsed.raw');
+const PARSED_TYPES_JSON_FILEPATH = path.join(__dirname, 'typedoc-types-parsed.json');
 
 const PYTHON_SCRIPT_FILEPATH = path.join(__dirname, 'parse_types.py');
 

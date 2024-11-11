@@ -9,9 +9,9 @@ export interface TypeDocObject {
     kindString: string;
     decorations?: { name: string, args: string }[];
     children?: TypeDocObject[];
-    groups: { title: string, children: OID[] }[];
+    groups?: { title: string, children: OID[] }[];
     flags: Record<string, boolean>;
-    module: string,
+    module?: string,
     inheritedFrom?: {
         type: string;
         target: OID;
@@ -19,10 +19,18 @@ export interface TypeDocObject {
     },
     comment?: {
         summary: { text: string, kind: 'text' }[];
+        blockTags?: { tag: string, content: any[] }[];
     };
     signatures?: TypeDocObject[];
-    sources: { filename: string, line: number, character: number, url: string }[];
+    sources?: { 
+        fileName: string, 
+        line: number, character: number, url: string }[];
     type?: TypeDocType;
+    symbolIdMap?: Record<number, { qualifiedName: string, sourceFileName: string }>,
+    extendedTypes?: TypeDocType[];
+    extendedBy?: TypeDocType[];
+    modifiers?: any[];
+    parameters?: TypeDocObject[];
 }
 
 export interface DocspecObject {
@@ -39,6 +47,8 @@ export interface DocspecObject {
     return_type?: DocspecType;
     value?: any;
     docstring?: { content: string };
+    modifiers?: DocspecType[];
+    args?: { name: string, type: DocspecType, default_value: any, datatype: DocspecType }[];
 }
 
 export interface TypeDocDocstring {
@@ -61,6 +71,7 @@ export type TypeDocType = {
 } | { 
     type: 'reference',
     name: string,
+    target?: number,
 };
 
 export type DocspecType = string;

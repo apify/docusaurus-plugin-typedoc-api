@@ -1,5 +1,3 @@
-import path from 'path';
-
 export const REPO_ROOT_PLACEHOLDER = 'REPO_ROOT_PLACEHOLDER';
 
 export const APIFY_CLIENT_REPO_URL = 'https://github.com/apify/apify-client-python';
@@ -13,9 +11,6 @@ export const REPO_URL_PER_PACKAGE = {
     'apify_shared': APIFY_SHARED_REPO_URL,
     'crawlee': CRAWLEE_PYTHON_REPO_URL,
 };
-
-export const PYDOC_MARKDOWN_JSON_FILEPATH = path.join(__dirname, 'docspec-dump.jsonl');
-export const PARSED_TYPEDOC_JSON_FILEPATH = path.join(__dirname, 'api-typedoc-generated.json');
 
 // Taken from https://github.com/TypeStrong/typedoc/blob/v0.23.24/src/lib/models/reflections/kind.ts, modified
 export const TYPEDOC_KINDS = {

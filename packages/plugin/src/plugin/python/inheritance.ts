@@ -1,8 +1,33 @@
 import { TypeDocObject } from "./types";
 import { getGroupName, getOID } from "./utils";
 
-export function injectInheritedChildren(ancestor: TypeDocObject, descendant: TypeDocObject) {
+/**
+ * Given an ancestor and a descendant objects, injects the children of the ancestor into the descendant.
+ * 
+ * Sets the `extendedTypes` / `extendedBy` properties.
+ * @param ancestor 
+ * @param descendant 
+ */
+export function resolveInheritedSymbols(ancestor: TypeDocObject, descendant: TypeDocObject) {
     descendant.children ??= [];
+
+    descendant.extendedTypes = [
+        ...descendant.extendedTypes ?? [],
+        {
+            name: ancestor.name,
+            target: ancestor.id,
+            type: 'reference',
+        }
+    ];
+
+    ancestor.extendedBy = [
+        ...ancestor.extendedBy ?? [],
+        {
+            name: descendant.name,
+            target: descendant.id,
+            type: 'reference',
+        }
+    ]
 
     for (const inheritedChild of ancestor.children ?? []) {
         const ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
