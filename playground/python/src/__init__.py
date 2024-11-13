@@ -1,6 +1,6 @@
 from foo import Foo
 
-
+@docs_group('Classes')
 class Bar:
     """
     The bar class is a simple

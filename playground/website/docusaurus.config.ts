@@ -48,8 +48,12 @@ const config: Config = {
       context,
       {
         ...options as any,
-        projectRoot: __dirname + '/../',
-        packages: ['/js'],
+        projectRoot: '.',
+        packages: [{ path: '.' }],
+        pythonOptions: {
+          moduleShortcutsPath: __dirname + '/../python/module_shortcuts.json',
+          pythonModulePath: __dirname + '/../python/src',
+        }
       },
     ),
   ],
