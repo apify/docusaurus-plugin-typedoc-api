@@ -40,9 +40,8 @@ export interface DocusaurusPluginTypeDocApiOptions
 	 */
 	python: boolean;
 	pythonOptions: {
-		pydocMarkdownDumpPath: string;
 		moduleShortcutsPath: string;
-		pyprojectTomlPath?: string;
+		pythonModulePath: string;
 	}
 
 	remarkPlugins: MDXPlugin[];

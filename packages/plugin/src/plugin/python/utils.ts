@@ -34,7 +34,7 @@ export function getGroupName(object: TypeDocObject): { groupName: string, source
     const groupPredicates: Record<string, (obj: TypeDocObject) => boolean> = {
         'Constants': (x) => x.kindString === 'Enumeration',
         'Constructors': (x) => x.kindString === 'Constructor',
-        'Enumeration Members': (x) => x.kindString === 'Enumeration Member',
+        'Enumeration members': (x) => x.kindString === 'Enumeration Member',
         'Methods': (x) => x.kindString === 'Method',
         'Properties': (x) => x.kindString === 'Property',
     };

@@ -21,7 +21,7 @@ export function getPackageGitHubTags(packageNames: string[]) {
     return packageTags;
 }
 
-function findNearestInParent(currentPath: string, filename: string) {
+export function findNearestInParent(currentPath: string, filename: string) {
     let parentPath = currentPath;
     while (true) {
         parentPath = path.dirname(parentPath);
@@ -30,7 +30,7 @@ function findNearestInParent(currentPath: string, filename: string) {
         }
 
         if (parentPath === '/') {
-            throw new Error('No pyproject.toml found in any parent directory');
+            throw new Error(`No ${filename} found in any parent directory`);
         }
     }
 }

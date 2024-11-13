@@ -204,9 +204,8 @@ export default function typedocApiPlugin(
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
 							} else if (options.pythonOptions) {
 								processPythonDocs({
+									pythonModulePath: options.pythonOptions.pythonModulePath,
 									moduleShortcutsPath: options.pythonOptions.moduleShortcutsPath,
-									pydocMarkdownDumpPath: options.pythonOptions.pydocMarkdownDumpPath,
-									pyprojectTomlPath: options.pythonOptions.pyprojectTomlPath,
 									outPath: outFile,
 								});
 							} else {
