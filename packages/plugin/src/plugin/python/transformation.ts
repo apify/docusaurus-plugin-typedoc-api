@@ -1,7 +1,7 @@
 import { REPO_ROOT_PLACEHOLDER, REPO_URL_PER_PACKAGE, TYPEDOC_KINDS } from "./consts";
 import { resolveInheritedSymbols } from "./inheritance";
 import { PythonTypeResolver } from "./type-parsing";
-import { DocspecDocstring, DocspecObject, TypeDocDocstring, TypeDocObject, TypeDocType } from "./types";
+import type { DocspecDocstring, DocspecObject, TypeDocDocstring, TypeDocObject, TypeDocType } from "./types";
 import { getGroupName, getOID, groupSort, isHidden } from "./utils";
 
 interface TransformObjectOptions {
@@ -101,8 +101,8 @@ export class DocspecTransformer {
 
         this.pythonTypeResolver.resolveTypes();
 
-        this.namesToIds = Object.entries(this.symbolIdMap).reduce((acc, [id, { qualifiedName }]) => {
-            acc[qualifiedName] = id;
+        this.namesToIds = Object.entries(this.symbolIdMap).reduce<Record<string, number>>((acc, [id, { qualifiedName }]) => {
+            acc[qualifiedName] = Number(id);
             return acc;
         }, {});
 
@@ -130,9 +130,12 @@ export class DocspecTransformer {
  * Searches for the {@link TypeDocType} structure with the `type` property set to `reference`, and replaces the `target` property
  * with the corresponding ID of the named entity.
  */
-private fixRefs(obj: TypeDocObject | TypeDocType) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+private fixRefs(obj: Record<string, any>) {
     for (const key of Object.keys(obj)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (key === 'name' && obj?.type === 'reference' && this.namesToIds[obj?.name]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             obj.target = this.namesToIds[obj?.name];
         }
         if (typeof obj[key] === 'object' && obj[key] !== null) {
@@ -224,7 +227,7 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
                 kindString: 'Call signature',
                 modifiers: currentDocspecNode.modifiers ?? [],
                 name: currentDocspecNode.name,
-                parameters: currentDocspecNode.args.filter((arg) => (arg.name !== 'self' && arg.name !== 'cls')).map((arg) => ({
+                parameters: currentDocspecNode.args?.filter((arg) => (arg.name !== 'self' && arg.name !== 'cls')).map((arg) => ({
                     comment: docstring.args?.[arg.name] ? {
                         summary: [{
                             kind: 'text',
@@ -233,8 +236,8 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
                     } : undefined,
                     defaultValue: arg.default_value as string,
                     flags: {
-                        isOptional: arg.datatype?.includes('Optional') ? true : undefined,
-                        'keyword-only': arg.type === 'KEYWORD_ONLY' ? true : undefined,
+                        isOptional: arg.datatype?.includes('Optional'),
+                        'keyword-only': arg.type === 'KEYWORD_ONLY',
                     },
                     id: getOID(),
                     kind: 32_768,
@@ -252,7 +255,7 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
 
             this.backwardAncestorRefs.set(currentDocspecNode.name, currentTypedocNode);
 
-            if (currentDocspecNode.bases?.length > 0) {
+            if (currentDocspecNode.bases && currentDocspecNode.bases.length > 0) {
                 for (const base of currentDocspecNode.bases) {
                     const canonicalAncestorType = this.pythonTypeResolver.getBaseType(base);
 
@@ -286,18 +289,18 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
         if (groupName // Use the decorator classes everytime, but don't render the class-level groups for the root project
             && (groupSource === 'decorator' || parentTypeDoc.kindString !== 'Project')
         ) {
-                const group = parentTypeDoc.groups.find((g) => g.title === groupName);
+                const group = parentTypeDoc.groups?.find((g) => g.title === groupName);
                 if (group) {
                     group.children.push(currentTypedocNode.id);
                 } else {
-                    parentTypeDoc.groups.push({
+                    parentTypeDoc.groups?.push({
                         children: [currentTypedocNode.id],
                         title: groupName,
                     });
                 }
             }
 
-        parentTypeDoc.children.push(currentTypedocNode);
+        parentTypeDoc.children?.push(currentTypedocNode);
 
         this.sortChildren(currentTypedocNode);
 
@@ -313,7 +316,7 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
     private getGitHubUrls(docspecMember: DocspecObject, moduleName: string): { filePathInRepo: string, memberGitHubUrl: string } {
         const rootModuleName = moduleName.split('.')[0];
         // Get the URL of the member in GitHub
-        const repoBaseUrl = `${REPO_URL_PER_PACKAGE[rootModuleName]}/blob/${this.githubTags[rootModuleName]}`;
+        const repoBaseUrl = `${REPO_URL_PER_PACKAGE[rootModuleName as keyof typeof REPO_URL_PER_PACKAGE]}/blob/${this.githubTags[rootModuleName]}`;
         const filePathInRepo = docspecMember.location.filename.replace(REPO_ROOT_PLACEHOLDER, '');
         const fileGitHubUrl = docspecMember.location.filename.replace(REPO_ROOT_PLACEHOLDER, repoBaseUrl);
         const memberGitHubUrl = `${fileGitHubUrl}#L${docspecMember.location.lineno}`;
@@ -325,15 +328,17 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
     * Sorts the `groups` of `typedocMember` using {@link groupSort} and sorts the children of each group alphabetically.
     */
     private sortChildren(typedocMember: TypeDocObject) {
-       for (const group of typedocMember.groups) {
-           group.children
+        if(!typedocMember.groups) return;
+
+        for (const group of (typedocMember.groups)) {
+            group.children
                .sort((a, b) => {
-                   const firstName = typedocMember.children.find(x => x.id === a || x.inheritedFrom?.target === a).name;
-                   const secondName = typedocMember.children.find(x => x.id === b || x.inheritedFrom?.target === b).name;
+                   const firstName = typedocMember.children?.find(x => x.id === a || x.inheritedFrom?.target === a)?.name ?? 'a';
+                   const secondName = typedocMember.children?.find(x => x.id === b || x.inheritedFrom?.target === b)?.name ?? 'b';
                    return firstName.localeCompare(secondName);
                });
        }
-       typedocMember.groups.sort((a, b) => groupSort(a.title, b.title));
+       typedocMember.groups?.sort((a, b) => groupSort(a.title, b.title));
    }
 
    /**
@@ -352,16 +357,16 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
             docstring.text = parsedDocstring.text;
             const parsedArguments = (
                 parsedDocstring.sections
-                    .find((section) => Object.keys(section)[0] === 'Arguments').Arguments
+                    ?.find((section) => Object.keys(section)[0] === 'Arguments')?.Arguments
                 ?? []
             ) as DocspecDocstring['args'];
 
-            docstring.args = parsedArguments.reduce((acc, arg) => {
+            docstring.args = parsedArguments?.reduce<Record<string, string>>((acc, arg) => {
                 acc[arg.param] = arg.desc;
                 return acc;
-            }, {});
+            }, {}) ?? {};
 
-            const returnTypes = docstring.sections.find((section) => Object.keys(section)[0] === 'Returns').Returns ?? [];
+            const returnTypes = docstring.sections?.find((section) => Object.keys(section)[0] === 'Returns')?.Returns ?? [];
 
             docstring.returns = returnTypes.join('\n');
         } catch {

@@ -4,6 +4,7 @@ import { TYPEDOC_KINDS } from "./consts";
 export type OID = number;
 
 export interface TypeDocObject {
+    [key: string]: any;
     id: OID;
     name: string;
     kind: number;
@@ -70,6 +71,7 @@ export type TypeDocType = {
     type: 'literal',
     value: any,
 } | { 
+    [key: string]: any,
     type: 'reference',
     name: string,
     target?: number,

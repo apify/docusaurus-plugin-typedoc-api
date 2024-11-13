@@ -1,5 +1,5 @@
 import { GROUP_ORDER, TYPEDOC_KINDS } from "./consts";
-import { DocspecObject, OID, TypeDocObject } from "./types";
+import type { DocspecObject, OID, TypeDocObject } from "./types";
 
 function* generateOID() {
     let id = 1;
@@ -23,11 +23,15 @@ export function getOID(): OID {
  * @param object The TypeDoc object.
  * @returns The group name and the source of the group name (either 'decorator' or 'predicate').
  */
-export function getGroupName(object: TypeDocObject): { groupName: string, source: 'decorator' | 'predicate' } {
+export function getGroupName(object: TypeDocObject): { groupName: string | undefined, source: 'decorator' | 'predicate' } {
     if (object.decorations?.some(d => d.name === 'docs_group')) {
-        return {
-            groupName: object.decorations.find(d => d.name === 'docs_group')?.args.slice(2,-2),
-            source: 'decorator'
+        const parsedGroupName = object.decorations.find(d => d.name === 'docs_group')?.args.slice(2,-2);
+
+        if(parsedGroupName){
+            return {
+                groupName: parsedGroupName,
+                source: 'decorator'
+            }
         }
     }
 

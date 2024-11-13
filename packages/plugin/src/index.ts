@@ -58,7 +58,7 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	rehypePlugins: [],
 	versions: {},
 	python: false,
-	pythonOptions: undefined,
+	pythonOptions: {},
 };
 
 async function importFile<T>(file: string): Promise<T> {
@@ -202,7 +202,14 @@ export default function typedocApiPlugin(
 									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 								}
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
-							} else if (options.pythonOptions) {
+							} else if (Object.keys(options.pythonOptions).length > 0) {
+								if (
+									!options.pythonOptions.pythonModulePath
+									|| !options.pythonOptions.moduleShortcutsPath
+								) {
+									throw new Error('Python options are missing required fields');
+								}
+
 								processPythonDocs({
 									pythonModulePath: options.pythonOptions.pythonModulePath,
 									moduleShortcutsPath: options.pythonOptions.moduleShortcutsPath,

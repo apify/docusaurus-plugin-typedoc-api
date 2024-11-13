@@ -3,7 +3,7 @@ import fs  from 'fs';
 import path from 'path';
 import { findNearestInParent, getCurrentPackageName, getPackageGitHubTags } from "./packageVersions";
 import { DocspecTransformer } from "./transformation";
-import { DocspecObject } from "./types";
+import type { DocspecObject } from "./types";
 
 export { groupSort } from "./utils";
 
@@ -36,7 +36,7 @@ export function processPythonDocs(
     try {
         const pyprojectTomlPath = findNearestInParent(pythonModulePath, 'pyproject.toml');
 
-        currentPackage = getCurrentPackageName(pyprojectTomlPath);
+        currentPackage = getCurrentPackageName(pyprojectTomlPath) ?? currentPackage;
     } catch (error) {
         console.warn(error);
     }

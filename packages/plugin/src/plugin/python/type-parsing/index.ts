@@ -1,7 +1,7 @@
 import childProcess from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { DocspecType, TypeDocType } from '../types';
+import type { DocspecType, TypeDocType } from '../types';
 
 const RAW_TYPES_JSON_FILEPATH = path.join(__dirname, 'typedoc-types.raw');
 const PARSED_TYPES_JSON_FILEPATH = path.join(__dirname, 'typedoc-types-parsed.json');
@@ -22,9 +22,9 @@ export class PythonTypeResolver {
      * 
      * Given a string representation of the type, returns a Typedoc type object.
      */
-    registerType(docspecType: DocspecType): TypeDocType {
+    registerType(docspecType?: DocspecType): TypeDocType {
         const newType: TypeDocType = {
-            name: docspecType?.replaceAll(/#.*/g, '').replaceAll('\n', '').trim() ?? docspecType,
+            name: docspecType?.replaceAll(/#.*/g, '').replaceAll('\n', '').trim() ?? 'Undefined',
             type: 'reference',
         };
 
@@ -46,8 +46,13 @@ export class PythonTypeResolver {
             RAW_TYPES_JSON_FILEPATH,
             JSON.stringify(
                 this.typedocTypes
-                    .filter(x => x.type === 'reference')
-                    .map(x => x.name)
+                    .map(x => {
+                        if (x.type === 'reference') {
+                            return x.name;
+                        }
+
+                        return null;
+                    })
                     .filter(Boolean)
             )
         );

@@ -1,4 +1,4 @@
-import { TypeDocObject } from "./types";
+import type { TypeDocObject } from "./types";
 import { getGroupName, getOID } from "./utils";
 
 /**
@@ -40,12 +40,12 @@ export function resolveInheritedSymbols(ancestor: TypeDocObject, descendant: Typ
                 throw new Error(`Couldn't resolve the group name for ${inheritedChild.name} (inherited child of ${ancestor.name})`);
             }
 
-            const group = descendant.groups.find((g) => g.title === groupName);
+            const group = descendant.groups?.find((g) => g.title === groupName);
 
             if (group) {
                 group.children.push(inheritedChild.id);
             } else {
-                descendant.groups.push({
+                descendant.groups?.push({
                     children: [inheritedChild.id],
                     title: groupName,
                 });
@@ -69,7 +69,7 @@ export function resolveInheritedSymbols(ancestor: TypeDocObject, descendant: Typ
 
             for (const key of Object.keys(inheritedChild)) {
                 if(key !== 'id' && key !== 'inheritedFrom') {
-                    ownChild[key] = inheritedChild[key as keyof typeof inheritedChild];
+                    ownChild[key as keyof typeof ownChild] = inheritedChild[key as keyof typeof inheritedChild];
                 }
             }
         }

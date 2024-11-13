@@ -5,9 +5,9 @@ import path from 'path';
 /**
  * Looks for the installed versions of the given packages and returns them as a dictionary.
  */
-export function getPackageGitHubTags(packageNames: string[]) {
+export function getPackageGitHubTags(packageNames: string[]): Record<string, string> {
     // For each package, get the installed version, and set the tag to the corresponding version
-    const packageTags = {};
+    const packageTags: Record<string, string> = {};
 
     for (const pkg of packageNames) {
         const spawnResult = childProcess.spawnSync('python', ['-c', `import ${pkg}; print(${pkg}.__version__)`]);
@@ -36,5 +36,5 @@ export function getCurrentPackageName(pyprojectTomlPath?: string) {
     pyprojectTomlPath ??= findNearestInParent(currentPath, 'pyproject.toml');
     const pyprojectToml = fs.readFileSync(pyprojectTomlPath, 'utf8');
     
-    return pyprojectToml.match(/^name = "(.+)"$/m)[1];
+    return pyprojectToml.match(/^name = "(.+)"$/m)?.[1];
 }
