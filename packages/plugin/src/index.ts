@@ -13,6 +13,7 @@ import {
 	generateJson,
 	loadPackageJsonAndDocs,
 } from './plugin/data';
+import { processPythonDocs } from './plugin/python';
 import { extractSidebar } from './plugin/sidebar';
 import { getVersionedDocsDirPath, readVersionsMetadata } from './plugin/version';
 import type {
@@ -26,7 +27,6 @@ import type {
 	TSDDeclarationReflection,
 	VersionMetadata,
 } from './types';
-import { processPythonDocs } from './plugin/python';
 
 const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	banner: '',
@@ -169,9 +169,9 @@ export default function typedocApiPlugin(
 							options.changelogName,
 						);
 
-						// eslint-disable-next-line no-param-reassign
+						 
 						cfg.packageName = packageJson.name;
-						// eslint-disable-next-line no-param-reassign
+						 
 						cfg.packageVersion = packageJson.version;
 					});
 

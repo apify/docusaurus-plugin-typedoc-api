@@ -1,5 +1,3 @@
-/* eslint-disable complexity */
-
 import { REPO_ROOT_PLACEHOLDER, REPO_URL_PER_PACKAGE, TYPEDOC_KINDS } from "./consts";
 import { resolveInheritedSymbols } from "./inheritance";
 import { PythonTypeResolver } from "./type-parsing";
@@ -211,40 +209,41 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
 
         if(currentTypedocNode.kindString === 'Method') {
             currentTypedocNode.signatures = [{
-                id: getOID(),
-                name: currentDocspecNode.name,
-                modifiers: currentDocspecNode.modifiers ?? [],
-                kind: 4096,
-                kindString: 'Call signature',
-                flags: {},
                 comment: docstring.text ? {
+                    blockTags: docstring?.returns ? [
+                        { content: [{ kind: 'text', text: docstring.returns }], tag: '@returns' },
+                    ] : undefined,
                     summary: [{
                         kind: 'text',
                         text: docstring?.text,
                     }],
-                    blockTags: docstring?.returns ? [
-                        { tag: '@returns', content: [{ kind: 'text', text: docstring.returns }] },
-                    ] : undefined,
                 } : undefined,
-                type: this.pythonTypeResolver.registerType(currentDocspecNode.return_type),
+                flags: {},
+                id: getOID(),
+                kind: 4096,
+                kindString: 'Call signature',
+                modifiers: currentDocspecNode.modifiers ?? [],
+                name: currentDocspecNode.name,
                 parameters: currentDocspecNode.args.filter((arg) => (arg.name !== 'self' && arg.name !== 'cls')).map((arg) => ({
-                    id: getOID(),
-                    name: arg.name,
-                    kind: 32_768,
-                    kindString: 'Parameter',
-                    flags: {
-                        isOptional: arg.datatype?.includes('Optional') ? true : undefined,
-                        'keyword-only': arg.type === 'KEYWORD_ONLY' ? true : undefined,
-                    },
-                    type: this.pythonTypeResolver.registerType(arg.datatype),
                     comment: docstring.args?.[arg.name] ? {
                         summary: [{
                             kind: 'text',
                             text: docstring.args[arg.name]
                         }]
                     } : undefined,
-                    defaultValue: arg.default_value,
+                    defaultValue: arg.default_value as string,
+                    flags: {
+                        isOptional: arg.datatype?.includes('Optional') ? true : undefined,
+                        'keyword-only': arg.type === 'KEYWORD_ONLY' ? true : undefined,
+                    },
+                    id: getOID(),
+                    kind: 32_768,
+                    kindString: 'Parameter',
+                    name: arg.name,
+                    type: this.pythonTypeResolver.registerType(arg.datatype),
+                    
                 })),
+                type: this.pythonTypeResolver.registerType(currentDocspecNode.return_type),
             }];
         }
 
@@ -397,7 +396,7 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
             typedocKind = TYPEDOC_KINDS.enumValue;
             typedocType = {
                 type: 'literal',
-                value: docspecMember.value,
+                value: docspecMember.value as string,
             }
         }
 

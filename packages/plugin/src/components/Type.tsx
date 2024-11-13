@@ -39,7 +39,7 @@ export interface TypeProps {
 	type?: { type: string; value?: unknown };
 }
 
-// eslint-disable-next-line complexity
+ 
 export function Type({ needsParens = false, type: base }: TypeProps) {
 	const reflections = useReflectionMap();
 	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;

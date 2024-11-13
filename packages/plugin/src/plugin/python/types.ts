@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TYPEDOC_KINDS } from "./consts";
 
 export type OID = number;

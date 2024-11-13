@@ -6,8 +6,6 @@ import path from 'path';
  * Looks for the installed versions of the given packages and returns them as a dictionary.
  */
 export function getPackageGitHubTags(packageNames: string[]) {
-    ['apify', 'apify_client', 'apify_shared']
-
     // For each package, get the installed version, and set the tag to the corresponding version
     const packageTags = {};
 
@@ -23,16 +21,14 @@ export function getPackageGitHubTags(packageNames: string[]) {
 
 export function findNearestInParent(currentPath: string, filename: string) {
     let parentPath = currentPath;
-    while (true) {
+    while (parentPath !== '/') {
         parentPath = path.dirname(parentPath);
         if (fs.existsSync(path.join(parentPath, filename))) {
             return path.join(parentPath, filename);
         }
-
-        if (parentPath === '/') {
-            throw new Error(`No ${filename} found in any parent directory`);
-        }
     }
+
+    throw new Error(`No ${filename} found in any parent directory`);
 }
 
 export function getCurrentPackageName(pyprojectTomlPath?: string) {

@@ -28,6 +28,6 @@ module.exports = {
 		'no-plusplus': 'off',
 		// this is definitely code smell but we have a lot of it in the python transforming script
 		'no-param-reassign': 'off',
-		'complexity': { max: 15 },
+		'complexity': 'off',
 	},
 };

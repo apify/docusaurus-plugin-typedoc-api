@@ -57,7 +57,7 @@ function intoReturnComment(comment?: JSONOutput.Comment): JSONOutput.Comment | u
 
 const HIDE_TAGS = ['@returns', '@param'];
 
-// eslint-disable-next-line complexity
+ 
 export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyProps) {
 	const minimal = useMinimalLayout();
 	const showTypes = sig.typeParameter && sig.typeParameter.length > 0;
@@ -69,7 +69,7 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 
 
 	if (isPython) {
-		// eslint-disable-next-line
+		 
 		sig.parameters = sig.parameters?.reduce<typeof sig.parameters>((acc, param) => {
 			// @ts-expect-error Silence ts errors
 			switch (param.type?.name) {
@@ -86,7 +86,7 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 			return acc;
 		}, []);
 		
-		// eslint-disable-next-line
+		 
 		sig.parameters = sig.parameters?.reduce<typeof sig.parameters>((acc, param) => {
 			// @ts-expect-error Silence ts errors
 			switch (param.type?.name) {
