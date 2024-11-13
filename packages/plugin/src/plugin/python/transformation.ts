@@ -182,10 +182,7 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
             moduleName = this.moduleShortcuts[fullName].replace(`.${currentDocspecNode.name}`, '');
         }
 
-        // TODO: SDK-specific case, remove when the SDK is refactored
-        if (currentDocspecNode.name === '_ActorType') {
-            currentDocspecNode.name = 'Actor';
-        }
+        currentDocspecNode.name = currentDocspecNode.decorations?.find(d => d.name === 'docs_name')?.args.slice(2,-2) ?? currentDocspecNode.name;
 
         // Create the Typedoc member object
         const currentTypedocNode: TypeDocObject = {
@@ -287,8 +284,9 @@ private fixRefs(obj: TypeDocObject | TypeDocType) {
 
         const { groupName, source: groupSource } = getGroupName(currentTypedocNode);
 
-        if (groupName && // Use the decorator classes everytime, but don't render the class-level groups for the root project
-            (groupSource === 'decorator' || parentTypeDoc.kindString !== 'Project')) {
+        if (groupName // Use the decorator classes everytime, but don't render the class-level groups for the root project
+            && (groupSource === 'decorator' || parentTypeDoc.kindString !== 'Project')
+        ) {
                 const group = parentTypeDoc.groups.find((g) => g.title === groupName);
                 if (group) {
                     group.children.push(currentTypedocNode.id);
