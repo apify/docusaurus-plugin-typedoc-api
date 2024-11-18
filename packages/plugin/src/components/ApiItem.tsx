@@ -100,6 +100,14 @@ function resolveTypeReferences(obj: { type?: "reference", target?: number, ref?:
 	}
 }
 
+function getOwnGroupNames(reflection: TSDDeclarationReflection, reflections: TSDDeclarationReflectionMap): string[] {
+	const parent = reflections[(reflection as unknown as { parentId: number }).parentId]
+
+	return parent?.groups?.filter(
+		({ children }) => children?.includes(reflection.id)
+	).map(({ title }) => title) ?? [];
+}
+
 export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	const [hideInherited, setHideInherited] = useState(false);
 	const apiOptions = useMemo(
@@ -173,7 +181,14 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 				)}
 
 				<Reflection reflection={item} />
-				<script type="application/json+typedoc-data">{JSON.stringify(item, null, 4)}</script>
+				<script type="application/json+typedoc-data">{JSON.stringify(
+					{
+						item,
+						groups: getOwnGroupNames(item, reflections),
+					}, 
+					null, 
+					4
+				)}</script>
 			</ApiItemLayout>
 		</ApiOptionsContext.Provider>
 	);
