@@ -1,8 +1,8 @@
-import { REPO_ROOT_PLACEHOLDER, REPO_URL_PER_PACKAGE, TYPEDOC_KINDS } from "./consts";
+import { REPO_ROOT_PLACEHOLDER, TYPEDOC_KINDS } from "./consts";
 import { resolveInheritedSymbols } from "./inheritance";
 import { PythonTypeResolver } from "./type-parsing";
 import type { DocspecDocstring, DocspecObject, TypeDocDocstring, TypeDocObject, TypeDocType } from "./types";
-import { getGroupName, getOID, groupSort, isHidden } from "./utils";
+import { getGroupName, getOID, groupSort, isHidden, projectUsesDocsGroupDecorator } from "./utils";
 
 interface TransformObjectOptions {
     /**
@@ -62,6 +62,8 @@ export class DocspecTransformer {
      * Used to read the class Google-style docstrings from the class' properties and methods.
      */
     private contextStack: TypeDocDocstring[] = [];
+
+    private settings: { useDocsGroup: boolean } = { useDocsGroup: false };
     
     constructor({ githubTags, moduleShortcuts }: DocspecTransformerOptions) {
         this.pythonTypeResolver = new PythonTypeResolver();
@@ -84,11 +86,12 @@ export class DocspecTransformer {
                     character: 0,
                     fileName: 'src/index.ts',
                     line: 1,
-                    url: `http://example.com/blob/123456/src/dummy.py`,
                 }
             ],
             symbolIdMap: this.symbolIdMap,
         };
+
+        this.settings.useDocsGroup = projectUsesDocsGroupDecorator(docspecModules as unknown as { name: string });
 
         // Convert all the modules, store them in the root object
         for (const module of docspecModules) {
@@ -170,7 +173,7 @@ private fixRefs(obj: Record<string, any>) {
         }
 
         const { typedocType, typedocKind } = this.getTypedocType(currentDocspecNode, parentTypeDoc);
-        const { filePathInRepo, memberGitHubUrl } = this.getGitHubUrls(currentDocspecNode, moduleName);
+        const { filePathInRepo } = this.getGitHubUrls(currentDocspecNode);
 
         const docstring = this.parseDocstring(currentDocspecNode);
         const currentId = getOID();
@@ -205,7 +208,6 @@ private fixRefs(obj: Record<string, any>) {
                 character: 1,
                 fileName: filePathInRepo,
                 line: currentDocspecNode.location.lineno,
-                url: memberGitHubUrl,
             }],
             type: typedocType,
         };
@@ -286,8 +288,8 @@ private fixRefs(obj: Record<string, any>) {
 
         const { groupName, source: groupSource } = getGroupName(currentTypedocNode);
 
-        if (groupName // Use the decorator classes everytime, but don't render the class-level groups for the root project
-            && (groupSource === 'decorator' || parentTypeDoc.kindString !== 'Project')
+        if (groupName // If the group comes from a decorator, use it always; otherwise check if the symbol isn't top-level
+            && (!this.settings.useDocsGroup || groupSource === 'decorator' || parentTypeDoc.kindString !== 'Project')
         ) {
                 const group = parentTypeDoc.groups?.find((g) => g.title === groupName);
                 if (group) {
@@ -313,15 +315,11 @@ private fixRefs(obj: Record<string, any>) {
         }
     }
 
-    private getGitHubUrls(docspecMember: DocspecObject, moduleName: string): { filePathInRepo: string, memberGitHubUrl: string } {
-        const rootModuleName = moduleName.split('.')[0];
-        // Get the URL of the member in GitHub
-        const repoBaseUrl = `${REPO_URL_PER_PACKAGE[rootModuleName as keyof typeof REPO_URL_PER_PACKAGE]}/blob/${this.githubTags[rootModuleName]}`;
+    // Get the URL of the member in GitHub
+    private getGitHubUrls(docspecMember: DocspecObject): { filePathInRepo: string } {
         const filePathInRepo = docspecMember.location.filename.replace(REPO_ROOT_PLACEHOLDER, '');
-        const fileGitHubUrl = docspecMember.location.filename.replace(REPO_ROOT_PLACEHOLDER, repoBaseUrl);
-        const memberGitHubUrl = `${fileGitHubUrl}#L${docspecMember.location.lineno}`;
 
-        return { filePathInRepo, memberGitHubUrl };
+        return { filePathInRepo };
     }
 
     /**

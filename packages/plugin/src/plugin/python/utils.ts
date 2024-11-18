@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import { GROUP_ORDER, TYPEDOC_KINDS } from "./consts";
 import type { DocspecObject, OID, TypeDocObject } from "./types";
 
@@ -27,7 +28,7 @@ export function getGroupName(object: TypeDocObject): { groupName: string | undef
     if (object.decorations?.some(d => d.name === 'docs_group')) {
         const parsedGroupName = object.decorations.find(d => d.name === 'docs_group')?.args.slice(2,-2);
 
-        if(parsedGroupName){
+        if (parsedGroupName){
             return {
                 groupName: parsedGroupName,
                 source: 'decorator'
@@ -36,11 +37,18 @@ export function getGroupName(object: TypeDocObject): { groupName: string | undef
     }
 
     const groupPredicates: Record<string, (obj: TypeDocObject) => boolean> = {
-        'Constants': (x) => x.kindString === 'Enumeration',
-        'Constructors': (x) => x.kindString === 'Constructor',
-        'Enumeration members': (x) => x.kindString === 'Enumeration Member',
+        'Scrapy integration': (x) => ['ApifyScheduler', 'ActorDatasetPushPipeline', 'ApifyHttpProxyMiddleware', 'apply_apify_settings'].includes(x.name),
+        'Data structures': (x) => ['BaseModel', 'TypedDict'].some(base => (x?.bases as { includes: (x: string) => boolean })?.includes(base)) || x?.decorations?.some(d => d.name === 'dataclass'),
+        'Errors': (x) => x.name.toLowerCase().includes('error'),
+        'Classes': (x) => x.kindString === 'Class',
+        'Main Clients': (x) => ['ApifyClient', 'ApifyClientAsync'].includes(x.name),
+        'Async Resource Clients': (x) => x.name.toLowerCase().includes('async'),
+        'Resource Clients': (x) => x.kindString === 'Class' && x.name.toLowerCase().includes('client'),
         'Methods': (x) => x.kindString === 'Method',
+        'Constructors': (x) => x.kindString === 'Constructor',
         'Properties': (x) => x.kindString === 'Property',
+        'Constants': (x) => x.kindString === 'Enumeration',
+        'Enumeration members': (x) => x.kindString === 'Enumeration Member',
     };
 
     const groupName = Object.entries(groupPredicates).find(
@@ -48,6 +56,26 @@ export function getGroupName(object: TypeDocObject): { groupName: string | undef
     )?.[0];
 
     return { groupName, source: 'predicate' };
+}
+
+/**
+ * Recursively search arbitrary JS object for property `name: 'docs_group'`.
+ * @param object 
+ */
+export function projectUsesDocsGroupDecorator(object: { name: string }): boolean {
+    if (object instanceof Object){
+        if (object.name === 'docs_group'){
+            return true;
+        }
+
+        for (const key in object){
+            if (projectUsesDocsGroupDecorator(object[key] as { name: string })) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 /**

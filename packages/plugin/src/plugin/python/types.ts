@@ -26,7 +26,9 @@ export interface TypeDocObject {
     signatures?: TypeDocObject[];
     sources?: { 
         fileName: string, 
-        line: number, character: number, url: string }[];
+        line: number,
+        character: number,
+    }[];
     type?: TypeDocType;
     symbolIdMap?: Record<number, { qualifiedName: string, sourceFileName: string }>,
     extendedTypes?: TypeDocType[];

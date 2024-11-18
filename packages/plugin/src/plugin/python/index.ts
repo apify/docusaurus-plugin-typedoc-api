@@ -1,7 +1,7 @@
 import childProcess from 'child_process';
 import fs  from 'fs';
 import path from 'path';
-import { findNearestInParent, getCurrentPackageName, getPackageGitHubTags } from "./packageVersions";
+import { getPackageGitHubTags } from "./packageVersions";
 import { DocspecTransformer } from "./transformation";
 import type { DocspecObject } from "./types";
 
@@ -31,17 +31,6 @@ export function processPythonDocs(
     ]);
     
     const githubTags = getPackageGitHubTags(['apify', 'apify_client', 'apify_shared']);
-
-    let currentPackage = 'UNNAMED';
-    try {
-        const pyprojectTomlPath = findNearestInParent(pythonModulePath, 'pyproject.toml');
-
-        currentPackage = getCurrentPackageName(pyprojectTomlPath) ?? currentPackage;
-    } catch (error) {
-        console.warn(error);
-    }
-
-    githubTags[currentPackage] = 'master';
 
     const moduleShortcuts = JSON.parse(
         fs.readFileSync(moduleShortcutsPath, 'utf8')

@@ -15,7 +15,8 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'apify', // Usually your GitHub org/user name.
-  projectName: '@apify/docusaurus-plugin-typedoc-api', // Usually your repo name.
+  projectName: 'docusaurus-plugin-typedoc-api', // Usually your repo name.
+  githubHost: 'github.com',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
