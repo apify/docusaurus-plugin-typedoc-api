@@ -34,7 +34,6 @@ export function DefaultValue({ comment, value, type }: DefaultValueProps) {
 		defaultTag = decode(marked(defaultTag));
 	}
 
-
 	if (!defaultTag && !value) {
 		return null;
 	}

@@ -28,7 +28,7 @@ const KIND_ICONS: Record<ReflectionKind, string> = {
 	1_048_576: 'symbol-field', // SetSignature
 	2_097_152: 'symbol-parameter', // TypeAlias
 	4_194_304: 'references', // Reference
-	8_388_608: 'references' // a Non-TS document (new in TypeDoc `0.26.0`, unused by `docusaurus-plugin-typedoc-api`)
+	8_388_608: 'references', // a Non-TS document (new in TypeDoc `0.26.0`, unused by `docusaurus-plugin-typedoc-api`)
 };
 
 export function getKindIcon(kind: ReflectionKind, name: string): string {
@@ -42,7 +42,6 @@ export function getKindIcon(kind: ReflectionKind, name: string): string {
 	return icon;
 }
 
- 
 export function getKindIconColor(kind: ReflectionKind): string {
 	switch (kind) {
 		// Function

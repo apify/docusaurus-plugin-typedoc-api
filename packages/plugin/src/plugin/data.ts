@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import * as TypeDoc from 'typedoc';
-import { type InlineTagDisplayPart, type JSONOutput, ReflectionKind } from 'typedoc'
+import { type InlineTagDisplayPart, type JSONOutput, ReflectionKind } from 'typedoc';
 import ts from 'typescript';
 import { normalizeUrl } from '@docusaurus/utils';
 import type {
@@ -110,7 +110,6 @@ export function createReflectionMap(
 ): TSDDeclarationReflectionMap {
 	const map: TSDDeclarationReflectionMap = {};
 
-	 
 	items.forEach((item) => {
 		// Add @reference categories to reflection.
 		const referenceCategories: Record<string, { title: string; children: number[] }> = {};
@@ -133,7 +132,6 @@ export function createReflectionMap(
 
 		// Update categories with reference categories.
 		if (!item.categories) {
-			 
 			item.categories = [];
 		}
 		for (const category of Object.values(referenceCategories)) {
@@ -170,7 +168,7 @@ export function loadPackageJsonAndDocs(
 		}
 	}
 
-	if(!found) {
+	if (!found) {
 		// TODO: load the actual package information from pyproject.toml or similar
 		return {
 			packageJson: {
@@ -179,7 +177,7 @@ export function loadPackageJsonAndDocs(
 			},
 			readmePath: '',
 			changelogPath: '',
-		}
+		};
 	}
 
 	const readmePath = path.join(currentDir, readmeFileName);
@@ -203,7 +201,6 @@ export function addMetadataToReflections(
 	const permalink = `/${joinUrl(urlPrefix, packageSlug)}`;
 
 	if (project.children) {
-		 
 		project.children = project.children.map((child) => {
 			migrateToVersion0230(child);
 
@@ -213,7 +210,6 @@ export function addMetadataToReflections(
 
 			// We need to go another level deeper and only use fragments
 			if (child.kind === ReflectionKind.Namespace && child.children) {
-				 
 				child.children = child.children.map((grandChild) => ({
 					...grandChild,
 					permalink: normalizeUrl([`${childPermalink}#${grandChild.name}`]),
@@ -251,7 +247,7 @@ function mergeReflections(base: TSDDeclarationReflection, next: TSDDeclarationRe
 		});
 
 		// We can remove refs since were merging all reflections into one
-		 
+
 		base.groups = base.groups.filter((group) => group.title !== 'References');
 	}
 }
@@ -390,13 +386,12 @@ function buildSourceFileNameMap(
 	const map: Record<string, boolean> = {};
 	const cwd = process.cwd();
 
-	if(project.symbolIdMap) {
+	if (project.symbolIdMap) {
 		Object.values(project.symbolIdMap).forEach((symbol) => {
 			// absolute
 			map[path.normalize(path.join(cwd, symbol.sourceFileName))] = true;
 		});
 	}
-
 
 	modChildren.forEach((child) => {
 		child.sources?.forEach((sf) => {
@@ -458,9 +453,8 @@ export function flattenAndGroupPackages(
 						changelogPath,
 					};
 
-					 
 					cfg.packageName = packages[cfg.packagePath].packageName;
-					 
+
 					cfg.packageVersion = packages[cfg.packagePath].packageVersion;
 				}
 

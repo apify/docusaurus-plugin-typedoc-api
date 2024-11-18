@@ -13,7 +13,6 @@ export interface MemberGetterSetterProps {
 	setter?: TSDDeclarationReflection['setSignature'];
 }
 
- 
 export function MemberGetterSetter({ inPanel, getter, setter }: MemberGetterSetterProps) {
 	const minimal = useMinimalLayout();
 

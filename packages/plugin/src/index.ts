@@ -169,9 +169,8 @@ export default function typedocApiPlugin(
 							options.changelogName,
 						);
 
-						 
 						cfg.packageName = packageJson.name;
-						 
+
 						cfg.packageVersion = packageJson.version;
 					});
 
@@ -198,14 +197,14 @@ export default function typedocApiPlugin(
 							const outFile = path.join(context.generatedFilesDir, `api-typedoc-${pluginId}.json`);
 
 							if (options.pathToCurrentVersionTypedocJSON) {
-								if (!fs.existsSync(context.generatedFilesDir)){
+								if (!fs.existsSync(context.generatedFilesDir)) {
 									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 								}
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
 							} else if (Object.keys(options.pythonOptions).length > 0) {
 								if (
-									!options.pythonOptions.pythonModulePath
-									|| !options.pythonOptions.moduleShortcutsPath
+									!options.pythonOptions.pythonModulePath ||
+									!options.pythonOptions.moduleShortcutsPath
 								) {
 									throw new Error('Python options are missing required fields');
 								}
@@ -345,7 +344,10 @@ export default function typedocApiPlugin(
 						return {
 							path: info.permalink,
 							exact: true,
-							component: path.join(__dirname, `./components/ApiItem.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`),
+							component: path.join(
+								__dirname,
+								`./components/ApiItem.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`,
+							),
 							modules,
 							sidebar: 'api',
 							// Map the ID here instead of creating a JSON data file,
@@ -414,7 +416,10 @@ export default function typedocApiPlugin(
 							{
 								path: indexPermalink,
 								exact: false,
-								component: path.join(__dirname, `./components/ApiPage.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`),
+								component: path.join(
+									__dirname,
+									`./components/ApiPage.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`,
+								),
 								routes,
 								modules: {
 									options: optionsData,
@@ -478,7 +483,10 @@ export default function typedocApiPlugin(
 										remarkPlugins: options.remarkPlugins,
 										rehypePlugins: options.rehypePlugins,
 										siteDir: context.siteDir,
-										staticDirs: [...context.siteConfig.staticDirectories, path.join(context.siteDir, 'static')],
+										staticDirs: [
+											...context.siteConfig.staticDirectories,
+											path.join(context.siteDir, 'static'),
+										],
 										// Since this isn't a doc/blog page, we can get
 										// away with it being a partial!
 										isMDXPartial: () => true,

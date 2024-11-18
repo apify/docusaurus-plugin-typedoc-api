@@ -55,19 +55,25 @@ export interface ApiItemProps extends Pick<DocItemProps, 'route'> {
 
 export const ApiOptionsContext = createContext({
 	hideInherited: false,
-	setHideInherited: (hideInherited: boolean) => {}
+	setHideInherited: (hideInherited: boolean) => {},
 });
 
 export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	const [hideInherited, setHideInherited] = useState(false);
-	const apiOptions = useMemo(() => ({
-		hideInherited,
-		setHideInherited,
-	}), [hideInherited, setHideInherited]);
+	const apiOptions = useMemo(
+		() => ({
+			hideInherited,
+			setHideInherited,
+		}),
+		[hideInherited, setHideInherited],
+	);
 
 	const item = useRequiredReflection((route as unknown as { id: number }).id);
 	const reflections = useReflectionMap();
-	const toc = useMemo(() => extractTOC(item, reflections, hideInherited), [item, reflections, hideInherited]);
+	const toc = useMemo(
+		() => extractTOC(item, reflections, hideInherited),
+		[item, reflections, hideInherited],
+	);
 
 	// Pagination
 	const prevItem = useReflection(item.previousId);
@@ -117,7 +123,7 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 					</section>
 				)}
 
-				<Reflection reflection={item}  />
+				<Reflection reflection={item} />
 			</ApiItemLayout>
 		</ApiOptionsContext.Provider>
 	);

@@ -1,6 +1,6 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/member.signature.body.hbs
 
-import { Fragment, useContext } from 'react'
+import { Fragment, useContext } from 'react';
 import type { JSONOutput, Models } from 'typedoc';
 import { type GlobalData } from '@docusaurus/types';
 import { usePluginData } from '@docusaurus/useGlobalData';
@@ -57,7 +57,6 @@ function intoReturnComment(comment?: JSONOutput.Comment): JSONOutput.Comment | u
 
 const HIDE_TAGS = ['@returns', '@param'];
 
- 
 export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyProps) {
 	const minimal = useMinimalLayout();
 	const showTypes = sig.typeParameter && sig.typeParameter.length > 0;
@@ -67,39 +66,37 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 	const { reflections } = useContext(ApiDataContext);
 	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;
 
-
 	if (isPython) {
-		 
 		sig.parameters = sig.parameters?.reduce<typeof sig.parameters>((acc, param) => {
 			// @ts-expect-error Silence ts errors
 			switch (param.type?.name) {
 				case 'Unpack':
 					// @ts-expect-error Silence ts errors
-					// eslint-disable-next-line
-					acc.push(...reflections[param.type.typeArguments[0].target].children.map(x => ({...x, flags: {'keyword-only': true}})));
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					acc.push(...reflections[param.type.typeArguments[0].target].children.map((x) => ({...x, flags: { 'keyword-only': true } })),
+					);
 					break;
 				default:
 					acc.push(param);
 					break;
 			}
-	
+
 			return acc;
 		}, []);
-		
-		 
+
 		sig.parameters = sig.parameters?.reduce<typeof sig.parameters>((acc, param) => {
 			// @ts-expect-error Silence ts errors
 			switch (param.type?.name) {
 				case 'NotRequired':
 					// @ts-expect-error Silence ts errors
 					// eslint-disable-next-line
-					acc.push({...param, type: param.type.typeArguments[0]});
+					acc.push({ ...param, type: param.type.typeArguments[0] });
 					break;
 				default:
 					acc.push(param);
 					break;
 			}
-	
+
 			return acc;
 		}, []);
 	}
@@ -152,7 +149,9 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 											<li key={reflectionChild.id}>
 												<h5>
 													<Flags flags={reflectionChild.flags} />
-													{reflectionChild.flags?.isRest && <span className="tsd-signature-symbol">...</span>}
+													{reflectionChild.flags?.isRest && (
+														<span className="tsd-signature-symbol">...</span>
+													)}
 													{`${reflectionChild.name}: `}
 													<Type type={reflectionChild.type} />
 													<DefaultValue
@@ -162,37 +161,42 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 													/>
 												</h5>
 
-												<Comment comment={reflectionChild.comment as unknown as JSONOutput.Comment} />
+												<Comment
+													comment={reflectionChild.comment as unknown as JSONOutput.Comment}
+												/>
 											</li>
 										))}
 									</ul>
 								)}
 
-								{param.type?.type === 'union' && (
-									((param.type.types.filter(
-										(unionType) => unionType.type === 'reflection')) as unknown as Models.ReflectionType[]).map(
-										(unionReflectionType) => (
-											<ul key={unionReflectionType.declaration.id}>
-												{unionReflectionType.declaration?.children?.map((unionChild) => (
-													<li key={unionChild.id}>
-														<h5>
-															<Flags flags={unionChild.flags} />
-															{unionChild.flags?.isRest && <span className="tsd-signature-symbol">...</span>}
-															{`${unionChild.name}: `}
-															<Type type={unionChild.type} />
-															<DefaultValue
-																comment={unionChild.comment as unknown as JSONOutput.Comment}
-																type={unionChild.type}
-																value={unionChild.defaultValue}
-															/>
-														</h5>
+								{param.type?.type === 'union' &&
+									(
+										param.type.types.filter(
+											(unionType) => unionType.type === 'reflection',
+										) as unknown as Models.ReflectionType[]
+									).map((unionReflectionType) => (
+										<ul key={unionReflectionType.declaration.id}>
+											{unionReflectionType.declaration?.children?.map((unionChild) => (
+												<li key={unionChild.id}>
+													<h5>
+														<Flags flags={unionChild.flags} />
+														{unionChild.flags?.isRest && (
+															<span className="tsd-signature-symbol">...</span>
+														)}
+														{`${unionChild.name}: `}
+														<Type type={unionChild.type} />
+														<DefaultValue
+															comment={unionChild.comment as unknown as JSONOutput.Comment}
+															type={unionChild.type}
+															value={unionChild.defaultValue}
+														/>
+													</h5>
 
-														<Comment comment={unionChild.comment as unknown as JSONOutput.Comment} />
-													</li>
-												))}
-											</ul>
-										))
-								)}
+													<Comment comment={unionChild.comment as unknown as JSONOutput.Comment} />
+												</li>
+											))}
+										</ul>
+									))}
 							</Fragment>
 						))}
 					</ul>

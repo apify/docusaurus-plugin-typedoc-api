@@ -46,24 +46,26 @@ export function Member({ id }: MemberProps) {
 	}
 
 	return (
-		!shouldHideInherited && <section className="tsd-panel tsd-member">
-			<h3 className="tsd-panel-header">
-				<AnchorLink id={reflection.name} />
-				<SourceLink sources={reflection.sources} />
-				<Flags flags={reflection.flags} />
-				{escapeMdx(reflection.name)}
-				{isCommentWithModifiers(comment) && <CommentBadges comment={comment} />}
-			</h3>
+		!shouldHideInherited && (
+			<section className="tsd-panel tsd-member">
+				<h3 className="tsd-panel-header">
+					<AnchorLink id={reflection.name} />
+					<SourceLink sources={reflection.sources} />
+					<Flags flags={reflection.flags} />
+					{escapeMdx(reflection.name)}
+					{isCommentWithModifiers(comment) && <CommentBadges comment={comment} />}
+				</h3>
 
-			{content}
+				{content}
 
-			{reflection.groups?.map((group) => (
-				<Fragment key={group.title}>
-					{group.children?.map((child) =>
-						hasOwnDocument(child, reflections) ? null : <Member key={child} id={child} />,
-					)}
-				</Fragment>
-			))}
-		</section>
+				{reflection.groups?.map((group) => (
+					<Fragment key={group.title}>
+						{group.children?.map((child) =>
+							hasOwnDocument(child, reflections) ? null : <Member key={child} id={child} />,
+						)}
+					</Fragment>
+				))}
+			</section>
+		)
 	);
 }

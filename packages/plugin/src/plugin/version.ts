@@ -46,9 +46,9 @@ function createVersionMetadata({
 	const isLast = versionName === lastVersionName;
 	const versionOptions = options.versions[versionName] ?? {};
 	const versionLabel =
-		versionOptions.label ?? versionName === CURRENT_VERSION_NAME ? 'Next' : versionName;
+		(versionOptions.label ?? versionName === CURRENT_VERSION_NAME) ? 'Next' : versionName;
 	let versionPathPart =
-		versionOptions.path ?? versionName === CURRENT_VERSION_NAME ? 'next' : versionName;
+		(versionOptions.path ?? versionName === CURRENT_VERSION_NAME) ? 'next' : versionName;
 
 	if (isLast) {
 		versionPathPart = '';

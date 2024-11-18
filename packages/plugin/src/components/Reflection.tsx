@@ -17,7 +17,7 @@ import { TypeParameters } from './TypeParameters';
 export interface ReflectionProps {
 	reflection: TSDDeclarationReflection | TSDReflection | TSDSignatureReflection;
 }
- 
+
 export function Reflection({ reflection }: ReflectionProps) {
 	const hierarchy = useMemo(() => createHierarchy(reflection), [reflection]);
 

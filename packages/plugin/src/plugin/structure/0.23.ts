@@ -1,5 +1,3 @@
- 
-
 import { JSONOutput } from 'typedoc';
 
 interface OldComment {

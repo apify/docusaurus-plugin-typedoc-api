@@ -5,6 +5,8 @@
     "types/**/*"
   ],
   "compilerOptions": {
-    "lib": ["es2021"]
+    "lib": [
+      "es2021"
+    ]
   }
 }

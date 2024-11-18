@@ -42,7 +42,7 @@ export interface DocusaurusPluginTypeDocApiOptions
 	pythonOptions: {
 		moduleShortcutsPath?: string;
 		pythonModulePath?: string;
-	}
+	};
 
 	remarkPlugins: MDXPlugin[];
 	rehypePlugins: MDXPlugin[];
