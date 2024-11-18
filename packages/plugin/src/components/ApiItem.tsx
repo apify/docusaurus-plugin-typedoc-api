@@ -11,6 +11,10 @@ import { displayPartsToMarkdown } from './Comment';
 import { Flags } from './Flags';
 import { Reflection } from './Reflection';
 import { TypeParametersGeneric } from './TypeParametersGeneric';
+import { resolveGithubUrl } from './SourceLink';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import { useGitRefName } from '../hooks/useGitRefName';
+import { DocusaurusConfig } from '@docusaurus/types';
 
 function extractTOC(
 	item: TSDDeclarationReflection,
@@ -58,6 +62,36 @@ export const ApiOptionsContext = createContext({
 	setHideInherited: (hideInherited: boolean) => {},
 });
 
+// Recursively traverse the passed object. If the object has a `sources` property, resolve the GitHub URLs.
+function resolveGithubUrls(obj: { sources?: { url?: string; fileName: string; line: number; character: number }[] }, siteConfig: DocusaurusConfig, gitRefName: string) {
+	if (obj.sources) {
+		obj.sources.forEach((source) => {
+			source.url = resolveGithubUrl(source, siteConfig, gitRefName);
+		});
+	}
+
+	for (const key in obj) {
+		if (typeof obj[key] === 'object') {
+			resolveGithubUrls(obj[key] as { sources?: { url?: string; fileName: string; line: number; character: number }[] }, siteConfig, gitRefName);
+		}
+	}
+}
+
+function resolveTypeReferences(obj: { type?: "reference", target?: number, permalink?: string }, reflectionMap: Record<number, { permalink: string }>, baseUrl: string) {
+	if (obj.type === 'reference') {
+		const reflectionIdentifier: number = obj.target ?? (obj as { id: number }).id;
+		const ref = reflectionIdentifier ? reflectionMap[Number(reflectionIdentifier)] : null;
+		obj.target = obj.target ? obj.target : 0;
+		obj.permalink = new URL(ref?.permalink ?? '', baseUrl).toString();
+	}
+
+	for (const key in obj) {
+		if (typeof obj[key] === 'object') {
+			resolveTypeReferences(obj[key] as { type?: "reference", target?: number, permalink?: string }, reflectionMap, baseUrl);
+		}
+	}
+}
+
 export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	const [hideInherited, setHideInherited] = useState(false);
 	const apiOptions = useMemo(
@@ -96,6 +130,13 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 		[nextItem, prevItem],
 	);
 
+	const { siteConfig } = useDocusaurusContext();
+	const gitRefName = useGitRefName();
+
+	resolveGithubUrls(item, siteConfig, gitRefName);
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
+	resolveTypeReferences(item as any, reflections, new URL(siteConfig.baseUrl, siteConfig.url).href);
+
 	return (
 		<ApiOptionsContext.Provider value={apiOptions}>
 			<ApiItemLayout
@@ -124,6 +165,7 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 				)}
 
 				<Reflection reflection={item} />
+				<script type="application/json+typedoc-data">{JSON.stringify(item, null, 4)}</script>
 			</ApiItemLayout>
 		</ApiOptionsContext.Provider>
 	);

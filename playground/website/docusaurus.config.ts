@@ -7,7 +7,7 @@ const config: Config = {
 	title: '@apify/docusaurus-plugin-typedoc-api',
 
 	// Set the production url of your site here
-	url: 'https://nonexistent.apify.com',
+	url: 'http://localhost:3000',
 	// Set the /<baseUrl>/ pathname under which your site is served
 	// For GitHub pages deployment, it is often '/<projectName>/'
 	baseUrl: '/',
