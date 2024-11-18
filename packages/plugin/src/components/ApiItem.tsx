@@ -64,6 +64,8 @@ export const ApiOptionsContext = createContext({
 
 // Recursively traverse the passed object. If the object has a `sources` property, resolve the GitHub URLs.
 function resolveGithubUrls(obj: { sources?: { url?: string; fileName: string; line: number; character: number }[] }, siteConfig: DocusaurusConfig, gitRefName: string) {
+	if (!obj) return;
+
 	if (obj.sources) {
 		obj.sources.forEach((source) => {
 			source.url = resolveGithubUrl(source, siteConfig, gitRefName);
@@ -77,12 +79,18 @@ function resolveGithubUrls(obj: { sources?: { url?: string; fileName: string; li
 	}
 }
 
-function resolveTypeReferences(obj: { type?: "reference", target?: number, permalink?: string }, reflectionMap: Record<number, { permalink: string }>, baseUrl: string) {
+function resolveTypeReferences(obj: { type?: "reference", target?: number, ref?: TSDDeclarationReflection }, reflectionMap: TSDDeclarationReflectionMap, baseUrl: string) {
+	if(!obj) return;
+
 	if (obj.type === 'reference') {
 		const reflectionIdentifier: number = obj.target ?? (obj as { id: number }).id;
 		const ref = reflectionIdentifier ? reflectionMap[Number(reflectionIdentifier)] : null;
 		obj.target = obj.target ? obj.target : 0;
-		obj.permalink = new URL(ref?.permalink ?? '', baseUrl).toString();
+
+		const { id, sources, kind, permalink } = ref ?? {};
+		// @ts-expect-error Partial reexports
+		obj.ref = { id, sources, kind, permalink };
+		if (ref) obj.ref.permalink = new URL(ref?.permalink ?? '', baseUrl).toString();
 	}
 
 	for (const key in obj) {
