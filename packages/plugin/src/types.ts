@@ -51,6 +51,7 @@ export interface DocusaurusPluginTypeDocApiOptions
 	disableVersioning?: boolean;
 	includeCurrentVersion?: boolean;
 	routeBasePath?: string;
+	reexports: string[];
 }
 
 export interface GlobalData {

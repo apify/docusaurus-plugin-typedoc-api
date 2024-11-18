@@ -27,6 +27,7 @@ import type {
 	TSDDeclarationReflection,
 	VersionMetadata,
 } from './types';
+import { injectReexports } from './utils/reexports';
 
 const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	banner: '',
@@ -59,6 +60,7 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	versions: {},
 	python: false,
 	pythonOptions: {},
+	reexports: [],
 };
 
 async function importFile<T>(file: string): Promise<T> {
@@ -216,6 +218,10 @@ export default function typedocApiPlugin(
 								});
 							} else {
 								await generateJson(projectRoot, entryPoints, outFile, options);
+							}
+
+							if(options.reexports && options.reexports.length > 0) {
+								await injectReexports(outFile, options.reexports);
 							}
 
 							packages = flattenAndGroupPackages(

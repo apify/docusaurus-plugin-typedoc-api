@@ -54,6 +54,7 @@ const config: Config = {
 					moduleShortcutsPath: __dirname + '/../python/module_shortcuts.json',
 					pythonModulePath: __dirname + '/../python/src',
 				},
+				reexports: ['https://crawlee.dev/python/api/class/BasicCrawler'],
 			}),
 	],
 
