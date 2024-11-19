@@ -14,7 +14,7 @@ import TOC from '@theme/TOC';
 import TOCCollapsible from '@theme/TOCCollapsible';
 import { useBreadcrumbs } from '../hooks/useBreadcrumbs';
 import type { TOCItem } from '../types';
-import ApiOptionsLayout from './ApiOptionsLayout'
+import ApiOptionsLayout from './ApiOptionsLayout';
 import { VersionBanner } from './VersionBanner';
 
 export interface ApiItemLayoutProps extends Pick<DocItemProps, 'route'> {
@@ -72,7 +72,9 @@ export default function ApiItemLayout({
 							<div className={`${ThemeClassNames.docs.docMarkdown ?? ''} markdown`}>
 								<header>
 									<Heading as="h1">{heading}</Heading>
-									{module && <code className="tsd-header-member-fullname">{`${module}.${name}`}</code>}
+									{module && (
+										<code className="tsd-header-member-fullname">{`${module}.${name}`}</code>
+									)}
 								</header>
 
 								<MDXContent>{children}</MDXContent>

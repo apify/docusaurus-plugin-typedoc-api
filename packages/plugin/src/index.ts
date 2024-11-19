@@ -13,6 +13,7 @@ import {
 	generateJson,
 	loadPackageJsonAndDocs,
 } from './plugin/data';
+import { processPythonDocs } from './plugin/python';
 import { extractSidebar } from './plugin/sidebar';
 import { getVersionedDocsDirPath, readVersionsMetadata } from './plugin/version';
 import type {
@@ -57,6 +58,7 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	rehypePlugins: [],
 	versions: {},
 	python: false,
+	pythonOptions: {},
 };
 
 async function importFile<T>(file: string): Promise<T> {
@@ -167,9 +169,8 @@ export default function typedocApiPlugin(
 							options.changelogName,
 						);
 
-						// eslint-disable-next-line no-param-reassign
 						cfg.packageName = packageJson.name;
-						// eslint-disable-next-line no-param-reassign
+
 						cfg.packageVersion = packageJson.version;
 					});
 
@@ -196,10 +197,23 @@ export default function typedocApiPlugin(
 							const outFile = path.join(context.generatedFilesDir, `api-typedoc-${pluginId}.json`);
 
 							if (options.pathToCurrentVersionTypedocJSON) {
-								if (!fs.existsSync(context.generatedFilesDir)){
+								if (!fs.existsSync(context.generatedFilesDir)) {
 									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 								}
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
+							} else if (Object.keys(options.pythonOptions).length > 0) {
+								if (
+									!options.pythonOptions.pythonModulePath ||
+									!options.pythonOptions.moduleShortcutsPath
+								) {
+									throw new Error('Python options are missing required fields');
+								}
+
+								processPythonDocs({
+									pythonModulePath: options.pythonOptions.pythonModulePath,
+									moduleShortcutsPath: options.pythonOptions.moduleShortcutsPath,
+									outPath: outFile,
+								});
 							} else {
 								await generateJson(projectRoot, entryPoints, outFile, options);
 							}
@@ -266,7 +280,7 @@ export default function typedocApiPlugin(
 			}
 
 			actions.setGlobalData({
-				isPython: !!options.python,
+				isPython: !!(options.python || options.pythonOptions),
 			} as GlobalData);
 
 			const docs: PropVersionDocs = {};
@@ -330,7 +344,10 @@ export default function typedocApiPlugin(
 						return {
 							path: info.permalink,
 							exact: true,
-							component: path.join(__dirname, `./components/ApiItem.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`),
+							component: path.join(
+								__dirname,
+								`./components/ApiItem.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`,
+							),
 							modules,
 							sidebar: 'api',
 							// Map the ID here instead of creating a JSON data file,
@@ -399,7 +416,10 @@ export default function typedocApiPlugin(
 							{
 								path: indexPermalink,
 								exact: false,
-								component: path.join(__dirname, `./components/ApiPage.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`),
+								component: path.join(
+									__dirname,
+									`./components/ApiPage.${process.env.TYPEDOC_PLUGIN_DEV ? 'tsx' : 'js'}`,
+								),
 								routes,
 								modules: {
 									options: optionsData,
@@ -463,7 +483,10 @@ export default function typedocApiPlugin(
 										remarkPlugins: options.remarkPlugins,
 										rehypePlugins: options.rehypePlugins,
 										siteDir: context.siteDir,
-										staticDirs: [...context.siteConfig.staticDirectories, path.join(context.siteDir, 'static')],
+										staticDirs: [
+											...context.siteConfig.staticDirectories,
+											path.join(context.siteDir, 'static'),
+										],
 										// Since this isn't a doc/blog page, we can get
 										// away with it being a partial!
 										isMDXPartial: () => true,

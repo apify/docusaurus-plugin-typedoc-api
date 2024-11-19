@@ -39,7 +39,6 @@ export interface TypeProps {
 	type?: { type: string; value?: unknown };
 }
 
-// eslint-disable-next-line complexity
 export function Type({ needsParens = false, type: base }: TypeProps) {
 	const reflections = useReflectionMap();
 	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;
@@ -238,22 +237,14 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 					)}
 					{type.typeArguments && type.typeArguments.length > 0 && (
 						<>
-							<span className="tsd-signature-symbol">
-								{
-									isPython ? '[' : '<'
-								}
-							</span>
+							<span className="tsd-signature-symbol">{isPython ? '[' : '<'}</span>
 							{type.typeArguments.map((t, i) => (
 								<Fragment key={t.type + i}>
 									{i > 0 && <span className="tsd-signature-symbol">, </span>}
 									<Type type={t} />
 								</Fragment>
 							))}
-							<span className="tsd-signature-symbol">
-								{
-									isPython ? ']' : '>'
-								}
-							</span>
+							<span className="tsd-signature-symbol">{isPython ? ']' : '>'}</span>
 						</>
 					)}
 				</>

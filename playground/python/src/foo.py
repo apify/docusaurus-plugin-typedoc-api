@@ -1,3 +1,4 @@
+@docs_group('Classes')
 class Foo:
     """
     The foo class is a simple class that prints "Foo" when it is initialized and "bar" when the bar method is called.

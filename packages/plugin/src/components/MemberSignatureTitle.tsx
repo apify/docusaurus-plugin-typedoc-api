@@ -3,7 +3,7 @@
 
 import { Fragment } from 'react';
 import { usePluginData } from '@docusaurus/useGlobalData';
-import type { GlobalData,TSDSignatureReflection } from '../types';
+import type { GlobalData, TSDSignatureReflection } from '../types';
 import { escapeMdx } from '../utils/helpers';
 import { Type } from './Type';
 import { TypeParametersGeneric } from './TypeParametersGeneric';
@@ -18,13 +18,15 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;
 	// add `*` before the first keyword-only parameter
 	const parametersCopy = sig.parameters?.slice() ?? [];
-	const firstKeywordOnlyIndex = parametersCopy.findIndex((param) => Object.keys(param.flags).includes('keyword-only'));
+	const firstKeywordOnlyIndex = parametersCopy.findIndex((param) =>
+		Object.keys(param.flags).includes('keyword-only'),
+	);
 	if (firstKeywordOnlyIndex >= 0) {
 		parametersCopy.splice(firstKeywordOnlyIndex, 0, {
 			id: 999_999,
 			name: '*',
 			kind: 32_768,
-			flags: { },
+			flags: {},
 			variant: 'param',
 		});
 	}
@@ -32,7 +34,10 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 	return (
 		<>
 			{!hideName && sig.name !== '__type' ? (
-				<span>{sig.modifiers ? `${sig.modifiers.join(' ')} ` : ''}<b>{escapeMdx(sig.name)}</b></span>
+				<span>
+					{sig.modifiers ? `${sig.modifiers.join(' ')} ` : ''}
+					<b>{escapeMdx(sig.name)}</b>
+				</span>
 			) : // Constructor signature
 			sig.kind === 16_384 ? (
 				<>
@@ -52,17 +57,15 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 					<span>
 						{param.flags?.isRest && <span className="tsd-signature-symbol">...</span>}
 						{escapeMdx(param.name)}
-						{
-							!isPython && (
-								<>
-									<span className="tsd-signature-symbol">
-										{(param.flags?.isOptional || 'defaultValue' in param) && '?'}
-										{': '}
-									</span>
-									<Type type={param.type} />
-								</>
-							)
-						}
+						{!isPython && (
+							<>
+								<span className="tsd-signature-symbol">
+									{(param.flags?.isOptional || 'defaultValue' in param) && '?'}
+									{': '}
+								</span>
+								<Type type={param.type} />
+							</>
+						)}
 					</span>
 				</Fragment>
 			))}

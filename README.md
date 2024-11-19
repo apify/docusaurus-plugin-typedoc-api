@@ -1,7 +1,8 @@
 # Apify's fork of `docusaurus-plugin-typedoc-api`
 
-This is a fork of [docusaurus-plugin-typedoc-api](https://github.com/milesj/docusaurus-plugin-typedoc-api)
-adjusted for our usecases with rendering library documentation in [Apify Docs](https://docs.apify.com).
+This is a fork of
+[docusaurus-plugin-typedoc-api](https://github.com/milesj/docusaurus-plugin-typedoc-api) adjusted
+for our usecases with rendering library documentation in [Apify Docs](https://docs.apify.com).
 
 ## Publishing
 

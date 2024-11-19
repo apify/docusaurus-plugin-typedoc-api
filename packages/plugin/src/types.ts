@@ -21,6 +21,9 @@ export interface DocusaurusPluginTypeDocApiOptions
 	minimal?: boolean;
 	packageJsonName?: string;
 	packages: (PackageConfig | string)[];
+	/**
+	 * @deprecated Use `pythonOptions` and the bundled transformation script instead.
+	 */
 	pathToCurrentVersionTypedocJSON?: string;
 	projectRoot: string;
 	readmeName?: string;
@@ -33,8 +36,13 @@ export interface DocusaurusPluginTypeDocApiOptions
 
 	/**
 	 * Enables the Python-specific rendering patches.
+	 * If `pythonOptions` is specified, this is automatically set to `true`.
 	 */
 	python: boolean;
+	pythonOptions: {
+		moduleShortcutsPath?: string;
+		pythonModulePath?: string;
+	};
 
 	remarkPlugins: MDXPlugin[];
 	rehypePlugins: MDXPlugin[];

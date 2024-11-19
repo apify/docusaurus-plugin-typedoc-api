@@ -38,3 +38,9 @@ tmp/
 !.yarn/versions
 .pnp.*
 *.tgz
+
+# Python tooling
+pydoc-markdown-dump.json
+__pycache__/
+typedoc-types.raw
+typedoc-types-*.json

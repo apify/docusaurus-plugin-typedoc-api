@@ -1,6 +1,6 @@
 from foo import Foo
 
-
+@docs_group('Classes')
 class Bar:
     """
     The bar class is a simple
@@ -15,7 +15,7 @@ class Bar:
         """
         print("Bar")
 
-    def foo(self):
+    def foo(self) -> Foo:
         """
         The foo method of the bar class, prints "foo".
         """
