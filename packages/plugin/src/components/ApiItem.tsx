@@ -210,8 +210,9 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 
 				<Reflection reflection={item} />
 				{/* The `application/json+typedoc-data;base64` is an base64 encoded JSON object that contains the machine-readable API item data. */}
-				<script type="application/typedoc-data;base64">{
-					base64Encode(
+				<script 
+				// eslint-disable-next-line react/no-danger,react-perf/jsx-no-new-object-as-prop
+					dangerouslySetInnerHTML={{__html: base64Encode(
 						JSON.stringify(
 							{
 								// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -224,7 +225,9 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 								groups: getOwnGroupNames(item, reflections),
 							}, 
 						)
-					)}</script>
+					)}} 
+					type="application/typedoc-data;base64" 
+				/>
 			</ApiItemLayout>
 		</ApiOptionsContext.Provider>
 	);
