@@ -31,8 +31,8 @@ const KIND_ICONS: Record<ReflectionKind, string> = {
 	8_388_608: 'references', // a Non-TS document (new in TypeDoc `0.26.0`, unused by `docusaurus-plugin-typedoc-api`)
 };
 
-export function getKindIcon(kind: ReflectionKind, name?: string): string {
-	if(!name) return null;
+export function getKindIcon(kind: ReflectionKind, name?: string): string | null {
+	if (!name) return null;
 
 	let icon = KIND_ICONS[kind];
 

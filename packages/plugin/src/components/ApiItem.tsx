@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useMemo, useState } from 'react';
 import { PageMetadata } from '@docusaurus/theme-common';
 import type { Props as DocItemProps } from '@theme/DocItem';
@@ -14,7 +15,7 @@ import { TypeParametersGeneric } from './TypeParametersGeneric';
 import { resolveGithubUrl } from './SourceLink';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useGitRefName } from '../hooks/useGitRefName';
-import { DocusaurusConfig } from '@docusaurus/types';
+import type { DocusaurusConfig } from '@docusaurus/types';
 
 function extractTOC(
 	item: TSDDeclarationReflection,
@@ -73,8 +74,8 @@ function resolveGithubUrls(obj: { sources?: { url?: string; fileName: string; li
 	}
 
 	for (const key in obj) {
-		if (typeof obj[key] === 'object') {
-			resolveGithubUrls(obj[key] as { sources?: { url?: string; fileName: string; line: number; character: number }[] }, siteConfig, gitRefName);
+		if (typeof obj[key as keyof typeof obj] === 'object') {
+			resolveGithubUrls(obj[key as keyof typeof obj] as { sources?: { url?: string; fileName: string; line: number; character: number }[] }, siteConfig, gitRefName);
 		}
 	}
 }
@@ -90,12 +91,12 @@ function resolveTypeReferences(obj: { type?: "reference", target?: number, ref?:
 		const { id, sources, kind, permalink } = ref ?? {};
 		// @ts-expect-error Partial reexports
 		obj.ref = { id, sources, kind, permalink };
-		if (ref) obj.ref.permalink = new URL(ref?.permalink ?? '', baseUrl).toString();
+		if (ref && obj.ref) obj.ref.permalink = new URL(ref?.permalink ?? '', baseUrl).toString();
 	}
 
 	for (const key in obj) {
-		if (typeof obj[key] === 'object') {
-			resolveTypeReferences(obj[key] as { type?: "reference", target?: number, permalink?: string }, reflectionMap, baseUrl);
+		if (typeof obj[key as keyof typeof obj] === 'object') {
+			resolveTypeReferences(obj[key as keyof typeof obj] as { type?: "reference", target?: number, permalink?: string }, reflectionMap, baseUrl);
 		}
 	}
 }
@@ -111,9 +112,9 @@ function getOwnGroupNames(reflection: TSDDeclarationReflection, reflections: TSD
 function deepCopy(obj: any): any {
 	if (typeof obj !== 'object') return obj;
 
-	const copy = Array.isArray(obj) ? [] : {};
+	const copy: any = Array.isArray(obj) ? [] : {};
 	for (const key in obj) {
-		copy[key] = deepCopy(obj[key]);
+		copy[key as keyof typeof copy] = deepCopy(obj[key as keyof typeof obj]);
 	}
 
 	return copy;
