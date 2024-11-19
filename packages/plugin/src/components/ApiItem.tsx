@@ -122,6 +122,16 @@ function deepCopy(obj: any): any {
 	return copy;
 }
 
+function base64Encode(message: string): string {
+	const bytes = new TextEncoder().encode(message);
+
+	const binString = Array.from(bytes, (byte) =>
+		String.fromCodePoint(byte),
+	  ).join("");
+	
+	return btoa(binString);
+}
+
 export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	const [hideInherited, setHideInherited] = useState(false);
 	const apiOptions = useMemo(
@@ -200,18 +210,21 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 
 				<Reflection reflection={item} />
 				{/* The `application/json+typedoc-data;base64` is an base64 encoded JSON object that contains the machine-readable API item data. */}
-				<script type="application/typedoc-data;base64">{btoa(JSON.stringify(
-						{
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-							item: {
-								...apiItem,
-								nextId: undefined,
-								previousId: undefined,
-								parentId: undefined,
-							},
-							groups: getOwnGroupNames(item, reflections),
-						}, 
-					))}</script>
+				<script type="application/typedoc-data;base64">{
+					base64Encode(
+						JSON.stringify(
+							{
+								// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+								item: {
+									...apiItem,
+									nextId: undefined,
+									previousId: undefined,
+									parentId: undefined,
+								},
+								groups: getOwnGroupNames(item, reflections),
+							}, 
+						)
+					)}</script>
 			</ApiItemLayout>
 		</ApiOptionsContext.Provider>
 	);

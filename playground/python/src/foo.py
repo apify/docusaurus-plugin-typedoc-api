@@ -19,6 +19,8 @@ class Foo:
     def bar_param(self, param):
         """
         The bar method of the foo class, prints "bar" and the given parameter.
+
+        There are more-than-1-byte characters here, look: žžžžžžž!
         """
 
         print("bar", param)

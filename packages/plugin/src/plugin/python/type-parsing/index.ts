@@ -6,7 +6,7 @@ import type { DocspecType, TypeDocType } from '../types';
 const RAW_TYPES_JSON_FILEPATH = path.join(__dirname, 'typedoc-types.raw');
 const PARSED_TYPES_JSON_FILEPATH = path.join(__dirname, 'typedoc-types-parsed.json');
 
-const PYTHON_SCRIPT_FILEPATH = path.join(__dirname, 'parse_types.py');
+const PYTHON_SCRIPT_FILEPATH = path.join(__dirname, '..', '..', '..', '..', 'python-scripts/type-parsing/parse_types.py');
 
 /**
  * Keeps track of Typedoc type objects. When `resolveTypes` is called, it tries to parse
