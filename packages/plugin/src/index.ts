@@ -198,10 +198,11 @@ export default function typedocApiPlugin(
 						if (metadata.versionName === CURRENT_VERSION_NAME) {
 							const outFile = path.join(context.generatedFilesDir, `api-typedoc-${pluginId}.json`);
 
+							if (!fs.existsSync(context.generatedFilesDir)) {
+								fs.mkdirSync(context.generatedFilesDir, { recursive: true });
+							}
+
 							if (options.pathToCurrentVersionTypedocJSON) {
-								if (!fs.existsSync(context.generatedFilesDir)) {
-									fs.mkdirSync(context.generatedFilesDir, { recursive: true });
-								}
 								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
 							} else if (Object.keys(options.pythonOptions).length > 0) {
 								if (
@@ -220,7 +221,7 @@ export default function typedocApiPlugin(
 								await generateJson(projectRoot, entryPoints, outFile, options);
 							}
 
-							if(options.reexports && options.reexports.length > 0) {
+							if (options.reexports && options.reexports.length > 0) {
 								await injectReexports(outFile, options.reexports);
 							}
 

@@ -279,8 +279,18 @@ export class DocspecTransformer {
 
 		if (currentTypedocNode.kindString === 'Class') {
 			this.newContext(docstring);
+		}
 
-			this.backwardAncestorRefs.set(currentDocspecNode.name, currentTypedocNode);
+		for (const docspecMember of currentDocspecNode.members ?? []) {
+			this.walkAndTransform({
+				currentDocspecNode: docspecMember,
+				moduleName,
+				parentTypeDoc: currentTypedocNode,
+			});
+		}
+
+		if (currentTypedocNode.kindString === 'Class') {
+			this.popContext();
 
 			if (currentDocspecNode.bases && currentDocspecNode.bases.length > 0) {
 				for (const base of currentDocspecNode.bases) {
@@ -297,18 +307,8 @@ export class DocspecTransformer {
 					}
 				}
 			}
-		}
 
-		for (const docspecMember of currentDocspecNode.members ?? []) {
-			this.walkAndTransform({
-				currentDocspecNode: docspecMember,
-				moduleName,
-				parentTypeDoc: currentTypedocNode,
-			});
-		}
-
-		if (currentTypedocNode.kindString === 'Class') {
-			this.popContext();
+			this.backwardAncestorRefs.set(currentDocspecNode.name, currentTypedocNode);
 		}
 
 		const { groupName, source: groupSource } = getGroupName(currentTypedocNode);

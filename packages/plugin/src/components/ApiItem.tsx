@@ -27,9 +27,9 @@ function extractTOC(
 	item.groups?.forEach((group) => {
 		group.children?.forEach((childId) => {
 			const child = map[childId];
-			const shouldShow = child.inheritedFrom ? !hideInherited : true;
+			const shouldShow = child?.inheritedFrom ? !hideInherited : true;
 
-			if (!shouldShow || mapped.has(child.name)) {
+			if (!child || !shouldShow || mapped.has(child.name)) {
 				return;
 			}
 
@@ -80,7 +80,7 @@ function resolveGithubUrls(obj: { sources?: { url?: string; fileName: string; li
 }
 
 function resolveTypeReferences(obj: { type?: "reference", target?: number, ref?: TSDDeclarationReflection }, reflectionMap: TSDDeclarationReflectionMap, baseUrl: string) {
-	if(!obj) return;
+	if (!obj) return;
 
 	if (obj.type === 'reference') {
 		const reflectionIdentifier: number = obj.target ?? (obj as { id: number }).id;
@@ -106,6 +106,17 @@ function getOwnGroupNames(reflection: TSDDeclarationReflection, reflections: TSD
 	return parent?.groups?.filter(
 		({ children }) => children?.includes(reflection.id)
 	).map(({ title }) => title) ?? [];
+}
+
+function deepCopy(obj: any): any {
+	if (typeof obj !== 'object') return obj;
+
+	const copy = Array.isArray(obj) ? [] : {};
+	for (const key in obj) {
+		copy[key] = deepCopy(obj[key]);
+	}
+
+	return copy;
 }
 
 export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
@@ -149,9 +160,13 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	const { siteConfig } = useDocusaurusContext();
 	const gitRefName = useGitRefName();
 
-	resolveGithubUrls(item, siteConfig, gitRefName);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
-	resolveTypeReferences(item as any, reflections, new URL(siteConfig.baseUrl, siteConfig.url).href);
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+	const apiItem = deepCopy(item);
+
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+	resolveGithubUrls(apiItem, siteConfig, gitRefName);
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+	resolveTypeReferences(apiItem, reflections, new URL(siteConfig.baseUrl, siteConfig.url).href);
 
 	return (
 		<ApiOptionsContext.Provider value={apiOptions}>
@@ -181,14 +196,19 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 				)}
 
 				<Reflection reflection={item} />
-				<script type="application/json+typedoc-data">{JSON.stringify(
-					{
-						item,
-						groups: getOwnGroupNames(item, reflections),
-					}, 
-					null, 
-					4
-				)}</script>
+				{/* The `application/json+typedoc-data;base64` is an base64 encoded JSON object that contains the machine-readable API item data. */}
+				<script type="application/typedoc-data;base64">{btoa(JSON.stringify(
+						{
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+							item: {
+								...apiItem,
+								nextId: undefined,
+								previousId: undefined,
+								parentId: undefined,
+							},
+							groups: getOwnGroupNames(item, reflections),
+						}, 
+					))}</script>
 			</ApiItemLayout>
 		</ApiOptionsContext.Provider>
 	);

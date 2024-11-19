@@ -134,7 +134,8 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 		case 'literal': {
 			const type = base as JSONOutput.LiteralType;
 
-			if (isPython && type.value === null) {
+			if (isPython && (type.value === null 
+					|| (typeof type.value === 'object' && Object.keys(type.value).length === 0))) {
 				return <span className="tsd-signature-type">None</span>;
 			}
 
@@ -216,10 +217,10 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 		}
 
 		case 'reference': {
-			const type = base as JSONOutput.ReferenceType;
+			const type = base as JSONOutput.ReferenceType & { ref?: TSDDeclarationReflection };
 			// eslint-disable-next-line
 			const reflectionIdentifier = type.target ?? (type as any).id;
-			const ref = reflectionIdentifier ? reflections[Number(reflectionIdentifier)] : null;
+			const ref = type.ref ?? (reflectionIdentifier ? reflections[Number(reflectionIdentifier)] : null);
 			const genericClass = ref?.id && !ref.sources ? 'tsd-signature-type-generic' : '';
 
 			return (
