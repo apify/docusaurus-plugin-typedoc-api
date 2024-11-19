@@ -14,6 +14,12 @@ interface ExternalApiItem {
     groups: string[];
 }
 
+function decodeBase64UTF8(base64: string): string {
+    const binString = atob(base64);
+    const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+    return new TextDecoder('utf8').decode(bytes);
+}
+
 async function loadExternalApiItem(url: string): Promise<ExternalApiItem> {
     console.log(`Loading external API item from ${url}...`);
     const response = await fetch(url);
@@ -23,7 +29,7 @@ async function loadExternalApiItem(url: string): Promise<ExternalApiItem> {
     
     if(!base64encoded) return null;
     
-    const jsonData = atob(base64encoded);
+    const jsonData = decodeBase64UTF8(base64encoded);
     return JSON.parse(jsonData) as ExternalApiItem;
 }
 
