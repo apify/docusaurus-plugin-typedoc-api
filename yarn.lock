@@ -227,7 +227,6 @@ __metadata:
     "@docusaurus/utils": "npm:^3.5.2"
     "@types/react": "npm:^18.3.11"
     "@vscode/codicons": "npm:^0.0.35"
-    cheerio: "npm:1.0.0-rc.12"
     html-entities: "npm:2.3.2"
     marked: "npm:^9.1.6"
     marked-smartypants: "npm:^1.1.5"
@@ -18496,24 +18495,6 @@ __metadata:
   checksum: 059d5bed5c52a40636e29271285de4a8f9ac2ebef8941b896fc3fb858df2bf6f7c2fdedab80d6637626b91e03686c553ff644af47deb5c44fedf32edf558396f
   languageName: node
   linkType: hard
-
-"website-2@workspace:playground/website-2":
-  version: 0.0.0-use.local
-  resolution: "website-2@workspace:playground/website-2"
-  dependencies:
-    "@docusaurus/core": "npm:3.5.2"
-    "@docusaurus/module-type-aliases": "npm:3.5.2"
-    "@docusaurus/preset-classic": "npm:3.5.2"
-    "@docusaurus/tsconfig": "npm:3.5.2"
-    "@docusaurus/types": "npm:3.5.2"
-    "@mdx-js/react": "npm:^3.0.0"
-    clsx: "npm:^2.0.0"
-    prism-react-renderer: "npm:^2.3.0"
-    react: "npm:^18.0.0"
-    react-dom: "npm:^18.0.0"
-    typescript: "npm:~5.5.2"
-  languageName: unknown
-  linkType: soft
 
 "website@workspace:playground/website":
   version: 0.0.0-use.local
