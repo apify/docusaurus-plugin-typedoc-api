@@ -6,7 +6,7 @@
     "clean": "packemon clean --cwd packages/plugin",
     "docs": "yarn run build && cd website && yarn run start",
     "build": "cd packages/plugin && yarn run build",
-    "build:deploy": "cd packages/plugin && yarn run build --cwd packages/plugin",
+    "build:deploy": "cd packages/plugin && yarn run build",
     "pack": "rimraf packages/plugin/tsconfig.lib.tsbuildinfo && packemon pack --addEngines --declaration --cwd packages/plugin && node ./scripts/revertPackemon.js",
     "format": "prettier --write .",
     "lint": "eslint --cache --color --fix --ext .ts,.tsx ./packages/*/{src,tests}",
