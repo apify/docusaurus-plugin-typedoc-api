@@ -30,11 +30,6 @@ interface DocspecTransformerOptions {
 	 * A map of module shortcuts, where the key is the full name of the module, and the value is the shortened name.
 	 */
 	moduleShortcuts?: Record<string, string>;
-
-	/**
-	 * A map of package tags, where the key is the package name, and the value is the tag.
-	 */
-	githubTags: Record<string, string>;
 }
 
 export class DocspecTransformer {
@@ -45,8 +40,6 @@ export class DocspecTransformer {
 	private namesToIds: Record<string, number> = {};
 
 	private moduleShortcuts: Record<string, string>;
-
-	private githubTags: Record<string, string>;
 
 	/**
 	 * Maps the name of the class to the list of Typedoc objects representing the classes that extend it.
@@ -71,10 +64,9 @@ export class DocspecTransformer {
 
 	private settings: { useDocsGroup: boolean } = { useDocsGroup: false };
 
-	constructor({ githubTags, moduleShortcuts }: DocspecTransformerOptions) {
+	constructor({ moduleShortcuts }: DocspecTransformerOptions) {
 		this.pythonTypeResolver = new PythonTypeResolver();
 		this.moduleShortcuts = moduleShortcuts ?? {};
-		this.githubTags = githubTags ?? {};
 	}
 
 	transform(docspecModules: DocspecObject[]): TypeDocObject {

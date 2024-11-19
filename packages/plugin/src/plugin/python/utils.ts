@@ -50,9 +50,9 @@ export function getGroupName(object: TypeDocObject): {
 				'apply_apify_settings',
 			].includes(x.name),
 		'Data structures': (x) =>
-			['BaseModel', 'TypedDict'].some((base) =>
+			Boolean(['BaseModel', 'TypedDict'].some((base) =>
 				(x?.bases as { includes: (x: string) => boolean })?.includes(base),
-			) || x?.decorations?.some((d) => d.name === 'dataclass'),
+			) || x?.decorations?.some((d) => d.name === 'dataclass')),
 		Errors: (x) => x.name.toLowerCase().includes('error'),
 		Classes: (x) => x.kindString === 'Class',
 		'Main Clients': (x) => ['ApifyClient', 'ApifyClientAsync'].includes(x.name),
@@ -83,7 +83,7 @@ export function projectUsesDocsGroupDecorator(object: { name: string }): boolean
 		}
 
 		for (const key in object) {
-			if (projectUsesDocsGroupDecorator(object[key] as { name: string })) {
+			if (projectUsesDocsGroupDecorator(object[key as keyof typeof object] as unknown as { name: string })) {
 				return true;
 			}
 		}

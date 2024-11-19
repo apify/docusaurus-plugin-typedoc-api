@@ -1,7 +1,6 @@
 import childProcess from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { getPackageGitHubTags } from './packageVersions';
 import { DocspecTransformer } from './transformation';
 import type { DocspecObject } from './types';
 
@@ -29,8 +28,6 @@ export function processPythonDocs({
 		pydocMarkdownDumpPath,
 	]);
 
-	const githubTags = getPackageGitHubTags(['apify', 'apify_client', 'apify_shared']);
-
 	const moduleShortcuts = JSON.parse(fs.readFileSync(moduleShortcutsPath, 'utf8')) as Record<
 		string,
 		string
@@ -41,7 +38,6 @@ export function processPythonDocs({
 	) as DocspecObject[];
 
 	const docspecTransformer = new DocspecTransformer({
-		githubTags,
 		moduleShortcuts,
 	});
 
