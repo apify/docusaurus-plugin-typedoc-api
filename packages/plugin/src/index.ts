@@ -287,7 +287,7 @@ export default function typedocApiPlugin(
 			}
 
 			actions.setGlobalData({
-				isPython: !!(options.python || Object.keys(options.pythonOptions).length > 0),
+				isPython: !!(options.python || (Object.keys(options.pythonOptions).length > 0)),
 			} as GlobalData);
 
 			const docs: PropVersionDocs = {};
