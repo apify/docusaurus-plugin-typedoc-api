@@ -18,6 +18,7 @@
   "types": "./lib/index.d.ts",
   "files": [
     "assets/**/*",
+    "python-scripts/**/*",
     "lib/**/*",
     "src/**/*",
     "styles.css"

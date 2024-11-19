@@ -21,12 +21,16 @@ export function processPythonDocs({
 }) {
 	const pydocMarkdownDumpPath = path.join(__dirname, './pydoc-markdown-dump.json');
 
-	childProcess.spawnSync('python', [
-		path.join(__dirname, './docspec-gen/generate_ast.py'),
+	const out = childProcess.spawnSync('python', [
+		path.join(__dirname,  '..', '..', '..', './python-scripts/docspec-gen/generate_ast.py'),
 		'-i',
 		pythonModulePath,
 		pydocMarkdownDumpPath,
 	]);
+
+	if (out.error) {
+		throw new Error(out.error.message);
+	}
 
 	const moduleShortcuts = JSON.parse(fs.readFileSync(moduleShortcutsPath, 'utf8')) as Record<
 		string,
