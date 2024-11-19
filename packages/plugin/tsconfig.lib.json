@@ -4,7 +4,7 @@
     "declarationDir": "lib",
     "outDir": "lib",
     "rootDir": "src",
-    "emitDeclarationOnly": true,
+    "emitDeclarationOnly": false,
     "types": [
       "node",
       "@docusaurus/module-type-aliases",

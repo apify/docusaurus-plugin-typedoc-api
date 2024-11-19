@@ -25,6 +25,13 @@
   "engines": {
     "node": ">=16.12.0"
   },
+  "scripts": {
+    "clean": "rimraf ./lib",
+    "compile": "tsc -p ./tsconfig.lib.json",
+    "build": "npm run clean && tsc --version && npm run compile && npm run copyfiles && npm run fixEntryPoints",
+    "copyfiles": "cp -r ./src/plugin/python/docspec-gen ./lib/plugin/python/ && cp ./src/plugin/python/type-parsing/parse_types.py ./lib/plugin/python/type-parsing/parse_types.py",
+    "fixEntryPoints": "cp ./package.json ./lib/package.json && sed 's/\"main\": \"src\\/index.ts\"/\"main\": \".\\/index.js\"/g' ./lib/package.json > ./lib/package.json.temp && mv ./lib/package.json.temp ./lib/package.json"
+  },
   "packemon": {
     "format": "lib",
     "platform": "node",
@@ -58,6 +65,7 @@
     "@docusaurus/tsconfig": "^3.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "rimraf": "^6.0.1",
     "typescript": "^5.3.3"
   },
   "stableVersion": "4.2.10"
