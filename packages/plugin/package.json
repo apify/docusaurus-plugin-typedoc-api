@@ -32,7 +32,8 @@
       "@theme/*",
       "@docusaurus/*",
       "@vscode/*",
-      "css$"
+      "css$",
+      "cheerio*"
     ]
   },
   "peerDependencies": {
