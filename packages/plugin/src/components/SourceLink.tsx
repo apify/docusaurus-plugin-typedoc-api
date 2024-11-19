@@ -1,7 +1,7 @@
 import type { JSONOutput } from 'typedoc';
+import type { DocusaurusConfig } from '@docusaurus/types';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useGitRefName } from '../hooks/useGitRefName';
-import type { DocusaurusConfig } from '@docusaurus/types';
 
 function replaceWithSrc(url: string): string {
 	// Always link the source file

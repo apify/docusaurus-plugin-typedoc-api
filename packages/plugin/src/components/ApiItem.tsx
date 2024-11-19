@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useMemo, useState } from 'react';
 import { PageMetadata } from '@docusaurus/theme-common';
+import type { DocusaurusConfig } from '@docusaurus/types';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import type { Props as DocItemProps } from '@theme/DocItem';
+import { useGitRefName } from '../hooks/useGitRefName';
 import { useReflection, useRequiredReflection } from '../hooks/useReflection';
 import { useReflectionMap } from '../hooks/useReflectionMap';
 import type { TOCItem, TSDDeclarationReflection, TSDDeclarationReflectionMap } from '../types';
@@ -11,11 +14,8 @@ import ApiItemLayout from './ApiItemLayout';
 import { displayPartsToMarkdown } from './Comment';
 import { Flags } from './Flags';
 import { Reflection } from './Reflection';
-import { TypeParametersGeneric } from './TypeParametersGeneric';
 import { resolveGithubUrl } from './SourceLink';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import { useGitRefName } from '../hooks/useGitRefName';
-import type { DocusaurusConfig } from '@docusaurus/types';
+import { TypeParametersGeneric } from './TypeParametersGeneric';
 
 function extractTOC(
 	item: TSDDeclarationReflection,
@@ -113,7 +113,9 @@ function deepCopy(obj: any): any {
 	if (typeof obj !== 'object') return obj;
 
 	const copy: any = Array.isArray(obj) ? [] : {};
+	// eslint-disable-next-line guard-for-in
 	for (const key in obj) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
 		copy[key as keyof typeof copy] = deepCopy(obj[key as keyof typeof obj]);
 	}
 
