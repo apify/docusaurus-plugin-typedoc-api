@@ -67,7 +67,7 @@ function incrementIds(obj: any, increment: number): number {
 }
 
 export async function injectReexports(typedocJsonFilePath: string, reexports: { url: string, group?: string }[]): Promise<void> {
-    const typedocJson: TypedocJSONFile = await import(typedocJsonFilePath) as TypedocJSONFile;
+    const typedocJson = JSON.parse(fs.readFileSync(typedocJsonFilePath, 'utf8')) as TypedocJSONFile;
 
     let baseId = getMaxId(typedocJson);
 
