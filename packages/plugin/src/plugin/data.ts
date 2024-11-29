@@ -110,6 +110,7 @@ export function createReflectionMap(
 ): TSDDeclarationReflectionMap {
 	const map: TSDDeclarationReflectionMap = {};
 
+	// eslint-disable-next-line complexity
 	items.forEach((item) => {
 		// Add @reference categories to reflection.
 		const referenceCategories: Record<string, { title: string; children: number[] }> = {};
