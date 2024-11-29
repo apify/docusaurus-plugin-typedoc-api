@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createContext, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PageMetadata } from '@docusaurus/theme-common';
 import type { DocusaurusConfig } from '@docusaurus/types';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
@@ -11,6 +11,7 @@ import type { TOCItem, TSDDeclarationReflection, TSDDeclarationReflectionMap } f
 import { escapeMdx } from '../utils/helpers';
 import { getKindIconHtml } from '../utils/icons';
 import ApiItemLayout from './ApiItemLayout';
+import { ApiOptionsContext } from './ApiOptionsContext';
 import { displayPartsToMarkdown } from './Comment';
 import { Flags } from './Flags';
 import { Reflection } from './Reflection';
@@ -57,11 +58,6 @@ function extractTOC(
 export interface ApiItemProps extends Pick<DocItemProps, 'route'> {
 	readme?: React.ComponentType;
 }
-
-export const ApiOptionsContext = createContext({
-	hideInherited: false,
-	setHideInherited: (hideInherited: boolean) => {},
-});
 
 // Recursively traverse the passed object. If the object has a `sources` property, resolve the GitHub URLs.
 function resolveGithubUrls(obj: { sources?: { url?: string; fileName: string; line: number; character: number }[] }, siteConfig: DocusaurusConfig, gitRefName: string) {
