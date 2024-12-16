@@ -150,7 +150,8 @@ export class InheritanceGraph {
 			const node = this.nodes.get(nodeName);
 
 			if (!node) {
-				throw new Error(`Couldn't find the node with the name ${nodeName}`);
+				// throw new Error(`Couldn't find the node with the name ${nodeName}`); // breaks the build for projects with external ancestors
+				return;
 			}
 
 			visited.add(nodeName);

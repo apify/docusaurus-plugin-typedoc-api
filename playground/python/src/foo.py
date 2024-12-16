@@ -1,5 +1,5 @@
 @docs_group('Classes')
-class Foo(BarBarBar):
+class Foo(BarBarBar, Generic[T]):
     """
     The foo class is a simple class that prints "Foo" when it is initialized and "bar" when the bar method is called.
     """
