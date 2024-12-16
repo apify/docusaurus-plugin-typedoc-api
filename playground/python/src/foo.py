@@ -1,5 +1,5 @@
 @docs_group('Classes')
-class Foo:
+class Foo(BarBarBar):
     """
     The foo class is a simple class that prints "Foo" when it is initialized and "bar" when the bar method is called.
     """
@@ -24,3 +24,9 @@ class Foo:
         """
 
         print("bar", param)
+
+    def foo(self):
+        """
+        The foo method of the FOO class, prints "foo".
+        """
+        print("foo")

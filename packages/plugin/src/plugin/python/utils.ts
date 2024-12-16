@@ -121,3 +121,23 @@ export function groupSort(g1: string, g2: string) {
 	}
 	return g1.localeCompare(g2);
 }
+
+/**
+ * Sorts the `groups` of `typedocMember` using {@link groupSort} and sorts the children of each group alphabetically.
+ */
+export function sortChildren(typedocMember: TypeDocObject) {
+	if (!typedocMember.groups) return;
+
+	for (const group of typedocMember.groups) {
+		group.children.sort((a, b) => {
+			const firstName =
+				typedocMember.children?.find((x) => x.id === a || x.inheritedFrom?.target === a)?.name ??
+				'a';
+			const secondName =
+				typedocMember.children?.find((x) => x.id === b || x.inheritedFrom?.target === b)?.name ??
+				'b';
+			return firstName.localeCompare(secondName);
+		});
+	}
+	typedocMember.groups?.sort((a, b) => groupSort(a.title, b.title));
+}
