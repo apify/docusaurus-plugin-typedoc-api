@@ -1,5 +1,5 @@
 import { REPO_ROOT_PLACEHOLDER, TYPEDOC_KINDS } from './consts';
-import { resolveInheritedSymbols } from './inheritance';
+import { InheritanceGraph } from './inheritance';
 import { PythonTypeResolver } from './type-parsing';
 import type {
 	DocspecDocstring,
@@ -8,7 +8,7 @@ import type {
 	TypeDocObject,
 	TypeDocType,
 } from './types';
-import { getGroupName, getOID, groupSort, isHidden, projectUsesDocsGroupDecorator } from './utils';
+import { getGroupName, getOID, isHidden, projectUsesDocsGroupDecorator, sortChildren } from './utils';
 
 interface TransformObjectOptions {
 	/**
@@ -35,25 +35,13 @@ interface DocspecTransformerOptions {
 export class DocspecTransformer {
 	private pythonTypeResolver: PythonTypeResolver;
 
+	private inheritanceGraph: InheritanceGraph = new InheritanceGraph();
+
 	private symbolIdMap: Record<number, { qualifiedName: string; sourceFileName: string }> = {};
 
 	private namesToIds: Record<string, number> = {};
 
 	private moduleShortcuts: Record<string, string>;
-
-	/**
-	 * Maps the name of the class to the list of Typedoc objects representing the classes that extend it.
-	 *
-	 * This is used for resolving the references to the base classes - in case the base class is encountered after the class that extends it.
-	 */
-	private forwardAncestorRefs = new Map<string, TypeDocObject[]>();
-
-	/**
-	 * Maps the name of the class to the reference to the Typedoc object representing the class.
-	 *
-	 * This is used to resolve the references to the base classes of a class using the name.
-	 */
-	private backwardAncestorRefs = new Map<string, TypeDocObject>();
 
 	/**
 	 * Stack of the docstrings of the current context.
@@ -102,6 +90,7 @@ export class DocspecTransformer {
 			});
 		}
 
+		this.inheritanceGraph.resolveInheritance();
 		this.pythonTypeResolver.resolveTypes();
 
 		this.namesToIds = Object.entries(this.symbolIdMap).reduce<Record<string, number>>(
@@ -113,7 +102,7 @@ export class DocspecTransformer {
 		);
 
 		this.fixRefs(typedocApiReference);
-		this.sortChildren(typedocApiReference);
+		sortChildren(typedocApiReference);
 
 		return typedocApiReference;
 	}
@@ -296,19 +285,11 @@ export class DocspecTransformer {
 				for (const base of currentDocspecNode.bases) {
 					const canonicalAncestorType = this.pythonTypeResolver.getBaseType(base);
 
-					const baseTypedocMember = this.backwardAncestorRefs.get(canonicalAncestorType);
-					if (baseTypedocMember) {
-						resolveInheritedSymbols(baseTypedocMember, currentTypedocNode);
-					} else {
-						this.forwardAncestorRefs.set(canonicalAncestorType, [
-							...(this.forwardAncestorRefs.get(canonicalAncestorType) ?? []),
-							currentTypedocNode,
-						]);
-					}
+					this.inheritanceGraph.addRelationship(canonicalAncestorType, currentTypedocNode);
 				}
 			}
 
-			this.backwardAncestorRefs.set(currentDocspecNode.name, currentTypedocNode);
+			this.inheritanceGraph.registerNode(currentTypedocNode);
 		}
 
 		const { groupName, source: groupSource } = getGroupName(currentTypedocNode);
@@ -331,16 +312,7 @@ export class DocspecTransformer {
 		}
 
 		parentTypeDoc.children?.push(currentTypedocNode);
-
-		this.sortChildren(currentTypedocNode);
-
-		if (currentTypedocNode.kindString === 'Class') {
-			for (const descendant of this.forwardAncestorRefs.get(currentTypedocNode.name) ?? []) {
-				resolveInheritedSymbols(currentTypedocNode, descendant);
-
-				this.sortChildren(descendant);
-			}
-		}
+		sortChildren(currentTypedocNode);
 	}
 
 	// Get the URL of the member in GitHub
@@ -348,26 +320,6 @@ export class DocspecTransformer {
 		const filePathInRepo = docspecMember.location.filename.replace(REPO_ROOT_PLACEHOLDER, '');
 
 		return { filePathInRepo };
-	}
-
-	/**
-	 * Sorts the `groups` of `typedocMember` using {@link groupSort} and sorts the children of each group alphabetically.
-	 */
-	private sortChildren(typedocMember: TypeDocObject) {
-		if (!typedocMember.groups) return;
-
-		for (const group of typedocMember.groups) {
-			group.children.sort((a, b) => {
-				const firstName =
-					typedocMember.children?.find((x) => x.id === a || x.inheritedFrom?.target === a)?.name ??
-					'a';
-				const secondName =
-					typedocMember.children?.find((x) => x.id === b || x.inheritedFrom?.target === b)?.name ??
-					'b';
-				return firstName.localeCompare(secondName);
-			});
-		}
-		typedocMember.groups?.sort((a, b) => groupSort(a.title, b.title));
 	}
 
 	/**

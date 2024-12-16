@@ -7,8 +7,6 @@ class Bar:
     class that prints "Bar" when it is initialized and "foo" when the foo method is called.
     """
 
-    foo = Foo()
-
     def __init__(self):
         """
         The constructor of the bar class.
@@ -20,3 +18,28 @@ class Bar:
         The foo method of the bar class, prints "foo".
         """
         print("foo")
+
+@docs_group('Classes')
+class BarBar(Bar):
+    """
+    The BarBar class inherits from the Bar class and prints "BarBar" when it is initialized.
+    """
+
+    def __init__(self):
+        """
+        The constructor of the bar class.
+        """
+        print("BarBar")
+
+@docs_group('Classes')
+class BarBarBar(BarBar):
+    """
+    The BarBarBar class inherits from the BarBar class and prints "BarBarBar" when it is initialized.
+    """
+
+    def __init__(self):
+        """
+        The constructor of the bar class.
+        """
+        print("BarBarBar")
+
