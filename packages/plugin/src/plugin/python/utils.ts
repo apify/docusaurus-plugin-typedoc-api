@@ -53,7 +53,7 @@ export function getGroupName(object: TypeDocObject): {
 			Boolean(['BaseModel', 'TypedDict'].some((base) =>
 				(x?.bases as { includes: (x: string) => boolean })?.includes(base),
 			) || x?.decorations?.some((d) => d.name === 'dataclass')),
-		Errors: (x) => x.name.toLowerCase().includes('error'),
+		Errors: (x) => x.name.toLowerCase().endsWith('error') && x.kindString === 'Class',
 		Classes: (x) => x.kindString === 'Class',
 		'Main Clients': (x) => ['ApifyClient', 'ApifyClientAsync'].includes(x.name),
 		'Async Resource Clients': (x) => x.name.toLowerCase().includes('async'),
