@@ -4,18 +4,18 @@ import { getGroupName, getOID, sortChildren } from './utils';
 export class InheritanceGraph {
 	private readonly nodes = new Map<TypeDocObject['name'], TypeDocObject>();
 
-	private readonly childrenOf: Map<TypeDocObject['name'], TypeDocObject['name'][]> = new Map();
+	private readonly children: Map<TypeDocObject['name'], TypeDocObject['name'][]> = new Map();
 
 	/**
 	 * Adds a new inheritance relationship.
-	 * @param parentName
-	 * @param child
+	 * @param parentName Name of the ancestor class.
+	 * @param child The object representing the descendant class.
 	 */
 	addRelationship(parentName: TypeDocObject['name'], child: TypeDocObject) {
-		const children = this.childrenOf.get(parentName) ?? [];
+		const children = this.children.get(parentName) ?? [];
 
 		children.push(child.name);
-		this.childrenOf.set(parentName, children);
+		this.children.set(parentName, children);
 
 		this.nodes.set(child.name, child);
 
@@ -38,7 +38,7 @@ export class InheritanceGraph {
 		const objects = this.getTopologicalOrder();
 
 		for (const parent of objects) {
-			const children = this.childrenOf.get(parent.name);
+			const children = this.children.get(parent.name);
 
 			if (children) {
 				for (const childId of children) {
@@ -52,6 +52,14 @@ export class InheritanceGraph {
 		}
 	}
 
+	/**
+	 * Given two TypeDoc objects, resolves the inherited symbols between them.
+	 * This method injects the ancestors' symbols into the descendants. 
+	 * 
+	 * In case the descendant already has a symbol with the same name, the symbol is not injected.
+	 * @param ancestor The ancestor object.
+	 * @param descendant The descendant object.
+	 */
 	protected resolveInheritedSymbols(ancestor: TypeDocObject, descendant: TypeDocObject) {
 		descendant.children ??= [];
 	
@@ -125,6 +133,13 @@ export class InheritanceGraph {
 		sortChildren(descendant);
 	}
 
+	/**
+	 * Returns the topological order of the inheritance graph.
+	 * 
+	 * The topological order puts the ancestors before their descendants.
+	 * This ensures that all the ancestors are processed before the descendants.
+	 * @returns 
+	 */
 	protected getTopologicalOrder(): TypeDocObject[] {
 		const visited = new Set<TypeDocObject['name']>();
 		const stack: TypeDocObject[] = [];
@@ -140,14 +155,14 @@ export class InheritanceGraph {
 
 			visited.add(nodeName);
 
-			for (const child of this.childrenOf.get(nodeName) ?? []) {
+			for (const child of this.children.get(nodeName) ?? []) {
 				visit(child);
 			}
 
 			stack.push(node);
 		};
 
-		for (const node of this.childrenOf.keys()) {
+		for (const node of this.children.keys()) {
 			visit(node as TypeDocObject['name']);
 		}
 
