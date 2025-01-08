@@ -121,6 +121,9 @@ class ApifyGoogleProcessor(Processor):
     def process(self, modules: t.List[docspec.Module], resolver: t.Optional[Resolver]) -> None:
         docspec.visit(modules, self._process)
 
+    def get_indent_size(self, line: str) -> int:
+        return len(line) - len(line.lstrip())
+
     def _process(self, node: docspec.ApiObject):
         if not node.docstring:
             return
@@ -131,6 +134,7 @@ class ApifyGoogleProcessor(Processor):
         in_codeblock = False
         keyword = None
         multiline_argument_offset = -1
+        state = { 'param_indent': None }
 
         def _commit():
             if keyword:
@@ -138,6 +142,13 @@ class ApifyGoogleProcessor(Processor):
             else:
                 lines.extend(current_lines)
             current_lines.clear()
+
+        def is_continuation(line: str) -> bool:
+            if state.get('param_indent') is None:
+                state['param_indent'] = self.get_indent_size(line)
+                return False
+            
+            return self.get_indent_size(line) > state.get('param_indent')
 
         for line in node.docstring.content.split("\n"):
             multiline_argument_offset += 1
@@ -152,29 +163,29 @@ class ApifyGoogleProcessor(Processor):
                 current_lines.append(line)
                 continue
 
-            line = line.strip()
-            if line in self._keywords_map:
+            stripped = line.strip()
+            if stripped in self._keywords_map:
                 _commit()
-                keyword = self._keywords_map[line]
+                keyword = self._keywords_map[stripped]
                 continue
 
             if keyword is None:
-                lines.append(line)
+                lines.append(stripped)
                 continue
 
             for param_re in self._param_res:
-                param_match = param_re.match(line)
-                if param_match:
+                param_match = param_re.match(stripped)
+                if param_match and not is_continuation(line):
                     current_lines.append(param_match.groupdict())
                     multiline_argument_offset = 0
                     break
 
             if not param_match:
                 if multiline_argument_offset == 1:
-                    current_lines[-1]["desc"] += "\n" + line
+                    current_lines[-1]["desc"] += "\n" + stripped
                     multiline_argument_offset = 0
                 else:
-                    current_lines.append(line)
+                    current_lines.append(stripped)
 
         _commit()
         node.docstring.content = json.dumps({

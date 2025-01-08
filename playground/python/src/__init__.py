@@ -13,11 +13,29 @@ class Bar:
         """
         print("Bar")
 
-    def foo(self) -> Foo:
+    def foo(self, count: int) -> Foo:
         """
         The foo method of the bar class, prints "foo".
+
+        Args:
+            count: The number of times to print "foo".
+                This comment is multiline, and contains
+                some urls too, look: https://apify.com
         """
-        print("foo")
+        print("foo " * count)
+    
+    def foo2(self, count: int, second_arg: str) -> Foo:
+        """
+        The foo2 method of the bar class, prints "foo2".
+
+        Args:
+            count: The number of times to print "foo2".
+                This comment is multiline, and contains some urls too,
+                look: https://apify.com
+            second_arg: The second argument. This shouldn't be a part of the previous argument's
+                description: even with a colon.
+        """
+        print("foo2 " * count)
 
 @docs_group('Classes')
 class BarBar(Bar):
