@@ -18,6 +18,7 @@ export function Flags({ flags }: FlagsProps) {
 	return (
 		<span className="tsd-flag-group">
 			{Object.keys(flags)
+				.filter((flag) => flags[flag])
 				.map(removePrefix)
 				.map((flag) => (
 					<span key={flag} className={`tsd-flag tsd-flag-${flag}`}>
