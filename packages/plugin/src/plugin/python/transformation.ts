@@ -252,7 +252,7 @@ export class DocspecTransformer {
 								: undefined,
 							defaultValue: arg.default_value as string,
 							flags: {
-								isOptional: arg.datatype?.includes('Optional'),
+								isOptional: arg.datatype?.includes('Optional') || arg.default_value === undefined,
 								'keyword-only': arg.type === 'KEYWORD_ONLY',
 							},
 							id: getOID(),

@@ -18,9 +18,8 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;
 	// add `*` before the first keyword-only parameter
 	const parametersCopy = sig.parameters?.slice() ?? [];
-	const firstKeywordOnlyIndex = parametersCopy.findIndex((param) =>
-		Object.keys(param.flags).includes('keyword-only'),
-	);
+	const firstKeywordOnlyIndex = parametersCopy.findIndex((param) => param.flags['keyword-only']);
+
 	if (firstKeywordOnlyIndex >= 0) {
 		parametersCopy.splice(firstKeywordOnlyIndex, 0, {
 			id: 999_999,
