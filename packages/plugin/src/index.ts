@@ -92,6 +92,11 @@ export default function typedocApiPlugin(
 		readmes,
 		removeScopes,
 	} = options;
+
+	if (options.pythonOptions && Object.keys(options.pythonOptions).length > 0) {
+		options.python = true;
+	}
+
 	const isDefaultPluginId = pluginId === DEFAULT_PLUGIN_ID;
 	const versionsMetadata = readVersionsMetadata(context, options);
 	const versionsDocsDir = getVersionedDocsDirPath(context.siteDir, pluginId);

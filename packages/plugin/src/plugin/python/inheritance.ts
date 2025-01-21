@@ -82,7 +82,7 @@ export class InheritanceGraph {
 		];
 	
 		for (const inheritedChild of ancestor.children ?? []) {
-			const ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
+			let ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
 	
 			if (!ownChild) {
 				const childId = getOID();
@@ -97,36 +97,49 @@ export class InheritanceGraph {
 				const group = descendant.groups?.find((g) => g.title === groupName);
 	
 				if (group) {
-					group.children.push(inheritedChild.id);
+					group.children.push(childId);
 				} else {
 					descendant.groups?.push({
-						children: [inheritedChild.id],
+						children: [childId],
 						title: groupName,
 					});
 				}
 	
-				descendant.children.push({
+				ownChild = {
 					...inheritedChild,
 					id: childId,
-					inheritedFrom: {
+					inheritedFrom: inheritedChild.inheritedFrom ?? {
 						name: `${ancestor.name}.${inheritedChild.name}`,
 						target: inheritedChild.id,
 						type: 'reference',
 					},
-				});
-			} else if (!ownChild.comment?.summary?.[0]?.text) {
-				ownChild.inheritedFrom = {
+				};
+
+				descendant.children.push(ownChild);
+			} else {
+				ownChild.overwrites = {
 					name: `${ancestor.name}.${inheritedChild.name}`,
 					target: inheritedChild.id,
 					type: 'reference',
 				};
-	
+			}
+			
+			
+			if (!ownChild.comment?.summary?.[0]?.text) {
 				for (const key of Object.keys(inheritedChild)) {
-					if (key !== 'id' && key !== 'inheritedFrom') {
+					if (!['id','inheritedFrom','overwrites'].includes(key)) {
 						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 						ownChild[key as keyof typeof ownChild] = inheritedChild[key as keyof typeof inheritedChild];
 					}
 				}
+			}
+
+			if (ownChild.kindString === 'Method') {
+				ownChild.signatures = ownChild.signatures?.map((sig) => ({
+					...sig,
+					inheritedFrom: ownChild.inheritedFrom,
+					overwrites: ownChild.overwrites,
+				}));
 			}
 		}
 
@@ -164,7 +177,7 @@ export class InheritanceGraph {
 		};
 
 		for (const node of this.children.keys()) {
-			visit(node as TypeDocObject['name']);
+			visit(node);
 		}
 
 		return stack.reverse();
