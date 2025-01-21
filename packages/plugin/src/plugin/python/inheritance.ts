@@ -97,23 +97,36 @@ export class InheritanceGraph {
 				const group = descendant.groups?.find((g) => g.title === groupName);
 	
 				if (group) {
-					group.children.push(inheritedChild.id);
+					group.children.push(childId);
 				} else {
 					descendant.groups?.push({
-						children: [inheritedChild.id],
+						children: [childId],
 						title: groupName,
 					});
 				}
 	
-				descendant.children.push({
+				const newChild = {
 					...inheritedChild,
 					id: childId,
-					inheritedFrom: {
+					inheritedFrom: inheritedChild.inheritedFrom ?? {
 						name: `${ancestor.name}.${inheritedChild.name}`,
 						target: inheritedChild.id,
 						type: 'reference',
 					},
-				});
+				};
+
+				if (newChild.kindString === 'Method') {
+					newChild.signatures = newChild.signatures?.map((sig) => ({
+						...sig,
+						inheritedFrom: inheritedChild.inheritedFrom ??{
+							name: `${ancestor.name}.${inheritedChild.name}`,
+							target: inheritedChild.id,
+							type: 'reference',
+						}
+					}));
+				}
+
+				descendant.children.push(newChild);
 			} else if (!ownChild.comment?.summary?.[0]?.text) {
 				ownChild.inheritedFrom = {
 					name: `${ancestor.name}.${inheritedChild.name}`,
@@ -164,7 +177,7 @@ export class InheritanceGraph {
 		};
 
 		for (const node of this.children.keys()) {
-			visit(node as TypeDocObject['name']);
+			visit(node);
 		}
 
 		return stack.reverse();
