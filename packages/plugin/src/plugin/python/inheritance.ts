@@ -82,7 +82,7 @@ export class InheritanceGraph {
 		];
 	
 		for (const inheritedChild of ancestor.children ?? []) {
-			const ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
+			let ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
 	
 			if (!ownChild) {
 				const childId = getOID();
@@ -105,7 +105,7 @@ export class InheritanceGraph {
 					});
 				}
 	
-				const newChild = {
+				ownChild = {
 					...inheritedChild,
 					id: childId,
 					inheritedFrom: inheritedChild.inheritedFrom ?? {
@@ -115,18 +115,7 @@ export class InheritanceGraph {
 					},
 				};
 
-				if (newChild.kindString === 'Method') {
-					newChild.signatures = newChild.signatures?.map((sig) => ({
-						...sig,
-						inheritedFrom: inheritedChild.inheritedFrom ??{
-							name: `${ancestor.name}.${inheritedChild.name}`,
-							target: inheritedChild.id,
-							type: 'reference',
-						}
-					}));
-				}
-
-				descendant.children.push(newChild);
+				descendant.children.push(ownChild);
 			} else if (!ownChild.comment?.summary?.[0]?.text) {
 				ownChild.inheritedFrom = {
 					name: `${ancestor.name}.${inheritedChild.name}`,
@@ -140,6 +129,13 @@ export class InheritanceGraph {
 						ownChild[key as keyof typeof ownChild] = inheritedChild[key as keyof typeof inheritedChild];
 					}
 				}
+			}
+
+			if (ownChild.kindString === 'Method') {
+				ownChild.signatures = ownChild.signatures?.map((sig) => ({
+					...sig,
+					inheritedFrom: ownChild.inheritedFrom,
+				}));
 			}
 		}
 

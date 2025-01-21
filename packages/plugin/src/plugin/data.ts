@@ -198,6 +198,7 @@ export function addMetadataToReflections(
 	project: JSONOutput.DeclarationReflection,
 	packageSlug: string,
 	urlPrefix: string,
+	options: DocusaurusPluginTypeDocApiOptions,
 ): TSDDeclarationReflection {
 	const permalink = `/${joinUrl(urlPrefix, packageSlug)}`;
 
@@ -210,7 +211,7 @@ export function addMetadataToReflections(
 			const childPermalink = permalink + childSlug;
 
 			// We need to go another level deeper and only use fragments
-			if (child.kind === ReflectionKind.Namespace && child.children) {
+			if ((child.kind === ReflectionKind.Namespace || options.python) && child.children) {
 				child.children = child.children.map((grandChild) => ({
 					...grandChild,
 					permalink: normalizeUrl([`${childPermalink}#${grandChild.name}`]),
@@ -461,7 +462,7 @@ export function flattenAndGroupPackages(
 
 				// Add metadata to package and children reflections
 				const urlSlug = getPackageSlug(cfg, importPath, isSinglePackage);
-				const reflection = addMetadataToReflections(mod, urlSlug, urlPrefix);
+				const reflection = addMetadataToReflections(mod, urlSlug, urlPrefix, options);
 				const existingEntry = packages[cfg.packagePath].entryPoints.find(
 					(ep) => ep.urlSlug === urlSlug,
 				);
