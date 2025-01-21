@@ -1,3 +1,9 @@
+class FooFooArguments:
+    test: str
+    """This is test, it is a string."""
+    test2: int
+    """This is test2, it is an integer."""
+
 @docs_group('Classes')
 class Foo(BarBarBar, Generic[T]):
     """
@@ -25,7 +31,7 @@ class Foo(BarBarBar, Generic[T]):
 
         print("bar", param)
 
-    def foo(self):
+    def foo(self, param: str, param2: int = 0, **kwargs: Unpack[FooFooArguments]):
         """
         The foo method of the FOO class, prints "foo".
         """
