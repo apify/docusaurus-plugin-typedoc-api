@@ -116,15 +116,18 @@ export class InheritanceGraph {
 				};
 
 				descendant.children.push(ownChild);
-			} else if (!ownChild.comment?.summary?.[0]?.text) {
-				ownChild.inheritedFrom = {
+			} else {
+				ownChild.overwrites = {
 					name: `${ancestor.name}.${inheritedChild.name}`,
 					target: inheritedChild.id,
 					type: 'reference',
 				};
-	
+			}
+			
+			
+			if (!ownChild.comment?.summary?.[0]?.text) {
 				for (const key of Object.keys(inheritedChild)) {
-					if (key !== 'id' && key !== 'inheritedFrom') {
+					if (!['id','inheritedFrom','overwrites'].includes(key)) {
 						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 						ownChild[key as keyof typeof ownChild] = inheritedChild[key as keyof typeof inheritedChild];
 					}
@@ -135,6 +138,7 @@ export class InheritanceGraph {
 				ownChild.signatures = ownChild.signatures?.map((sig) => ({
 					...sig,
 					inheritedFrom: ownChild.inheritedFrom,
+					overwrites: ownChild.overwrites,
 				}));
 			}
 		}

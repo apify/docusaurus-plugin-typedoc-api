@@ -19,6 +19,11 @@ export interface TypeDocObject {
 		target: OID;
 		name: string;
 	};
+	overwrites?: {
+		type: string;
+		target: OID;
+		name: string;
+	};
 	comment?: {
 		summary: { text: string; kind: 'text' }[];
 		blockTags?: { tag: string; content: any[] }[];
