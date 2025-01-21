@@ -73,7 +73,7 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 				case 'Unpack':
 					// @ts-expect-error Silence ts errors
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					acc.push(...(reflections[param.type.typeArguments[0].target]?.children ?? []).map((x) => ({...x, flags: { 'keyword-only': true } })),
+					acc.push(...(reflections[param.type.typeArguments[0].target]?.children ?? []).map((x) => ({...x, flags: { 'keyword-only': true, optional: true } })),
 					);
 					break;
 				default:
