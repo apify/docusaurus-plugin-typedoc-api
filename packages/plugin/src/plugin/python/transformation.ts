@@ -246,7 +246,6 @@ export class DocspecTransformer {
 		const currentTypedocNode: TypeDocObject = {
 			...typedocKind,
 			children: [],
-			parsedDocstring: currentDocspecNode.parsedDocstring,
 			comment: currentDocspecNode.parsedDocstring
 				? {
 						summary: [
@@ -263,6 +262,7 @@ export class DocspecTransformer {
 			id: currentId,
 			module: moduleName, // This is an extension to the original Typedoc structure, to support showing where the member is exported from
 			name: currentDocspecNode.name,
+			parsedDocstring: currentDocspecNode.parsedDocstring,
 			sources: [
 				{
 					character: 1,
