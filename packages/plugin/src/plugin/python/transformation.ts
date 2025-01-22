@@ -8,7 +8,7 @@ import type {
 	TypeDocObject,
 	TypeDocType,
 } from './types';
-import { getGroupName, getOID, isHidden, projectUsesDocsGroupDecorator, sortChildren } from './utils';
+import { getGroupName, getOID, isHidden, isOverload, projectUsesDocsGroupDecorator, sortChildren } from './utils';
 
 interface TransformObjectOptions {
 	/**
@@ -139,6 +139,55 @@ export class DocspecTransformer {
 		}
 	}
 
+	private makeMethodSignature(docspecObject: DocspecObject, docstring: TypeDocDocstring): TypeDocObject['signatures'][number] {
+		return {
+			comment: docstring.text
+				? {
+						blockTags: docstring?.returns
+							? [{ content: [{ kind: 'text', text: docstring.returns }], tag: '@returns' }]
+							: undefined,
+						summary: [
+							{
+								kind: 'text',
+								text: docstring?.text,
+							},
+						],
+					}
+				: undefined,
+			flags: {},
+			id: getOID(),
+			kind: 4096,
+			kindString: 'Call signature',
+			modifiers: docspecObject.modifiers ?? [],
+			name: docspecObject.name,
+			parameters: docspecObject.args
+				?.filter((arg) => arg.name !== 'self' && arg.name !== 'cls')
+				.map((arg) => ({
+					comment: docstring.args?.[arg.name]
+						? {
+								summary: [
+									{
+										kind: 'text',
+										text: docstring.args[arg.name],
+									},
+								],
+							}
+						: undefined,
+					defaultValue: arg.default_value as string,
+					flags: {
+						isOptional: arg.datatype?.includes('Optional') || arg.default_value !== undefined,
+						'keyword-only': arg.type === 'KEYWORD_ONLY',
+					},
+					id: getOID(),
+					kind: 32_768,
+					kindString: 'Parameter',
+					name: arg.name,
+					type: this.pythonTypeResolver.registerType(arg.datatype),
+				})),
+			type: this.pythonTypeResolver.registerType(docspecObject.return_type),
+		};
+	}
+
 	/**
 	 * Given a docspec object outputted by `pydoc-markdown`, transforms this object into the Typedoc structure,
 	 * and appends it as a child of the `parentTypeDoc` Typedoc object (which serves as an accumulator for the recursion).
@@ -166,8 +215,16 @@ export class DocspecTransformer {
 
 		const { typedocType, typedocKind } = this.getTypedocType(currentDocspecNode, parentTypeDoc);
 		const { filePathInRepo } = this.getGitHubUrls(currentDocspecNode);
+		currentDocspecNode.parsedDocstring = this.parseDocstring(currentDocspecNode);
+		
+		const isOverloadedMethod = typedocKind.kindString === 'Method' && isOverload(currentDocspecNode);
 
-		const docstring = this.parseDocstring(currentDocspecNode);
+		if (isOverloadedMethod) {
+			parentTypeDoc.overloads ??= [];
+			parentTypeDoc.overloads.push(currentDocspecNode);
+			return;
+		}
+
 		const currentId = getOID();
 
 		this.symbolIdMap[currentId] = {
@@ -189,12 +246,13 @@ export class DocspecTransformer {
 		const currentTypedocNode: TypeDocObject = {
 			...typedocKind,
 			children: [],
-			comment: docstring
+			parsedDocstring: currentDocspecNode.parsedDocstring,
+			comment: currentDocspecNode.parsedDocstring
 				? {
 						summary: [
 							{
 								kind: 'text',
-								text: docstring.text,
+								text: currentDocspecNode.parsedDocstring.text,
 							},
 						],
 					}
@@ -217,57 +275,12 @@ export class DocspecTransformer {
 
 		if (currentTypedocNode.kindString === 'Method') {
 			currentTypedocNode.signatures = [
-				{
-					comment: docstring.text
-						? {
-								blockTags: docstring?.returns
-									? [{ content: [{ kind: 'text', text: docstring.returns }], tag: '@returns' }]
-									: undefined,
-								summary: [
-									{
-										kind: 'text',
-										text: docstring?.text,
-									},
-								],
-							}
-						: undefined,
-					flags: {},
-					id: getOID(),
-					kind: 4096,
-					kindString: 'Call signature',
-					modifiers: currentDocspecNode.modifiers ?? [],
-					name: currentDocspecNode.name,
-					parameters: currentDocspecNode.args
-						?.filter((arg) => arg.name !== 'self' && arg.name !== 'cls')
-						.map((arg) => ({
-							comment: docstring.args?.[arg.name]
-								? {
-										summary: [
-											{
-												kind: 'text',
-												text: docstring.args[arg.name],
-											},
-										],
-									}
-								: undefined,
-							defaultValue: arg.default_value as string,
-							flags: {
-								isOptional: arg.datatype?.includes('Optional') || arg.default_value !== undefined,
-								'keyword-only': arg.type === 'KEYWORD_ONLY',
-							},
-							id: getOID(),
-							kind: 32_768,
-							kindString: 'Parameter',
-							name: arg.name,
-							type: this.pythonTypeResolver.registerType(arg.datatype),
-						})),
-					type: this.pythonTypeResolver.registerType(currentDocspecNode.return_type),
-				},
+				this.makeMethodSignature(currentDocspecNode, currentDocspecNode.parsedDocstring),
 			];
 		}
 
 		if (currentTypedocNode.kindString === 'Class') {
-			this.newContext(docstring);
+			this.newContext(currentDocspecNode.parsedDocstring);
 		}
 
 		for (const docspecMember of currentDocspecNode.members ?? []) {
@@ -289,6 +302,25 @@ export class DocspecTransformer {
 				}
 			}
 
+			for (const overload of currentTypedocNode.overloads ?? []) {
+				const baseMethod = currentTypedocNode.children?.find((child) => child.name === overload.name && child.kindString === 'Method' && child.decorations.every((d) => d.name !== 'overload'));
+
+				if (baseMethod) {
+					baseMethod.signatures?.push(
+						this.makeMethodSignature(
+							overload, 
+							overload.parsedDocstring.text.length > 0 ? 
+								overload.parsedDocstring : 
+								baseMethod.parsedDocstring
+						),
+					);
+				} else {
+					console.warn(`Method ${overload.name} not found in class ${currentTypedocNode.name} (but overload ${overload.name} exists).`);
+				}
+			}
+
+			currentTypedocNode.overloads = undefined;
+
 			this.inheritanceGraph.registerNode(currentTypedocNode);
 		}
 
@@ -299,6 +331,7 @@ export class DocspecTransformer {
 			(!this.settings.useDocsGroup ||
 				groupSource === 'decorator' ||
 				parentTypeDoc.kindString !== 'Project')
+			&& !isOverloadedMethod
 		) {
 			const group = parentTypeDoc.groups?.find((g) => g.title === groupName);
 			if (group) {

@@ -40,6 +40,8 @@ export interface TypeDocObject {
 	extendedBy?: TypeDocType[];
 	modifiers?: any[];
 	parameters?: TypeDocObject[];
+	overloads?: DocspecObject[];
+	parsedDocstring?: TypeDocDocstring;
 }
 
 export interface DocspecObject {
@@ -56,6 +58,7 @@ export interface DocspecObject {
 	return_type?: DocspecType;
 	value?: any;
 	docstring?: { content: string };
+	parsedDocstring?: TypeDocDocstring;
 	modifiers?: DocspecType[];
 	args?: { name: string; type: DocspecType; default_value: any; datatype: DocspecType }[];
 }
