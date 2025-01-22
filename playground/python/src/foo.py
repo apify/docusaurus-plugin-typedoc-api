@@ -46,7 +46,7 @@ class Foo(BarBarBar, Generic[T]):
         """
         print("foo")
     
-    def foo(self, param: str, param2: int = 0, **kwargs: Unpack[FooFooArguments]):
+    def foo(self, param: str, param2: int = 0):
         """This is the foo method of the Foo class.
         
         Args:
