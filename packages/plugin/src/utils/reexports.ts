@@ -40,7 +40,9 @@ function getMaxId(obj: any) {
         if (typeof obj[key] === 'object') {
             maxId = Math.max(maxId, getMaxId(obj[key]));
         } else if (key === 'id') {
-            maxId = Math.max(maxId, obj[key]);
+            if (Number.isInteger(obj[key])) {
+                maxId = Math.max(maxId, obj[key]);
+            }
         }
     }
 
