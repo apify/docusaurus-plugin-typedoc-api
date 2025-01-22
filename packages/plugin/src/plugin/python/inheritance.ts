@@ -123,11 +123,11 @@ export class InheritanceGraph {
 					type: 'reference',
 				};
 			}
-			
+
 			
 			if (!ownChild.comment?.summary?.[0]?.text) {
 				for (const key of Object.keys(inheritedChild)) {
-					if (!['id','inheritedFrom','overwrites'].includes(key)) {
+					if (!['id','inheritedFrom','overwrites','sources'].includes(key)) {
 						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 						ownChild[key as keyof typeof ownChild] = inheritedChild[key as keyof typeof inheritedChild];
 					}
