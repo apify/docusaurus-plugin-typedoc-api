@@ -108,6 +108,10 @@ export function isHidden(member: DocspecObject): boolean {
 	);
 }
 
+export function isOverload(member: DocspecObject): boolean {
+	return member.decorations?.some((d) => d.name === 'overload');
+}
+
 /**
  * Comparator for enforcing the documentation groups order (examples of groups in {@link GROUP_ORDER}).
  *

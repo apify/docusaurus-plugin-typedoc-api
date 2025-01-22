@@ -31,5 +31,27 @@ class Foo(BarBarBar, Generic[T]):
 
         print("bar", param)
 
+    @overload
+    def foo(self, param: str):
+        print("foo")
+    
+    @overload
+    def foo(self, param: str, param2: int):
+        """
+        Other signature of the foo method. Note that unlike in the first signature, the second parameter is required here
+
+        Args:
+            param: This is the first parameter of the overloaded foo method.
+            param2: This is the second parameter of the overloaded foo method.
+        """
+        print("foo")
+    
     def foo(self, param: str, param2: int = 0, **kwargs: Unpack[FooFooArguments]):
+        """This is the foo method of the Foo class.
+        
+        Args:
+            param: This is the first parameter of the foo method.
+            param2: This is the second parameter of the foo method.
+            **kwargs: This is a dictionary of additional arguments.
+        """
         print("foo")
