@@ -12,9 +12,10 @@ export interface MemberSignatureTitleProps {
 	useArrow?: boolean;
 	hideName?: boolean;
 	sig: TSDSignatureReflection & { modifiers?: string[] };
+	hasMultipleSignatures?: boolean;
 }
 
-export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatureTitleProps) {
+export function MemberSignatureTitle({ useArrow, hideName, sig, hasMultipleSignatures }: MemberSignatureTitleProps) {
 	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;
 	// add `*` before the first keyword-only parameter
 	const parametersCopy = sig.parameters?.slice() ?? [];
@@ -56,7 +57,7 @@ export function MemberSignatureTitle({ useArrow, hideName, sig }: MemberSignatur
 					<span>
 						{param.flags?.isRest && <span className="tsd-signature-symbol">...</span>}
 						{escapeMdx(param.name)}
-						{!isPython && (
+						{!isPython || hasMultipleSignatures && (
 							<>
 								<span className="tsd-signature-symbol">
 									{(param.flags?.isOptional || 'defaultValue' in param) && '?'}

@@ -40,7 +40,7 @@ export function MemberSignatures({ inPanel, sigs }: MemberSignaturesProps) {
 							}
 						>
 							<Icon reflection={sig} />
-							<MemberSignatureTitle sig={sig} />
+							<MemberSignatureTitle hasMultipleSignatures={sigs.length > 1} sig={sig} />
 						</li>
 					))}
 				</ul>
