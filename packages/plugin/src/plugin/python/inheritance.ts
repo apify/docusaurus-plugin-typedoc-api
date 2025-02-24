@@ -1,10 +1,17 @@
+import { type SymbolIdTracker } from './transformation';
 import type { TypeDocObject } from './types';
-import { getGroupName, getOID, sortChildren } from './utils';
+import { getGroupName, sortChildren } from './utils';
 
 export class InheritanceGraph {
 	private readonly nodes = new Map<TypeDocObject['name'], TypeDocObject>();
 
 	private readonly children: Map<TypeDocObject['name'], TypeDocObject['name'][]> = new Map();
+
+	private symbolIdResolver: SymbolIdTracker;
+
+	constructor(symbolIdResolver: SymbolIdTracker) {
+		this.symbolIdResolver = symbolIdResolver;
+	}
 
 	/**
 	 * Adds a new inheritance relationship.
@@ -85,7 +92,7 @@ export class InheritanceGraph {
 			let ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
 	
 			if (!ownChild) {
-				const childId = getOID();
+				const childId = this.symbolIdResolver.getNewId();
 	
 				const { groupName } = getGroupName(inheritedChild);
 				if (!groupName) {
@@ -141,6 +148,8 @@ export class InheritanceGraph {
 					overwrites: ownChild.overwrites,
 				}));
 			}
+
+			this.symbolIdResolver.addNewReference(ownChild);
 		}
 
 		sortChildren(descendant);

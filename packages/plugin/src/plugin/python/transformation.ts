@@ -1,14 +1,16 @@
+/* eslint-disable max-classes-per-file */
 import { REPO_ROOT_PLACEHOLDER, TYPEDOC_KINDS } from './consts';
 import { InheritanceGraph } from './inheritance';
 import { PythonTypeResolver } from './type-parsing';
 import type {
 	DocspecDocstring,
 	DocspecObject,
+	OID,
 	TypeDocDocstring,
 	TypeDocObject,
 	TypeDocType,
 } from './types';
-import { getGroupName, getOID, isHidden, isOverload, projectUsesDocsGroupDecorator, sortChildren } from './utils';
+import { getGroupName, isHidden, isOverload, projectUsesDocsGroupDecorator, sortChildren } from './utils';
 
 interface TransformObjectOptions {
 	/**
@@ -32,14 +34,58 @@ interface DocspecTransformerOptions {
 	moduleShortcuts?: Record<string, string>;
 }
 
+export class SymbolIdTracker {
+	symbolIdMap: Record<number, { qualifiedName: string; sourceFileName: string }> = {};
+
+	private idToReference: Record<number, TypeDocObject> = {};
+
+	private oidGenerator = this.generateOID();
+
+	/**
+	 * Returns automatically incrementing OID. Every call to this function will return a new unique OID.
+	 * @returns {number} The OID.
+	 */
+	getNewId(): OID {
+		return this.oidGenerator.next().value as OID;
+	}
+
+	addNewReference(object: TypeDocObject) {
+		if( object.sources?.[0]?.fileName ) {
+			this.symbolIdMap[object.id] = {
+				qualifiedName: object.name,
+				sourceFileName: object.sources?.[0]?.fileName,
+			};
+		}
+
+		this.idToReference[object.id] = object;
+	}
+
+	getMethodSignatures() {
+		return Object.values(this.idToReference).filter(({ kindString }) => kindString === 'Call signature');
+	}
+
+	getIdByName(name: string) {
+		return Object.entries(this.symbolIdMap).find(([, { qualifiedName }]) => qualifiedName === name)?.[0];
+	}
+
+	getTypeDocById(id: number) {
+		return this.idToReference[id];
+	}
+	
+	private *generateOID() {
+		let id = 1;
+		while (true) {
+			yield id++;
+		}
+	}
+};
+
 export class DocspecTransformer {
 	private pythonTypeResolver: PythonTypeResolver;
 
-	private inheritanceGraph: InheritanceGraph = new InheritanceGraph();
+	private inheritanceGraph: InheritanceGraph;
 
-	private symbolIdMap: Record<number, { qualifiedName: string; sourceFileName: string }> = {};
-
-	private namesToIds: Record<string, number> = {};
+	private symbolIdResolver: SymbolIdTracker;
 
 	private moduleShortcuts: Record<string, string>;
 
@@ -54,6 +100,8 @@ export class DocspecTransformer {
 
 	constructor({ moduleShortcuts }: DocspecTransformerOptions) {
 		this.pythonTypeResolver = new PythonTypeResolver();
+		this.symbolIdResolver = new SymbolIdTracker();
+		this.inheritanceGraph = new InheritanceGraph(this.symbolIdResolver);
 		this.moduleShortcuts = moduleShortcuts ?? {};
 	}
 
@@ -74,7 +122,7 @@ export class DocspecTransformer {
 					line: 1,
 				},
 			],
-			symbolIdMap: this.symbolIdMap,
+			symbolIdMap: this.symbolIdResolver.symbolIdMap,
 		};
 
 		this.settings.useDocsGroup = projectUsesDocsGroupDecorator(
@@ -93,16 +141,9 @@ export class DocspecTransformer {
 		this.inheritanceGraph.resolveInheritance();
 		this.pythonTypeResolver.resolveTypes();
 
-		this.namesToIds = Object.entries(this.symbolIdMap).reduce<Record<string, number>>(
-			(acc, [id, { qualifiedName }]) => {
-				acc[qualifiedName] = Number(id);
-				return acc;
-			},
-			{},
-		);
-
 		this.fixRefs(typedocApiReference);
 		sortChildren(typedocApiReference);
+		this.unpackKwargs();
 
 		return typedocApiReference;
 	}
@@ -119,6 +160,29 @@ export class DocspecTransformer {
 		this.contextStack.push(context);
 	}
 
+	private unpackKwargs() {
+		const signatures = this.symbolIdResolver.getMethodSignatures();
+
+		for (const sig of signatures) {
+			const unpackedParams: TypeDocObject[] = [];
+			for (const param of sig.parameters ?? []) {
+				if (param.type.type === 'literal' || param.type.type === 'reference' && param.type?.name !== 'Unpack') {
+					unpackedParams.push(param);
+					// eslint-disable-next-line no-continue
+					continue;
+				}
+
+				const typedDict = this.symbolIdResolver.getTypeDocById((param.type.typeArguments as { target: number }[])[0].target);
+
+				unpackedParams.push(
+					...typedDict.children.map((x) => ({...x, flags: { 'keyword-only': true, optional: true } })),
+				)
+			}
+
+			sig.parameters = unpackedParams;
+		}
+	}
+
 	/**
 	 * Recursively traverse the Typedoc structure and fix the references to the named entities.
 	 *
@@ -128,10 +192,8 @@ export class DocspecTransformer {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private fixRefs(obj: Record<string, any>) {
 		for (const key of Object.keys(obj)) {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			if (key === 'name' && obj?.type === 'reference' && this.namesToIds[obj?.name]) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-				obj.target = this.namesToIds[obj?.name];
+			if (key === 'name' && obj?.type === 'reference' && this.symbolIdResolver.getIdByName(obj?.name as string ?? '')) {
+				obj.target = this.symbolIdResolver.getIdByName(obj?.name as string ?? '');
 			}
 			if (typeof obj[key] === 'object' && obj[key] !== null) {
 				this.fixRefs(obj[key] as TypeDocObject);
@@ -140,7 +202,7 @@ export class DocspecTransformer {
 	}
 
 	private makeMethodSignature(docspecObject: DocspecObject, docstring: TypeDocDocstring): TypeDocObject['signatures'][number] {
-		return {
+		const methodTypeDoc: TypeDocObject = {
 			comment: docstring.text
 				? {
 						blockTags: docstring?.returns
@@ -155,37 +217,47 @@ export class DocspecTransformer {
 					}
 				: undefined,
 			flags: {},
-			id: getOID(),
+			id: this.symbolIdResolver.getNewId(),
 			kind: 4096,
 			kindString: 'Call signature',
 			modifiers: docspecObject.modifiers ?? [],
 			name: docspecObject.name,
 			parameters: docspecObject.args
 				?.filter((arg) => arg.name !== 'self' && arg.name !== 'cls')
-				.map((arg) => ({
-					comment: docstring.args?.[arg.name]
-						? {
-								summary: [
-									{
-										kind: 'text',
-										text: docstring.args[arg.name],
-									},
-								],
-							}
-						: undefined,
-					defaultValue: arg.default_value as string,
-					flags: {
-						isOptional: arg.datatype?.includes('Optional') || arg.default_value !== undefined,
-						'keyword-only': arg.type === 'KEYWORD_ONLY',
-					},
-					id: getOID(),
-					kind: 32_768,
-					kindString: 'Parameter',
-					name: arg.name,
-					type: this.pythonTypeResolver.registerType(arg.datatype),
-				})),
+				.map((arg) => {
+					const paramTypeDoc: TypeDocObject = {
+						comment: docstring.args?.[arg.name]
+							? {
+									summary: [
+										{
+											kind: 'text',
+											text: docstring.args[arg.name],
+										},
+									],
+								}
+							: undefined,
+						defaultValue: arg.default_value as string,
+						flags: {
+							isOptional: arg.datatype?.includes('Optional') || arg.default_value !== undefined,
+							'keyword-only': arg.type === 'KEYWORD_ONLY',
+						},
+						id: this.symbolIdResolver.getNewId(),
+						kind: 32_768,
+						kindString: 'Parameter',
+						name: arg.name,
+						type: this.pythonTypeResolver.registerType(arg.datatype),
+					}
+
+					this.symbolIdResolver.addNewReference(paramTypeDoc);
+
+					return paramTypeDoc;
+			}),
 			type: this.pythonTypeResolver.registerType(docspecObject.return_type),
 		};
+
+		this.symbolIdResolver.addNewReference(methodTypeDoc);
+
+		return methodTypeDoc;
 	}
 
 	/**
@@ -225,12 +297,7 @@ export class DocspecTransformer {
 			return;
 		}
 
-		const currentId = getOID();
-
-		this.symbolIdMap[currentId] = {
-			qualifiedName: currentDocspecNode.name,
-			sourceFileName: filePathInRepo,
-		};
+		const currentId = this.symbolIdResolver.getNewId();
 
 		// Get the module name of the member, and check if it has a shortcut (reexport from an ancestor module)
 		const fullName = `${moduleName}.${currentDocspecNode.name}`;
@@ -272,6 +339,8 @@ export class DocspecTransformer {
 			],
 			type: typedocType,
 		};
+
+		this.symbolIdResolver.addNewReference(currentTypedocNode);
 
 		if (currentTypedocNode.kindString === 'Method') {
 			currentTypedocNode.signatures = [
