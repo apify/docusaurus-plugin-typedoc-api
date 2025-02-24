@@ -14,7 +14,8 @@ function IndexChild({ id }: IndexChildProps) {
 	const reflection = useRequiredReflection(id);
 
 	return (
-		<li>
+		// eslint-disable-next-line react-perf/jsx-no-new-object-as-prop
+		<li style={{ marginTop: '0px', marginBottom: '4px' }}>
 			<Link className="tsd-kind-icon" to={reflection.permalink ?? `#${reflection.name}`}>
 				<Icon reflection={reflection} />
 				{escapeMdx(reflection.name)}

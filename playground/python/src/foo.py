@@ -35,13 +35,13 @@ class Foo(BarBarBar, Generic[T]):
         """
         print("Foo")
 
-    def bar(self, caps: Capitalization):
+    def bar(self, caps: Capitalization | None):
         """
         The bar method of the foo class, prints "bar".
         """
         print("bar")
 
-    def bar_param(self, params: int, **kwargs: Unpack[RandomKwargs]):
+    def bar_param(self, params: int, **kwargs: Unpack[RandomKwargs[GenericParameter]]):
         """
         The bar method of the foo class, prints "bar" and the given parameter.
 
