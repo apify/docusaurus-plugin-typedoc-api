@@ -17,16 +17,22 @@ const PYTHON_SCRIPT_FILEPATH = path.join(__dirname, '..', '..', '..', '..', 'pyt
 export class PythonTypeResolver {
 	private typedocTypes: TypeDocType[] = [];
 
+	private aliases: Record<string, string> = {};
+
 	/**
 	 * Register a new Python type to be resolved.
 	 *
 	 * Given a string representation of the type, returns a Typedoc type object.
 	 */
-	registerType(docspecType?: DocspecType): TypeDocType {
+	registerType(docspecType?: DocspecType, aliasName?: string): TypeDocType {
 		const newType: TypeDocType = {
 			name: docspecType?.replaceAll(/#.*/g, '').replaceAll('\n', '').trim() ?? 'Undefined',
 			type: 'reference',
 		};
+
+		if (aliasName) {
+			this.aliases[aliasName] = newType.name;
+		}
 
 		this.typedocTypes.push(newType);
 		return newType;
@@ -66,7 +72,9 @@ export class PythonTypeResolver {
 
 		for (const originalType of this.typedocTypes) {
 			if (originalType.type === 'reference') {
-				const parsedType = parsedTypes[originalType.name];
+				// The verbatim name of the type will always be in `parsedTypes`.
+				// If it references a `TypeAlias`, it should have a priority.
+				const parsedType = parsedTypes[this.aliases[originalType.name]] ?? parsedTypes[originalType.name];
 
 				if (parsedType) {
 					for (const key of Object.keys(parsedType)) {

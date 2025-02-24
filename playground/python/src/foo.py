@@ -18,6 +18,11 @@ class RandomKwargs(TypedDict):
     strict: NotRequired[bool]
     """When True, raises an exception on bad CSV input. Defaults to False."""
 
+Capitalization: TypeAlias = Literal[
+    'lowercase',
+    'UPPERCASE',
+]
+
 @docs_group('Classes')
 class Foo(BarBarBar, Generic[T]):
     """
@@ -30,7 +35,7 @@ class Foo(BarBarBar, Generic[T]):
         """
         print("Foo")
 
-    def bar(self):
+    def bar(self, caps: Capitalization):
         """
         The bar method of the foo class, prints "bar".
         """

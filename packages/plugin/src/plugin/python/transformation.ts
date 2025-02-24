@@ -272,6 +272,10 @@ export class DocspecTransformer {
 		parentTypeDoc,
 		moduleName,
 	}: TransformObjectOptions) {
+		if (currentDocspecNode?.datatype === 'TypeAlias') {
+			this.pythonTypeResolver.registerType(currentDocspecNode.value as string, currentDocspecNode.name);
+		}
+
 		if (isHidden(currentDocspecNode)) {
 			for (const docspecMember of currentDocspecNode.members ?? []) {
 				this.walkAndTransform({
