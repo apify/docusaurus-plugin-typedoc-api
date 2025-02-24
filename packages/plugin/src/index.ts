@@ -207,28 +207,7 @@ export default function typedocApiPlugin(
 								fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 							}
 
-							if (options.pathToCurrentVersionTypedocJSON) {
-								fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
-							} else if (Object.keys(options.pythonOptions).length > 0) {
-								if (
-									!options.pythonOptions.pythonModulePath ||
-									!options.pythonOptions.moduleShortcutsPath
-								) {
-									throw new Error('Python options are missing required fields');
-								}
-
-								processPythonDocs({
-									pythonModulePath: options.pythonOptions.pythonModulePath,
-									moduleShortcutsPath: options.pythonOptions.moduleShortcutsPath,
-									outPath: outFile,
-								});
-							} else {
-								await generateJson(projectRoot, entryPoints, outFile, options);
-							}
-
-							if (options.reexports && options.reexports.length > 0) {
-								await injectReexports(outFile, options.reexports);
-							}
+							await generateJson(projectRoot, entryPoints, outFile, options);
 
 							packages = flattenAndGroupPackages(
 								packageConfigs,

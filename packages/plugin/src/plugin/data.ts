@@ -12,6 +12,8 @@ import type {
 	TSDDeclarationReflection,
 	TSDDeclarationReflectionMap,
 } from '../types';
+import { injectReexports } from '../utils/reexports';
+import { processPythonDocs } from './python';
 import { migrateToVersion0230 } from './structure/0.23';
 import { getKindSlug, getPackageSlug, joinUrl } from './url';
 
@@ -54,55 +56,75 @@ export async function generateJson(
 		return true;
 	}
 
-	const tsconfig = path.join(projectRoot, options.tsconfigName ?? 'tsconfig.json');
+	if (options.pathToCurrentVersionTypedocJSON) {
+		fs.copyFileSync(options.pathToCurrentVersionTypedocJSON, outFile);
+	} if (Object.keys(options.pythonOptions).length > 0) {
+		if (
+			!options.pythonOptions.pythonModulePath ||
+			!options.pythonOptions.moduleShortcutsPath
+		) {
+			throw new Error('Python options are missing required fields');
+		}
 
-	const app = await TypeDoc.Application.bootstrapWithPlugins(
-		{
-			gitRevision: options.gitRefName,
-			includeVersion: true,
-			skipErrorChecking: true,
-			// stripYamlFrontmatter: true,
-			// Only emit when using project references
-			emit: shouldEmit(projectRoot, tsconfig),
-			// Only document the public API by default
-			excludeExternals: true,
-			excludeInternal: true,
-			excludePrivate: true,
-			excludeProtected: true,
-			// Enable verbose logging when debugging
-			logLevel: options.debug ? 'Verbose' : 'Info',
-			inlineTags: [
-				'@link',
-				'@inheritDoc',
-				'@label',
-				'@linkcode',
-				'@linkplain',
-				'@apilink',
-				'@doclink',
-			] as `@${string}`[],
-			...options.typedocOptions,
-			// Control how config and packages are detected
-			tsconfig,
-			entryPoints: entryPoints.map((ep) => path.join(projectRoot, ep)),
-			entryPointStrategy: 'expand',
-			exclude: options.exclude,
-			// We use a fake category title so that we can fallback to the parent group
-			defaultCategory: '__CATEGORY__',
-		},
-		[new TypeDoc.TSConfigReader(), new TypeDoc.TypeDocReader()],
-	);
+		processPythonDocs({
+			moduleShortcutsPath: options.pythonOptions.moduleShortcutsPath,
+			outPath: outFile,
+			pythonModulePath: options.pythonOptions.pythonModulePath,
+		});
+	} else {
 
-	const project = await app.convert();
-
-	if (project) {
-		await app.generateJson(project, outFile);
-
-		global.typedocBuild.count += 1;
-
-		return true;
+		const tsconfig = path.join(projectRoot, options.tsconfigName ?? 'tsconfig.json');
+	
+		const app = await TypeDoc.Application.bootstrapWithPlugins(
+			{
+				gitRevision: options.gitRefName,
+				includeVersion: true,
+				skipErrorChecking: true,
+				// stripYamlFrontmatter: true,
+				// Only emit when using project references
+				emit: shouldEmit(projectRoot, tsconfig),
+				// Only document the public API by default
+				excludeExternals: true,
+				excludeInternal: true,
+				excludePrivate: true,
+				excludeProtected: true,
+				// Enable verbose logging when debugging
+				logLevel: options.debug ? 'Verbose' : 'Info',
+				inlineTags: [
+					'@link',
+					'@inheritDoc',
+					'@label',
+					'@linkcode',
+					'@linkplain',
+					'@apilink',
+					'@doclink',
+				] as `@${string}`[],
+				...options.typedocOptions,
+				// Control how config and packages are detected
+				tsconfig,
+				entryPoints: entryPoints.map((ep) => path.join(projectRoot, ep)),
+				entryPointStrategy: 'expand',
+				exclude: options.exclude,
+				// We use a fake category title so that we can fallback to the parent group
+				defaultCategory: '__CATEGORY__',
+			},
+			[new TypeDoc.TSConfigReader(), new TypeDoc.TypeDocReader()],
+		);
+	
+		const project = await app.convert();
+	
+		if (project) {
+			await app.generateJson(project, outFile);
+	
+			global.typedocBuild.count += 1;
+		}
 	}
 
-	return false;
+	if (options.reexports && options.reexports.length > 0) {
+		await injectReexports(outFile, options.reexports);
+	}
+
+	return true;
 }
 
 export function createReflectionMap(
@@ -110,7 +132,7 @@ export function createReflectionMap(
 ): TSDDeclarationReflectionMap {
 	const map: TSDDeclarationReflectionMap = {};
 
-	// eslint-disable-next-line complexity
+	 
 	items.forEach((item) => {
 		// Add @reference categories to reflection.
 		const referenceCategories: Record<string, { title: string; children: number[] }> = {};
