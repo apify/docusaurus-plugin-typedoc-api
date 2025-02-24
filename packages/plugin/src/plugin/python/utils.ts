@@ -1,23 +1,6 @@
 /* eslint-disable sort-keys */
 import { GROUP_ORDER, TYPEDOC_KINDS } from './consts';
-import type { DocspecObject, OID, TypeDocObject } from './types';
-
-function* generateOID() {
-	let id = 1;
-	while (true) {
-		yield id++;
-	}
-}
-
-const oidGenerator = generateOID();
-
-/**
- * Returns automatically incrementing OID. Every call to this function will return a new unique OID.
- * @returns {number} The OID.
- */
-export function getOID(): OID {
-	return oidGenerator.next().value as OID;
-}
+import type { DocspecObject, TypeDocObject } from './types';
 
 /**
  * Given a TypeDoc object, returns the name of the group this object belongs to.
