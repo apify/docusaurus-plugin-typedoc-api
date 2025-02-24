@@ -166,16 +166,23 @@ export class DocspecTransformer {
 		for (const sig of signatures) {
 			const unpackedParams: TypeDocObject[] = [];
 			for (const param of sig.parameters ?? []) {
-				if (param.type.type === 'literal' || param.type.type === 'reference' && param.type?.name !== 'Unpack') {
+				if (param.type.type !== 'reference' || param.type?.name !== 'Unpack') {
 					unpackedParams.push(param);
 					// eslint-disable-next-line no-continue
 					continue;
 				}
-
-				const typedDict = this.symbolIdTracker.getTypeDocById((param.type.typeArguments as { target: number }[])[0].target);
+		  
+				const typedDict = this.symbolIdTracker.getTypeDocById(
+					(
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					param.type.typeArguments[0]?.target
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+					?? this.symbolIdTracker.getIdByName(param.type.typeArguments[0]?.name)
+					) as number
+				);
 
 				unpackedParams.push(
-					...typedDict.children.map((x) => ({...x, flags: { 'keyword-only': true, optional: true } })),
+					...(typedDict?.children.map((x) => ({...x, flags: { 'keyword-only': true, optional: true } })) ?? [])
 				)
 			}
 

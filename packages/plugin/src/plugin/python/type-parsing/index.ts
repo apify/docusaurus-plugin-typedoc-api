@@ -1,3 +1,4 @@
+/* eslint-disable */
 import childProcess from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -70,6 +71,8 @@ export class PythonTypeResolver {
 			TypeDocType
 		>;
 
+		this.applyAliases(parsedTypes);
+
 		for (const originalType of this.typedocTypes) {
 			if (originalType.type === 'reference') {
 				// The verbatim name of the type will always be in `parsedTypes`.
@@ -92,5 +95,16 @@ export class PythonTypeResolver {
 	 */
 	getBaseType(type: string): string {
 		return type?.replace(/Optional\[(.*)]/g, '$1').split('[')[0];
+	}
+
+	private applyAliases(obj: Record<string, Record<string, any> | { name: string }>) {
+		for (const key of Object.keys(obj)) {
+			if (obj[key]?.name && this.aliases[obj[key]?.name]) {
+				obj[key].name = this.aliases[obj[key]?.name];
+			}
+			if (typeof obj[key] === 'object' && obj[key] !== null) {
+				this.applyAliases(obj[key] as any);
+			}
+		}
 	}
 }
