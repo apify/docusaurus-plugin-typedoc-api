@@ -85,7 +85,7 @@ export class DocspecTransformer {
 
 	private inheritanceGraph: InheritanceGraph;
 
-	private symbolIdResolver: SymbolIdTracker;
+	private symbolIdTracker: SymbolIdTracker;
 
 	private moduleShortcuts: Record<string, string>;
 
@@ -100,8 +100,8 @@ export class DocspecTransformer {
 
 	constructor({ moduleShortcuts }: DocspecTransformerOptions) {
 		this.pythonTypeResolver = new PythonTypeResolver();
-		this.symbolIdResolver = new SymbolIdTracker();
-		this.inheritanceGraph = new InheritanceGraph(this.symbolIdResolver);
+		this.symbolIdTracker = new SymbolIdTracker();
+		this.inheritanceGraph = new InheritanceGraph(this.symbolIdTracker);
 		this.moduleShortcuts = moduleShortcuts ?? {};
 	}
 
@@ -122,7 +122,7 @@ export class DocspecTransformer {
 					line: 1,
 				},
 			],
-			symbolIdMap: this.symbolIdResolver.symbolIdMap,
+			symbolIdMap: this.symbolIdTracker.symbolIdMap,
 		};
 
 		this.settings.useDocsGroup = projectUsesDocsGroupDecorator(
@@ -161,7 +161,7 @@ export class DocspecTransformer {
 	}
 
 	private unpackKwargs() {
-		const signatures = this.symbolIdResolver.getMethodSignatures();
+		const signatures = this.symbolIdTracker.getMethodSignatures();
 
 		for (const sig of signatures) {
 			const unpackedParams: TypeDocObject[] = [];
@@ -172,7 +172,7 @@ export class DocspecTransformer {
 					continue;
 				}
 
-				const typedDict = this.symbolIdResolver.getTypeDocById((param.type.typeArguments as { target: number }[])[0].target);
+				const typedDict = this.symbolIdTracker.getTypeDocById((param.type.typeArguments as { target: number }[])[0].target);
 
 				unpackedParams.push(
 					...typedDict.children.map((x) => ({...x, flags: { 'keyword-only': true, optional: true } })),
@@ -192,8 +192,8 @@ export class DocspecTransformer {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private fixRefs(obj: Record<string, any>) {
 		for (const key of Object.keys(obj)) {
-			if (key === 'name' && obj?.type === 'reference' && this.symbolIdResolver.getIdByName(obj?.name as string ?? '')) {
-				obj.target = this.symbolIdResolver.getIdByName(obj?.name as string ?? '');
+			if (key === 'name' && obj?.type === 'reference' && this.symbolIdTracker.getIdByName(obj?.name as string ?? '')) {
+				obj.target = this.symbolIdTracker.getIdByName(obj?.name as string ?? '');
 			}
 			if (typeof obj[key] === 'object' && obj[key] !== null) {
 				this.fixRefs(obj[key] as TypeDocObject);
@@ -217,7 +217,7 @@ export class DocspecTransformer {
 					}
 				: undefined,
 			flags: {},
-			id: this.symbolIdResolver.getNewId(),
+			id: this.symbolIdTracker.getNewId(),
 			kind: 4096,
 			kindString: 'Call signature',
 			modifiers: docspecObject.modifiers ?? [],
@@ -241,21 +241,21 @@ export class DocspecTransformer {
 							isOptional: arg.datatype?.includes('Optional') || arg.default_value !== undefined,
 							'keyword-only': arg.type === 'KEYWORD_ONLY',
 						},
-						id: this.symbolIdResolver.getNewId(),
+						id: this.symbolIdTracker.getNewId(),
 						kind: 32_768,
 						kindString: 'Parameter',
 						name: arg.name,
 						type: this.pythonTypeResolver.registerType(arg.datatype),
 					}
 
-					this.symbolIdResolver.addNewReference(paramTypeDoc);
+					this.symbolIdTracker.addNewReference(paramTypeDoc);
 
 					return paramTypeDoc;
 			}),
 			type: this.pythonTypeResolver.registerType(docspecObject.return_type),
 		};
 
-		this.symbolIdResolver.addNewReference(methodTypeDoc);
+		this.symbolIdTracker.addNewReference(methodTypeDoc);
 
 		return methodTypeDoc;
 	}
@@ -297,7 +297,7 @@ export class DocspecTransformer {
 			return;
 		}
 
-		const currentId = this.symbolIdResolver.getNewId();
+		const currentId = this.symbolIdTracker.getNewId();
 
 		// Get the module name of the member, and check if it has a shortcut (reexport from an ancestor module)
 		const fullName = `${moduleName}.${currentDocspecNode.name}`;
@@ -340,7 +340,7 @@ export class DocspecTransformer {
 			type: typedocType,
 		};
 
-		this.symbolIdResolver.addNewReference(currentTypedocNode);
+		this.symbolIdTracker.addNewReference(currentTypedocNode);
 
 		if (currentTypedocNode.kindString === 'Method') {
 			currentTypedocNode.signatures = [
