@@ -142,11 +142,10 @@ export class InheritanceGraph {
 			}
 
 			if (ownChild.kindString === 'Method') {
-				ownChild.signatures = ownChild.signatures?.map((sig) => ({
-					...sig,
-					inheritedFrom: ownChild.inheritedFrom,
-					overwrites: ownChild.overwrites,
-				}));
+				for (const sig of ownChild.signatures ?? []) {
+					sig.inheritedFrom = ownChild.inheritedFrom;
+					sig.overwrites = ownChild.overwrites;
+				}
 			}
 
 			this.symbolIdResolver.addNewReference(ownChild);
