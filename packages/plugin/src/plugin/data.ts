@@ -16,6 +16,7 @@ import { injectReexports } from '../utils/reexports';
 import { processPythonDocs } from './python';
 import { migrateToVersion0230 } from './structure/0.23';
 import { getKindSlug, getPackageSlug, joinUrl } from './url';
+import { LoadContext } from '@docusaurus/types';
 
 function shouldEmit(projectRoot: string, tsconfigPath: string) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -47,8 +48,12 @@ export async function generateJson(
 	entryPoints: string[],
 	outFile: string,
 	options: DocusaurusPluginTypeDocApiOptions,
+	context: LoadContext,
 ): Promise<boolean> {
 	/* eslint-disable sort-keys */
+	if (projectRoot && !path.isAbsolute(projectRoot)) {
+		projectRoot = path.join(context.siteDir, projectRoot);
+	}
 
 	// Running the TypeDoc compiler is pretty slow...
 	// We should only load on the 1st build, and use cache for subsequent reloads.
@@ -432,6 +437,7 @@ export function flattenAndGroupPackages(
 	project: JSONOutput.ProjectReflection,
 	urlPrefix: string,
 	options: DocusaurusPluginTypeDocApiOptions,
+	context: LoadContext,
 	versioned: boolean = false,
 ): PackageReflectionGroup[] {
 	const isSinglePackage = packageConfigs.length === 1;
@@ -448,13 +454,18 @@ export function flattenAndGroupPackages(
 			Object.entries(cfg.entryPoints).some(([importPath, entry]) => {
 				const isUsingDeepImports = !entry.path.match(/\.tsx?$/);
 
+				let { packageRoot } = cfg;
+				if (packageRoot && !path.isAbsolute(packageRoot)) {
+					packageRoot = path.join(context.siteDir, packageRoot);
+				}
+
 				if (
 					!modContainsEntryPoint(mod, entry, {
 						allSourceFiles,
 						isSinglePackage,
 						isUsingDeepImports,
 						packagePath: cfg.packagePath,
-						packageRoot: cfg.packageRoot,
+						packageRoot,
 					})
 				) {
 					return false;
