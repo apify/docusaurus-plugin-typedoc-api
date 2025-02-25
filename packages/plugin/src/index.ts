@@ -27,6 +27,8 @@ import type {
 	VersionMetadata,
 } from './types';
 
+const PLUGIN_NAME = 'docusaurus-plugin-typedoc-api';
+
 const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	banner: '',
 	breadcrumbs: true,
@@ -86,10 +88,11 @@ export default function typedocApiPlugin(
 		id: pluginId,
 		gitRefName,
 		minimal,
-		projectRoot,
 		readmes,
 		removeScopes,
 	} = options;
+
+	let { projectRoot } = options;
 
 	if (options.pythonOptions && Object.keys(options.pythonOptions).length > 0) {
 		options.python = true;
@@ -126,6 +129,15 @@ export default function typedocApiPlugin(
 			entryPoints.push(path.join(pkgConfig.path, entryConfig.path));
 		});
 
+		const { siteDir } = context;
+
+		if (projectRoot && path.isAbsolute(projectRoot)) {
+			console.warn(`[${PLUGIN_NAME}]:`, `projectRoot is an absolute path. This could cause issues with reproducibility
+under different environments. Internally, this will be stored as a relative path from (${siteDir}).`);
+
+			projectRoot = path.relative(siteDir, projectRoot);
+		}
+
 		return {
 			entryPoints: entries,
 			packageRoot: path.normalize(path.join(projectRoot, pkgConfig.path || '.')),
@@ -138,8 +150,7 @@ export default function typedocApiPlugin(
 	});
 
 	return {
-		name: 'docusaurus-plugin-typedoc-api',
-
+		name: PLUGIN_NAME,
 		extendCli(cli) {
 			const command = isDefaultPluginId ? 'api:version' : `api:version:${pluginId}`;
 			const commandDescription = isDefaultPluginId
@@ -156,11 +167,20 @@ export default function typedocApiPlugin(
 
 					console.log(`[${prefix}]:`, 'Generating docs...');
 
+					if (path.isAbsolute(projectRoot)) {
+						console.debug(`[${PLUGIN_NAME}]:`, `projectRoot should be a relative path, not an absolute path.
+Overwriting with relative path from siteDir (${context.siteDir}).`);
+				
+						projectRoot = path.relative(context.siteDir, projectRoot);
+					}
+				
+
 					await generateJson(
 						projectRoot,
 						entryPoints,
 						path.join(outDir, 'api-typedoc.json'),
 						options,
+						context,
 					);
 
 					console.log(`[${prefix}]:`, 'Persisting packages...');
@@ -205,13 +225,14 @@ export default function typedocApiPlugin(
 								fs.mkdirSync(context.generatedFilesDir, { recursive: true });
 							}
 
-							await generateJson(projectRoot, entryPoints, outFile, options);
+							await generateJson(projectRoot, entryPoints, outFile, options, context);
 
 							packages = flattenAndGroupPackages(
 								packageConfigs,
 								await importFile(outFile),
 								metadata.versionPath,
 								options,
+								context,
 							);
 
 							// Versioned data is stored in the file system
@@ -223,6 +244,7 @@ export default function typedocApiPlugin(
 								await importFile(path.join(outDir, 'api-typedoc.json')),
 								metadata.versionPath,
 								options,
+								context,
 								true,
 							);
 						}
