@@ -10,6 +10,8 @@ import json
 import sys
 import os
 
+from types import EllipsisType, NotImplementedType
+
 base_scalar_types = {
     "str",
     "int",
@@ -53,6 +55,10 @@ def parse_expression(ast_node, full_expression):
         return main_type
 
     if current_node_type == "Constant":
+        if isinstance(ast_node.value, EllipsisType):
+            return {"type": "literal", "value": "..."}
+        if isinstance(ast_node.value, NotImplementedType):
+            return {"type": "literal", "value": "???"}
         return {"type": "literal", "value": ast_node.value}
 
     # If the expression is not one of the types above, we simply print the expression
