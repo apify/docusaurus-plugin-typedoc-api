@@ -81,7 +81,7 @@ export class PythonTypeResolver {
 
 				if (parsedType) {
 					for (const key of Object.keys(parsedType)) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						 
 						originalType[key] = parsedType[key as keyof TypeDocType];
 					}
 				}

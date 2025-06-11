@@ -124,7 +124,7 @@ function base64Encode(message: string): string {
 	const binString = Array.from(bytes, (byte) =>
 		String.fromCodePoint(byte),
 	  ).join("");
-	
+
 	return btoa(binString);
 }
 
@@ -173,7 +173,7 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	const apiItem = deepCopy(item);
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-	resolveGithubUrls(apiItem, siteConfig, gitRefName);
+	resolveGithubUrls(apiItem, siteConfig as never, gitRefName);
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	resolveTypeReferences(apiItem, reflections, new URL(siteConfig.baseUrl, siteConfig.url).href);
 
@@ -206,7 +206,7 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 
 				<Reflection reflection={item} />
 				{/* The `application/json+typedoc-data;base64` is an base64 encoded JSON object that contains the machine-readable API item data. */}
-				<script 
+				<script
 				// eslint-disable-next-line react/no-danger,react-perf/jsx-no-new-object-as-prop
 					dangerouslySetInnerHTML={{__html: base64Encode(
 						JSON.stringify(
@@ -219,10 +219,10 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 									parentId: undefined,
 								},
 								groups: getOwnGroupNames(item, reflections),
-							}, 
+							},
 						)
-					)}} 
-					type="application/typedoc-data;base64" 
+					)}}
+					type="application/typedoc-data;base64"
 				/>
 			</ApiItemLayout>
 		</ApiOptionsContext.Provider>

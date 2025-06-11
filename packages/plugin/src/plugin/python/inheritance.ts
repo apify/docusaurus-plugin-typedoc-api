@@ -91,7 +91,13 @@ export class InheritanceGraph {
 		for (const inheritedChild of ancestor.children ?? []) {
 			let ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
 	
-			if (!ownChild) {
+			if (ownChild) {
+				ownChild.overwrites = {
+					name: `${ancestor.name}.${inheritedChild.name}`,
+					target: inheritedChild.id,
+					type: 'reference',
+				};
+			} else {
 				const childId = this.symbolIdResolver.getNewId();
 	
 				const { groupName } = getGroupName(inheritedChild);
@@ -123,12 +129,6 @@ export class InheritanceGraph {
 				};
 
 				descendant.children.push(ownChild);
-			} else {
-				ownChild.overwrites = {
-					name: `${ancestor.name}.${inheritedChild.name}`,
-					target: inheritedChild.id,
-					type: 'reference',
-				};
 			}
 
 			

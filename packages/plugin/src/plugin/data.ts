@@ -3,6 +3,7 @@ import path from 'path';
 import * as TypeDoc from 'typedoc';
 import { type InlineTagDisplayPart, type JSONOutput, ReflectionKind } from 'typedoc';
 import ts from 'typescript';
+import { LoadContext } from '@docusaurus/types';
 import { normalizeUrl } from '@docusaurus/utils';
 import type {
 	DocusaurusPluginTypeDocApiOptions,
@@ -16,7 +17,6 @@ import { injectReexports } from '../utils/reexports';
 import { processPythonDocs } from './python';
 import { migrateToVersion0230 } from './structure/0.23';
 import { getKindSlug, getPackageSlug, joinUrl } from './url';
-import { LoadContext } from '@docusaurus/types';
 
 function shouldEmit(projectRoot: string, tsconfigPath: string) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
