@@ -30,7 +30,7 @@ export function SourceLink({ sources = [] }: SourceLinkProps) {
 				<a
 					key={source.fileName}
 					className="tsd-anchor"
-					href={resolveGithubUrl(source, siteConfig, gitRefName)}
+					href={resolveGithubUrl(source, siteConfig as never, gitRefName)}
 					rel="noreferrer"
 					target="_blank"
 				>

@@ -1,3 +1,4 @@
+import '@docusaurus/preset-classic';
 import { useEffect } from 'react';
 import Link from '@docusaurus/Link';
 import type { PropVersionMetadata } from '@docusaurus/plugin-content-docs';
