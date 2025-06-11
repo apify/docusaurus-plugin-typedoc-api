@@ -1,14 +1,17 @@
-import '@docusaurus/preset-classic';
 import { useEffect } from 'react';
 import Link from '@docusaurus/Link';
 import type { PropVersionMetadata } from '@docusaurus/plugin-content-docs';
 import type { GlobalVersion } from '@docusaurus/plugin-content-docs/client';
 import { useDocsPreferredVersion, useDocsVersion } from '@docusaurus/plugin-content-docs/client';
+import type * as Preset from '@docusaurus/preset-classic';
 import type { Props as DocItemProps } from '@theme/DocItem';
 import Heading from '@theme/Heading';
 import type { ApiOptions, PackageReflectionGroup } from '../types';
 import { removeScopes } from '../utils/links';
 import { VersionBanner } from './VersionBanner';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const foo = {} as unknown as Preset.Options;
 
 export interface ApiIndexProps extends Pick<DocItemProps, 'route'> {
 	history: {
