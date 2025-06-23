@@ -1,10 +1,10 @@
-export interface BarOptions {
+export interface BarOptions<NameType extends string> {
 	/**
 	 * The name of the `Bar` instance.
 	 *
 	 * @default 'Karl'
 	 */
-	name: string;
+	name: NameType;
 	/**
 	 * The age of the `Bar` instance.
 	 *
@@ -29,7 +29,7 @@ export interface BarOptions {
  * This is a simple class called `Bar`
  */
 export class Bar {
-	private constructor(options: BarOptions) {
+	private constructor() {
 		// do nothing
 	}
 
@@ -39,7 +39,7 @@ export class Bar {
 	 * @param {BarOptions} options
 	 * @returns {Bar}
 	 */
-	static create(options: BarOptions = {} as BarOptions): Bar {
-		return new Bar(options);
+	static create<TypeParamName extends string = 'Karl'>(options: BarOptions<TypeParamName> = {} as BarOptions<TypeParamName>): Bar {
+		return new Bar();
 	}
 }
