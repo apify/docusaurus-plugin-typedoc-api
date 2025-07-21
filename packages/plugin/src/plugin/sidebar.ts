@@ -15,7 +15,14 @@ export function groupSidebarItems(
 	groups: JSONOutput.ReflectionGroup[],
 ): SidebarItem[] {
 	const items: SidebarItem[] = [];
-	const sortedGroups = [...groups].sort((a, b) => a.title.localeCompare(b.title));
+	const sortedGroups = [...groups].sort((a, b) => {
+		if (a.title.toLowerCase().startsWith('other')) {
+			return 1;
+		} else if (b.title.toLowerCase().startsWith('other')) {
+			return -1;
+		}
+		return a.title.localeCompare(b.title);
+	});
 
 	function getLastItemInGroup(index: number) {
 		const length = sortedGroups[index]?.children?.length;

@@ -9,7 +9,7 @@ Capitalization: TypeAlias = Literal[
     'UPPERCASE',
 ]
 
-@docs_group('Classes')
+@docs_group('Other')
 class Foo(BarBarBar, Generic[T]):
     """
     The foo class is a simple class that prints "Foo" when it is initialized and "bar" when the bar method is called.
@@ -39,7 +39,7 @@ class Foo(BarBarBar, Generic[T]):
     @overload
     def foo(self, param: str):
         print("foo")
-    
+
     @overload
     def foo(self, param: str, param2: int):
         """
@@ -50,10 +50,10 @@ class Foo(BarBarBar, Generic[T]):
             param2: This is the second parameter of the overloaded foo method.
         """
         print("foo")
-    
+
     def foo(self, param: str, param2: int = 0):
         """This is the foo method of the Foo class.
-        
+
         Args:
             param: This is the first parameter of the foo method.
             param2: This is the second parameter of the foo method.
