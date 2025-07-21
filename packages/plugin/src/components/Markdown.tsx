@@ -107,7 +107,7 @@ const TOKEN_TO_TAG: Record<string, keyof JSX.IntrinsicElements> = {
 	tablerow: 'tr',
 };
 
-function convertAstToElements(ast: TokensList): React.ReactNode[] | undefined {
+function convertAstToElements(ast: TokensList): Iterable<React.ReactNode> | undefined {
 	const elements: React.ReactNode[] = [];
 	let counter = 0;
 
