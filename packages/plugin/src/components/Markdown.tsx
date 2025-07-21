@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 
-import { Fragment, useState } from 'react';
+import { Fragment, type JSX, useState } from 'react';
 import { marked, type Tokens } from 'marked';
 import { markedSmartypants } from 'marked-smartypants';
 import { useDocsData, useDocsVersion } from '@docusaurus/plugin-content-docs/client';
