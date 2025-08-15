@@ -126,7 +126,7 @@ export class InheritanceGraph {
 						target: inheritedChild.id,
 						type: 'reference',
 					},
-				}));
+				})) as TypeDocObject;
 
 				descendant.children.push(ownChild);
 			}
