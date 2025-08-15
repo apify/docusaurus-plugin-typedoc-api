@@ -35,7 +35,7 @@ export class InheritanceGraph {
 
 	/**
 	 * Resolves the inheritance relationships between the objects.
-	 * 
+	 *
 	 * Adds the inherited symbols to the descendants, and sets the `extendedTypes` / `extendedBy` properties.
 	 * The symbol inheritance works transitively, so if `A` inherits from `B` and `B` inherits from `C`, then `A` inherits from `C`.
 	 *
@@ -61,15 +61,15 @@ export class InheritanceGraph {
 
 	/**
 	 * Given two TypeDoc objects, resolves the inherited symbols between them.
-	 * This method injects the ancestors' symbols into the descendants. 
-	 * 
+	 * This method injects the ancestors' symbols into the descendants.
+	 *
 	 * In case the descendant already has a symbol with the same name, the symbol is not injected.
 	 * @param ancestor The ancestor object.
 	 * @param descendant The descendant object.
 	 */
 	protected resolveInheritedSymbols(ancestor: TypeDocObject, descendant: TypeDocObject) {
 		descendant.children ??= [];
-	
+
 		descendant.extendedTypes = [
 			...(descendant.extendedTypes ?? []),
 			{
@@ -78,7 +78,7 @@ export class InheritanceGraph {
 				type: 'reference',
 			},
 		];
-	
+
 		ancestor.extendedBy = [
 			...(ancestor.extendedBy ?? []),
 			{
@@ -87,10 +87,10 @@ export class InheritanceGraph {
 				type: 'reference',
 			},
 		];
-	
+
 		for (const inheritedChild of ancestor.children ?? []) {
 			let ownChild = descendant.children?.find((x) => x.name === inheritedChild.name);
-	
+
 			if (ownChild) {
 				ownChild.overwrites = {
 					name: `${ancestor.name}.${inheritedChild.name}`,
@@ -99,16 +99,16 @@ export class InheritanceGraph {
 				};
 			} else {
 				const childId = this.symbolIdResolver.getNewId();
-	
+
 				const { groupName } = getGroupName(inheritedChild);
 				if (!groupName) {
 					throw new Error(
 						`Couldn't resolve the group name for ${inheritedChild.name} (inherited child of ${ancestor.name})`,
 					);
 				}
-	
+
 				const group = descendant.groups?.find((g) => g.title === groupName);
-	
+
 				if (group) {
 					group.children.push(childId);
 				} else {
@@ -117,8 +117,8 @@ export class InheritanceGraph {
 						title: groupName,
 					});
 				}
-	
-				ownChild = {
+
+				ownChild = JSON.parse(JSON.stringify({
 					...inheritedChild,
 					id: childId,
 					inheritedFrom: inheritedChild.inheritedFrom ?? {
@@ -126,12 +126,12 @@ export class InheritanceGraph {
 						target: inheritedChild.id,
 						type: 'reference',
 					},
-				};
+				}));
 
 				descendant.children.push(ownChild);
 			}
 
-			
+
 			if (!ownChild.comment?.summary?.[0]?.text) {
 				for (const key of Object.keys(inheritedChild)) {
 					if (!['id','inheritedFrom','overwrites','sources'].includes(key)) {
@@ -156,10 +156,10 @@ export class InheritanceGraph {
 
 	/**
 	 * Returns the topological order of the inheritance graph.
-	 * 
+	 *
 	 * The topological order puts the ancestors before their descendants.
 	 * This ensures that all the ancestors are processed before the descendants.
-	 * @returns 
+	 * @returns
 	 */
 	protected getTopologicalOrder(): TypeDocObject[] {
 		const visited = new Set<TypeDocObject['name']>();
