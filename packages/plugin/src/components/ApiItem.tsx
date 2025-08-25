@@ -172,7 +172,7 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const apiItem = deepCopy(item);
 
-	const shortenedDescription = displayPartsToMarkdown(item.comment?.summary ?? []).split('.')[0]
+	const shortenedDescription = displayPartsToMarkdown(item.comment?.summary ?? []).split('\n')[0]
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	resolveGithubUrls(apiItem, siteConfig as never, gitRefName);
