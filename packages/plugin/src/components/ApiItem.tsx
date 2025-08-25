@@ -172,6 +172,8 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const apiItem = deepCopy(item);
 
+	const shortenedDescription = displayPartsToMarkdown(item.comment?.summary ?? []).split('\n')[0]
+
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 	resolveGithubUrls(apiItem, siteConfig as never, gitRefName);
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -190,7 +192,7 @@ export default function ApiItem({ readme: Readme, route }: ApiItemProps) {
 				}
 				pageMetadata={
 					<PageMetadata
-						description={item.comment?.summary ? displayPartsToMarkdown(item.comment.summary) : ''}
+						description={shortenedDescription}
 						title={`${item.name} | API`}
 					/>
 				}
