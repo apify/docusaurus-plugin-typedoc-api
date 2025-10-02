@@ -1,3 +1,4 @@
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import * as TypeDoc from 'typedoc';
@@ -13,6 +14,7 @@ import type {
 	TSDDeclarationReflection,
 	TSDDeclarationReflectionMap,
 } from '../types';
+import { injectGitRevision } from '../utils/links';
 import { injectReexports } from '../utils/reexports';
 import { processPythonDocs } from './python';
 import { migrateToVersion0230 } from './structure/0.23';
@@ -41,6 +43,19 @@ function shouldEmit(projectRoot: string, tsconfigPath: string) {
 // Because of this, we can't use state in the plugin or module scope.
 if (!global.typedocBuild) {
 	global.typedocBuild = { count: 0 };
+}
+
+function getCurrentGitRef(): string | undefined {
+	try {
+		const result = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' });
+		if (result.status === 0) {
+			return result.stdout.trim();
+		}
+		console.warn(`[@apify/docusaurus-plugin-typedoc-api]: Unable to get current git SHA:`, result.stderr.trim());
+	} catch (error) {
+		console.warn(`[@apify/docusaurus-plugin-typedoc-api]: Error while getting current git SHA:`, error);
+	}
+	return undefined;
 }
 
 export async function generateJson(
@@ -75,14 +90,15 @@ export async function generateJson(
 			moduleShortcutsPath: options.pythonOptions.moduleShortcutsPath,
 			outPath: outFile,
 			pythonModulePath: options.pythonOptions.pythonModulePath,
+			gitRevision: options.gitRefName,
 		});
 	} else {
 
 		const tsconfig = path.join(projectRoot, options.tsconfigName ?? 'tsconfig.json');
-	
+
 		const app = await TypeDoc.Application.bootstrapWithPlugins(
 			{
-				gitRevision: options.gitRefName,
+				gitRevision: getCurrentGitRef() ?? options.gitRefName,
 				includeVersion: true,
 				skipErrorChecking: true,
 				// stripYamlFrontmatter: true,
@@ -115,18 +131,24 @@ export async function generateJson(
 			},
 			[new TypeDoc.TSConfigReader(), new TypeDoc.TypeDocReader()],
 		);
-	
+
 		const project = await app.convert();
-	
+
 		if (project) {
 			await app.generateJson(project, outFile);
-	
+
 			global.typedocBuild.count += 1;
 		}
 	}
 
 	if (options.reexports && options.reexports.length > 0) {
 		await injectReexports(outFile, options.reexports);
+	}
+
+	const gitRefName = getCurrentGitRef();
+
+	if (gitRefName) {
+		injectGitRevision(outFile, gitRefName);
 	}
 
 	return true;
@@ -137,7 +159,7 @@ export function createReflectionMap(
 ): TSDDeclarationReflectionMap {
 	const map: TSDDeclarationReflectionMap = {};
 
-	 
+
 	items.forEach((item) => {
 		// Add @reference categories to reflection.
 		const referenceCategories: Record<string, { title: string; children: number[] }> = {};

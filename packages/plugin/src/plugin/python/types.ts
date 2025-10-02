@@ -33,6 +33,7 @@ export interface TypeDocObject {
 		fileName: string;
 		line: number;
 		character: number;
+		gitRevision?: string;
 	}[];
 	type?: TypeDocType;
 	symbolIdMap?: Record<number, { qualifiedName: string; sourceFileName: string }>;
