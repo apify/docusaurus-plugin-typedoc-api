@@ -26,22 +26,8 @@ import type {
 	TSDDeclarationReflection,
 	VersionMetadata,
 } from './types';
-import { spawnSync } from 'child_process';
 
 const PLUGIN_NAME = 'docusaurus-plugin-typedoc-api';
-
-function getCurrentGitRef(): string | undefined {
-	try {
-		const result = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' });
-		if (result.status === 0) {
-			return result.stdout.trim();
-		}
-		console.warn(`[${PLUGIN_NAME}]: Unable to get current git SHA:`, result.stderr.trim());
-	} catch (error) {
-		console.warn(`[${PLUGIN_NAME}]: Error while getting current git SHA:`, error);
-	}
-	return undefined;
-}
 
 const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	banner: '',
@@ -51,7 +37,7 @@ const DEFAULT_OPTIONS: Required<DocusaurusPluginTypeDocApiOptions> = {
 	debug: false,
 	disableVersioning: false,
 	exclude: [],
-	gitRefName: getCurrentGitRef() ?? 'master',
+	gitRefName: 'master',
 	id: DEFAULT_PLUGIN_ID,
 	includeCurrentVersion: true,
 	lastVersion: '',

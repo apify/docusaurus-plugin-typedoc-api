@@ -32,6 +32,11 @@ interface DocspecTransformerOptions {
 	 * A map of module shortcuts, where the key is the full name of the module, and the value is the shortened name.
 	 */
 	moduleShortcuts?: Record<string, string>;
+
+	/**
+	 * SHA of the git revision to use in the GitHub source links. If not provided, `master` will be used.
+	 */
+	gitRevision?: string;
 }
 
 export class SymbolIdTracker {
@@ -71,7 +76,7 @@ export class SymbolIdTracker {
 	getTypeDocById(id: number) {
 		return this.idToReference[id];
 	}
-	
+
 	private *generateOID() {
 		let id = 1;
 		while (true) {
@@ -89,6 +94,8 @@ export class DocspecTransformer {
 
 	private moduleShortcuts: Record<string, string>;
 
+	private gitRevision: string;
+
 	/**
 	 * Stack of the docstrings of the current context.
 	 *
@@ -98,11 +105,12 @@ export class DocspecTransformer {
 
 	private settings: { useDocsGroup: boolean } = { useDocsGroup: false };
 
-	constructor({ moduleShortcuts }: DocspecTransformerOptions) {
+	constructor({ moduleShortcuts, gitRevision }: DocspecTransformerOptions) {
 		this.pythonTypeResolver = new PythonTypeResolver();
 		this.symbolIdTracker = new SymbolIdTracker();
 		this.inheritanceGraph = new InheritanceGraph(this.symbolIdTracker);
 		this.moduleShortcuts = moduleShortcuts ?? {};
+		this.gitRevision = gitRevision;
 	}
 
 	transform(docspecModules: DocspecObject[]): TypeDocObject {
@@ -171,7 +179,7 @@ export class DocspecTransformer {
 					// eslint-disable-next-line no-continue
 					continue;
 				}
-		  
+
 				const typedDict = this.symbolIdTracker.getTypeDocById(
 					(
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -299,7 +307,7 @@ export class DocspecTransformer {
 		const { typedocType, typedocKind } = this.getTypedocType(currentDocspecNode, parentTypeDoc);
 		const { filePathInRepo } = this.getGitHubUrls(currentDocspecNode);
 		currentDocspecNode.parsedDocstring = this.parseDocstring(currentDocspecNode);
-		
+
 		const isOverloadedMethod = typedocKind.kindString === 'Method' && isOverload(currentDocspecNode);
 
 		if (isOverloadedMethod) {
@@ -346,6 +354,7 @@ export class DocspecTransformer {
 					character: 1,
 					fileName: filePathInRepo,
 					line: currentDocspecNode.location.lineno,
+					gitRevision: this.gitRevision,
 				},
 			],
 			type: typedocType,
@@ -388,9 +397,9 @@ export class DocspecTransformer {
 				if (baseMethod) {
 					baseMethod.signatures?.push(
 						this.makeMethodSignature(
-							overload, 
-							overload.parsedDocstring.text.length > 0 ? 
-								overload.parsedDocstring : 
+							overload,
+							overload.parsedDocstring.text.length > 0 ?
+								overload.parsedDocstring :
 								baseMethod.parsedDocstring
 						),
 					);

@@ -14,10 +14,12 @@ export function processPythonDocs({
 	pythonModulePath,
 	moduleShortcutsPath,
 	outPath,
+	gitRevision,
 }: {
 	pythonModulePath: string;
 	moduleShortcutsPath: string;
 	outPath: string;
+	gitRevision: string;
 }) {
 	const pydocMarkdownDumpPath = path.join(__dirname, './pydoc-markdown-dump.json');
 
@@ -43,6 +45,7 @@ export function processPythonDocs({
 
 	const docspecTransformer = new DocspecTransformer({
 		moduleShortcuts,
+		gitRevision
 	});
 
 	const typedocApiReference = docspecTransformer.transform(pydocMarkdownDump);
