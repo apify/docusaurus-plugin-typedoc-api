@@ -13,7 +13,7 @@ export interface SourceLinkProps {
 }
 
 export function resolveGithubUrl(source: JSONOutput.SourceReference & { gitRevision?: string }, siteConfig: DocusaurusConfig, gitRefName: string): string {
-	return source.url || `https://${siteConfig.githubHost}${siteConfig.githubPort ? `:${siteConfig.githubPort}` : ''}/${siteConfig.organizationName}/${siteConfig.projectName}/blob/${source.gitRevision ?? gitRefName}/${replaceWithSrc(source.fileName)}#L${source.line}`;
+	return source.url ?? `https://${siteConfig.githubHost}${siteConfig.githubPort ? `:${siteConfig.githubPort}` : ''}/${siteConfig.organizationName}/${siteConfig.projectName}/blob/${source.gitRevision ?? gitRefName}/${replaceWithSrc(source.fileName)}#L${source.line}`;
 }
 
 export function SourceLink({ sources = [] }: SourceLinkProps) {

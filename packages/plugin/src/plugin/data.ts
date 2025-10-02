@@ -98,7 +98,7 @@ export async function generateJson(
 
 		const app = await TypeDoc.Application.bootstrapWithPlugins(
 			{
-				gitRevision: options.gitRefName,
+				gitRevision: getCurrentGitRef() ?? options.gitRefName,
 				includeVersion: true,
 				skipErrorChecking: true,
 				// stripYamlFrontmatter: true,
