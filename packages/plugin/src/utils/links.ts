@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { TypedocJSONFile } from '../types';
 
 export function removeScopes(text: string, scopes: string[]): string {
 	if (scopes.length === 0) {
@@ -11,10 +12,11 @@ export function removeScopes(text: string, scopes: string[]): string {
 	);
 }
 
-export async function injectGitRevision(typedocJsonFilePath: string, gitRevision: string): Promise<void> {
-	const typedocJson = JSON.parse(fs.readFileSync(typedocJsonFilePath, 'utf8'));
+export function injectGitRevision(typedocJsonFilePath: string, gitRevision: string): void {
+	const typedocJson = JSON.parse(fs.readFileSync(typedocJsonFilePath, 'utf8')) as TypedocJSONFile;
 
-	function walkAndInjectRevision(obj: any): void {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	function walkAndInjectRevision(obj: Record<string, any> | { sources?: { line?: number, fileName?: string, gitRevision?: string }[] }): void {
 		if (typeof obj !== 'object' || obj === null) {
 			return;
 		}
@@ -26,8 +28,8 @@ export async function injectGitRevision(typedocJsonFilePath: string, gitRevision
 
 		// Check if this object has sources property with line and fileName
 		if (obj.sources && Array.isArray(obj.sources)) {
-			obj.sources.forEach((source: any) => {
-				if (source.line !== undefined && source.fileName !== undefined) {
+			obj.sources.forEach((source: { line?: number, fileName?: string, gitRevision?: string }) => {
+				if (source?.line !== undefined && source?.fileName !== undefined) {
 					source.gitRevision = gitRevision;
 				}
 			});

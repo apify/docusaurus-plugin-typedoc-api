@@ -8,6 +8,11 @@ import type {
 
 export type { VersionBanner };
 
+export interface TypedocJSONFile {
+    children: TypedocJSONFile[];
+    groups: { title: string, children: number[] }[];
+}
+
 export interface DocusaurusPluginTypeDocApiOptions
 	extends Omit<VersionsOptions, 'disableVersioning' | 'includeCurrentVersion'> {
 	banner?: string;

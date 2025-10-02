@@ -353,8 +353,8 @@ export class DocspecTransformer {
 				{
 					character: 1,
 					fileName: filePathInRepo,
-					line: currentDocspecNode.location.lineno,
 					gitRevision: this.gitRevision,
+					line: currentDocspecNode.location.lineno,
 				},
 			],
 			type: typedocType,

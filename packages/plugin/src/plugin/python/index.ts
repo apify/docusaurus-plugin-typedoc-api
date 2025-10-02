@@ -44,8 +44,8 @@ export function processPythonDocs({
 	) as DocspecObject[];
 
 	const docspecTransformer = new DocspecTransformer({
+		gitRevision,
 		moduleShortcuts,
-		gitRevision
 	});
 
 	const typedocApiReference = docspecTransformer.transform(pydocMarkdownDump);

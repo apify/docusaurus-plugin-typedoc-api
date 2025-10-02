@@ -3,11 +3,7 @@
 
 import { load } from "cheerio";
 import fs from "fs";
-
-interface TypedocJSONFile {
-    children: TypedocJSONFile[];
-    groups: { title: string, children: number[] }[];
-}
+import { TypedocJSONFile } from "../types";
 
 interface ExternalApiItem {
     item: TypedocJSONFile;
@@ -26,9 +22,9 @@ async function loadExternalApiItem(url: string): Promise<ExternalApiItem> {
 
     const $ = load(await response.text(), { decodeEntities: false })
     const base64encoded = $('script[type="application/typedoc-data;base64"]')?.first()?.text();
-    
+
     if(!base64encoded) return null;
-    
+
     const jsonData = decodeBase64UTF8(base64encoded);
     return JSON.parse(jsonData) as ExternalApiItem;
 }
@@ -58,7 +54,7 @@ function incrementIds(obj: any, increment: number): number {
             max = Math.max(max, ...obj[key]);
         } else if (key === 'id' && Number.isInteger(obj[key])) {
             obj[key] += increment;
-            
+
             max = Math.max(obj[key], max);
         } else if (obj[key] && typeof obj[key] === 'object') {
             max = Math.max(incrementIds(obj[key], increment), max);
@@ -82,7 +78,7 @@ export async function injectReexports(typedocJsonFilePath: string, reexports: { 
         if (!externalItem) continue;
 
         let { item, groups } = externalItem;
-    
+
         // Make sure the new item doesn't have any conflicting IDs
         baseId = incrementIds(item, baseId);
 
@@ -98,7 +94,7 @@ export async function injectReexports(typedocJsonFilePath: string, reexports: { 
         for (const groupName of groups) {
             // Assign the new item into the specified groups
             const reexportsGroup = typedocJson.groups.find(g => g.title === groupName);
-    
+
             if (reexportsGroup) {
                 reexportsGroup.children.push(item.id);
             } else {

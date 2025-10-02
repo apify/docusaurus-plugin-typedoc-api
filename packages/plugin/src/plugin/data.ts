@@ -1,3 +1,4 @@
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import * as TypeDoc from 'typedoc';
@@ -13,12 +14,11 @@ import type {
 	TSDDeclarationReflection,
 	TSDDeclarationReflectionMap,
 } from '../types';
+import { injectGitRevision } from '../utils/links';
 import { injectReexports } from '../utils/reexports';
 import { processPythonDocs } from './python';
 import { migrateToVersion0230 } from './structure/0.23';
 import { getKindSlug, getPackageSlug, joinUrl } from './url';
-import { spawnSync } from 'child_process';
-import { injectGitRevision } from '../utils/links';
 
 function shouldEmit(projectRoot: string, tsconfigPath: string) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -148,7 +148,7 @@ export async function generateJson(
 	const gitRefName = getCurrentGitRef();
 
 	if (gitRefName) {
-		await injectGitRevision(outFile, gitRefName);
+		injectGitRevision(outFile, gitRefName);
 	}
 
 	return true;
