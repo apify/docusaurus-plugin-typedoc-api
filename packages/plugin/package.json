@@ -1,6 +1,6 @@
 {
   "name": "@apify/docusaurus-plugin-typedoc-api",
-  "version": "4.4.10",
+  "version": "4.4.11",
   "description": "Docusaurus plugin that provides source code API documentation powered by TypeDoc. ",
   "keywords": [
     "docusaurus",
@@ -14,7 +14,7 @@
   },
   "author": "Miles Johnson, Apify Technologies",
   "license": "MIT",
-  "main": "src/index.ts",
+  "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "files": [
     "assets/**/*",
