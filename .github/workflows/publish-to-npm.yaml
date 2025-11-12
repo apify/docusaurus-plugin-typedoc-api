@@ -64,10 +64,12 @@ jobs:
         run: yarn build:deploy
 
       - name: Bump version to custom version
+        working-directory: ./packages/plugin
         if: ${{ github.event.inputs.version == 'custom' && github.event.inputs.custom_version != '' }}
         run: yarn version ${{ github.event.inputs.custom_version }}
 
       - name: Bump version to ${{ github.event.inputs.version }} version
+        working-directory: ./packages/plugin
         if: ${{ github.event.inputs.version != 'custom' }}
         run: yarn version ${{ github.event.inputs.version }}
 
