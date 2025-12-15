@@ -225,20 +225,11 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 
 			return (
 				<>
-					{ref?.permalink ? (
+					{ref?.permalink ?? type.externalUrl ? (
 						<Link
 							className={`tsd-signature-type ${genericClass}`}
-							data-tsd-kind={ref.kind}
-							to={ref.permalink}
-						>
-							{type.name}
-						</Link>
-					) : type.externalUrl ? (
-						<Link
-							className={`tsd-signature-type ${genericClass}`}
-							to={type.externalUrl}
-							target="_blank"
-							rel="external noopener noreferrer"
+							data-tsd-kind={ref?.kind ?? undefined}
+							to={ref?.permalink ?? type.externalUrl}
 						>
 							{type.name}
 						</Link>
