@@ -134,7 +134,7 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 		case 'literal': {
 			const type = base as JSONOutput.LiteralType;
 
-			if (isPython && (type.value === null 
+			if (isPython && (type.value === null
 					|| (typeof type.value === 'object' && Object.keys(type.value).length === 0))) {
 				return <span className="tsd-signature-type">None</span>;
 			}
@@ -230,6 +230,15 @@ export function Type({ needsParens = false, type: base }: TypeProps) {
 							className={`tsd-signature-type ${genericClass}`}
 							data-tsd-kind={ref.kind}
 							to={ref.permalink}
+						>
+							{type.name}
+						</Link>
+					) : type.externalUrl ? (
+						<Link
+							className={`tsd-signature-type ${genericClass}`}
+							to={type.externalUrl}
+							target="_blank"
+							rel="external noopener noreferrer"
 						>
 							{type.name}
 						</Link>
