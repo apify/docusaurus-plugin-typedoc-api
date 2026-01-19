@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 import type { Props as DocItemProps } from '@theme/DocItem';
 import Heading from '@theme/Heading';
 import type { ApiOptions, PackageReflectionGroup } from '../types';
-import { removeScopes } from '../utils/links';
+import { removeScopes } from '../utils/removeScopes';
 import { VersionBanner } from './VersionBanner';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

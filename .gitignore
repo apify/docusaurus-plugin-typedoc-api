@@ -10,7 +10,6 @@ logs/
 .yarnclean
 
 # Directories
-assets/
 build/
 cjs/
 coverage/

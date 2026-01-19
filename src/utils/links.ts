@@ -1,17 +1,6 @@
 import fs from 'fs';
 import { TypedocJSONFile } from '../types';
 
-export function removeScopes(text: string, scopes: string[]): string {
-	if (scopes.length === 0) {
-		return text;
-	}
-
-	return scopes.reduce(
-		(value, scope) => value.replace(new RegExp(`^(${scope}-|@${scope}/)`), ''),
-		text,
-	);
-}
-
 export function injectGitRevision(typedocJsonFilePath: string, gitRevision: string): void {
 	const typedocJson = JSON.parse(fs.readFileSync(typedocJsonFilePath, 'utf8')) as TypedocJSONFile;
 

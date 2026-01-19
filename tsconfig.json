@@ -1,9 +1,13 @@
 {
-  "extends": "./tsconfig.options.json",
-  "files": [],
-  "references": [
-    {
-      "path": "packages/plugin"
-    }
-  ]
+  "extends": "@docusaurus/tsconfig",
+  "include": [
+    "src/**/*"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "es2021"
+    ],
+    "target": "ES2015",
+    "esModuleInterop": true
+  }
 }

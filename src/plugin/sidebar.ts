@@ -7,7 +7,7 @@ import type {
 	TSDDeclarationReflection,
 	TSDDeclarationReflectionMap,
 } from '../types';
-import { removeScopes } from '../utils/links';
+import { removeScopes } from '../utils/removeScopes';
 import { createReflectionMap } from './data';
 
 export function groupSidebarItems(
