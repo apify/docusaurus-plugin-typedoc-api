@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { JSONOutput, ReflectionKind } from 'typedoc';
 import type { ResolvedPackageConfig } from '../types';
 

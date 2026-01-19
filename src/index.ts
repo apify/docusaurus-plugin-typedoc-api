@@ -1,7 +1,7 @@
 /* eslint-disable no-console, sort-keys */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import type { Options as MDXLoaderOptions } from '@docusaurus/mdx-loader';
 import type { PropVersionDocs, PropVersionMetadata } from '@docusaurus/plugin-content-docs';
 import { CURRENT_VERSION_NAME } from '@docusaurus/plugin-content-docs/server';

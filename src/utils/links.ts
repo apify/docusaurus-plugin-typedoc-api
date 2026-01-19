@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import { TypedocJSONFile } from '../types';
 
 export function injectGitRevision(typedocJsonFilePath: string, gitRevision: string): void {

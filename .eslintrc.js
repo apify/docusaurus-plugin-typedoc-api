@@ -25,6 +25,8 @@ module.exports = {
 		'import/no-extraneous-dependencies': 'off',
 		'unicorn/prefer-ternary': 'off',
 		'unicorn/no-abusive-eslint-disable': 'off',
+		// We need __dirname and require.resolve for path resolution in the plugin
+		'unicorn/prefer-module': 'off',
 		'no-plusplus': 'off',
 		// this is definitely code smell but we have a lot of it in the python transforming script
 		'no-param-reassign': 'off',

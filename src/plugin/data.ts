@@ -1,6 +1,6 @@
-import { spawnSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import * as TypeDoc from 'typedoc';
 import { type InlineTagDisplayPart, type JSONOutput, ReflectionKind } from 'typedoc';
 import ts from 'typescript';
