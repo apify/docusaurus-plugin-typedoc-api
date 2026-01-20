@@ -1,6 +1,6 @@
 {
   "name": "@apify/docusaurus-plugin-typedoc-api",
-  "version": "4.4.12",
+  "version": "5.0.0",
   "description": "Docusaurus plugin that provides source code API documentation powered by TypeDoc.",
   "keywords": [
     "docusaurus",
