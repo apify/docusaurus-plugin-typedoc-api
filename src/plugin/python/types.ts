@@ -71,7 +71,7 @@ export interface TypeDocDocstring {
 	sections?: Record<string, any[]>[];
 }
 
-export type DocspecDocstringContentItem = string | Record<string, any[]>;
+export type DocspecDocstringContentItem = Record<string, any[]> | string;
 
 export interface DocspecDocstring {
 	content: DocspecDocstringContentItem[];

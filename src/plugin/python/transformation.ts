@@ -86,6 +86,19 @@ export class SymbolIdTracker {
 };
 
 export class DocspecTransformer {
+	/**
+	 * Maps Google-style docstring section names to Docusaurus admonition types.
+	 * Only sections that semantically match admonition purposes are included.
+	 * Sections like Raises, Yields, Attributes are technical documentation, not admonitions.
+	 */
+	private static readonly SECTION_TO_ADMONITION: Record<string, string> = {
+		Danger: 'danger',
+		Info: 'info',
+		Note: 'note',
+		Tip: 'tip',
+		Warning: 'warning',
+	};
+
 	private pythonTypeResolver: PythonTypeResolver;
 
 	private inheritanceGraph: InheritanceGraph;
@@ -443,19 +456,6 @@ export class DocspecTransformer {
 
 		return { filePathInRepo };
 	}
-
-	/**
-	 * Maps Google-style docstring section names to Docusaurus admonition types.
-	 * Only sections that semantically match admonition purposes are included.
-	 * Sections like Raises, Yields, Attributes are technical documentation, not admonitions.
-	 */
-	private static readonly SECTION_TO_ADMONITION: Record<string, string> = {
-		Note: 'note',
-		Tip: 'tip',
-		Info: 'info',
-		Warning: 'warning',
-		Danger: 'danger',
-	};
 
 	/**
 	 * Converts a docstring section to Docusaurus admonition markdown format.
