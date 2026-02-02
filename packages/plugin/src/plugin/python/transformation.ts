@@ -445,6 +445,57 @@ export class DocspecTransformer {
 	}
 
 	/**
+	 * Maps Google-style docstring section names to Docusaurus admonition types.
+	 * Only sections that semantically match admonition purposes are included.
+	 * Sections like Raises, Yields, Attributes are technical documentation, not admonitions.
+	 */
+	private static readonly SECTION_TO_ADMONITION: Record<string, string> = {
+		Warning: 'warning',
+		Warnings: 'warning',
+		Note: 'note',
+		Notes: 'note',
+		Tip: 'tip',
+		Tips: 'tip',
+		Example: 'tip',
+		Examples: 'tip',
+		Info: 'info',
+		Todo: 'info',
+		Caution: 'caution',
+		Danger: 'danger',
+		Important: 'warning',
+	};
+
+	/**
+	 * Converts a docstring section to Docusaurus admonition markdown format.
+	 */
+	private sectionToAdmonition(sectionName: string, content: unknown[]): string {
+		const admonitionType = DocspecTransformer.SECTION_TO_ADMONITION[sectionName];
+		if (!admonitionType) {
+			return '';
+		}
+
+		const contentText = content
+			.map((item) => {
+				if (typeof item === 'string') {
+					return item;
+				}
+				if (typeof item === 'object' && item !== null && 'desc' in item) {
+					const obj = item as { param?: string; desc: string };
+					return obj.param ? `**${obj.param}**: ${obj.desc}` : obj.desc;
+				}
+				return '';
+			})
+			.filter(Boolean)
+			.join('\n');
+
+		if (!contentText) {
+			return '';
+		}
+
+		return `\n\n:::${admonitionType} ${sectionName}\n${contentText}\n:::`;
+	}
+
+	/**
 	 * If possible, parses the `.docstring` property of the passed object. If the docstring is a stringified JSON object,
 	 * it extracts the `args` and `returns` sections and adds them to the returned object.
 	 *
@@ -472,6 +523,24 @@ export class DocspecTransformer {
 				docstring.sections?.find((section) => Object.keys(section)[0] === 'Returns')?.Returns ?? [];
 
 			docstring.returns = returnTypes.join('\n');
+
+			// Convert other sections (Warnings, Notes, Raises, etc.) to admonitions
+			const admonitions: string[] = [];
+			for (const section of parsedDocstring.sections ?? []) {
+				const sectionName = Object.keys(section)[0];
+				// Skip sections that are handled separately
+				if (['Arguments', 'Returns'].includes(sectionName)) {
+					continue;
+				}
+				const admonition = this.sectionToAdmonition(sectionName, section[sectionName] as unknown[]);
+				if (admonition) {
+					admonitions.push(admonition);
+				}
+			}
+
+			if (admonitions.length > 0) {
+				docstring.text += admonitions.join('');
+			}
 		} catch {
 			// Do nothing
 		}
