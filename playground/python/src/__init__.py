@@ -26,6 +26,9 @@ class Bar:
             count: The number of times to print "foo".
                 This comment is multiline, and contains
                 some urls too, look: https://apify.com
+
+        Returns:
+            Foo: The foo object.
         """
         print("foo " * count)
     def foo2(self, count: int, second_arg: str) -> Foo:

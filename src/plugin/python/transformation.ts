@@ -522,7 +522,19 @@ export class DocspecTransformer {
 							}, {}) ?? {};
 					} else if (sectionName === 'Returns') {
 						// Extract return type documentation
-						docstring.returns = (sectionContent as string[]).join('\n');
+						docstring.returns = sectionContent
+							.map((returnsItem) => {
+								if (typeof returnsItem === 'string') {
+									return returnsItem;
+								}
+								if (typeof returnsItem === 'object' && returnsItem !== null && 'param' in returnsItem && 'desc' in returnsItem) {
+									const obj = returnsItem as { param: string; desc: string };
+									return `${obj.param}: ${obj.desc}`;
+								}
+								return '';
+							})
+							.filter(Boolean)
+							.join('\n');
 					} else {
 						// Convert other sections to admonitions inline
 						const admonition = this.sectionToAdmonition(sectionName, sectionContent);
