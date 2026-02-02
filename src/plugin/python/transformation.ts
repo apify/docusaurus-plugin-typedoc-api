@@ -86,6 +86,19 @@ export class SymbolIdTracker {
 };
 
 export class DocspecTransformer {
+	/**
+	 * Maps Google-style docstring section names to Docusaurus admonition types.
+	 * Only sections that semantically match admonition purposes are included.
+	 * Sections like Raises, Yields, Attributes are technical documentation, not admonitions.
+	 */
+	private static readonly SECTION_TO_ADMONITION: Record<string, string> = {
+		Danger: 'danger',
+		Info: 'info',
+		Note: 'note',
+		Tip: 'tip',
+		Warning: 'warning',
+	};
+
 	private pythonTypeResolver: PythonTypeResolver;
 
 	private inheritanceGraph: InheritanceGraph;
@@ -445,11 +458,41 @@ export class DocspecTransformer {
 	}
 
 	/**
+	 * Converts a docstring section to Docusaurus admonition markdown format.
+	 */
+	private sectionToAdmonition(sectionName: string, content: unknown[]): string {
+		const admonitionType = DocspecTransformer.SECTION_TO_ADMONITION[sectionName];
+		if (!admonitionType) {
+			return '';
+		}
+
+		const contentText = content
+			.map((item) => {
+				if (typeof item === 'string') {
+					return item;
+				}
+				if (typeof item === 'object' && item !== null && 'desc' in item) {
+					const obj = item as { param?: string; desc: string };
+					return obj.param ? `**${obj.param}**: ${obj.desc}` : obj.desc;
+				}
+				return '';
+			})
+			.filter(Boolean)
+			.join('\n');
+
+		if (!contentText) {
+			return '';
+		}
+
+		return `:::${admonitionType} ${sectionName}\n${contentText}\n:::`;
+	}
+
+	/**
 	 * If possible, parses the `.docstring` property of the passed object. If the docstring is a stringified JSON object,
 	 * it extracts the `args` and `returns` sections and adds them to the returned object.
 	 *
-	 * TODO
-	 * This structure is created in the `google` docstring format, which is a JSON object with the following structure:
+	 * The docstring format is a JSON object with a `content` array that contains interleaved text strings
+	 * and section objects, preserving the original order from the docstring.
 	 */
 	private parseDocstring(docspecMember: DocspecObject): TypeDocDocstring {
 		const docstring: TypeDocDocstring = { text: docspecMember.docstring?.content ?? '' };
@@ -457,21 +500,52 @@ export class DocspecTransformer {
 		try {
 			const parsedDocstring = JSON.parse(docstring.text) as DocspecDocstring;
 
-			docstring.text = parsedDocstring.text;
-			const parsedArguments = (parsedDocstring.sections?.find(
-				(section) => Object.keys(section)[0] === 'Arguments',
-			)?.Arguments ?? []) as DocspecDocstring['args'];
+			// Build the text output by processing content items in order
+			const textParts: string[] = [];
 
-			docstring.args =
-				parsedArguments?.reduce<Record<string, string>>((acc, arg) => {
-					acc[arg.param] = arg.desc;
-					return acc;
-				}, {}) ?? {};
+			for (const item of parsedDocstring.content ?? []) {
+				if (typeof item === 'string') {
+					// Regular text content
+					textParts.push(item);
+				} else {
+					// Section object
+					const sectionName = Object.keys(item)[0];
+					const sectionContent = item[sectionName] as unknown[];
 
-			const returnTypes =
-				docstring.sections?.find((section) => Object.keys(section)[0] === 'Returns')?.Returns ?? [];
+					if (sectionName === 'Arguments') {
+						// Extract arguments for parameter documentation
+						const parsedArguments = sectionContent as { param: string; desc: string }[];
+						docstring.args =
+							parsedArguments?.reduce<Record<string, string>>((acc, arg) => {
+								acc[arg.param] = arg.desc;
+								return acc;
+							}, {}) ?? {};
+					} else if (sectionName === 'Returns') {
+						// Extract return type documentation
+						docstring.returns = sectionContent
+							.map((returnsItem) => {
+								if (typeof returnsItem === 'string') {
+									return returnsItem;
+								}
+								if (typeof returnsItem === 'object' && returnsItem !== null && 'param' in returnsItem && 'desc' in returnsItem) {
+									const obj = returnsItem as { param: string; desc: string };
+									return `${obj.param}: ${obj.desc}`;
+								}
+								return '';
+							})
+							.filter(Boolean)
+							.join('\n');
+					} else {
+						// Convert other sections to admonitions inline
+						const admonition = this.sectionToAdmonition(sectionName, sectionContent);
+						if (admonition) {
+							textParts.push(admonition);
+						}
+					}
+				}
+			}
 
-			docstring.returns = returnTypes.join('\n');
+			docstring.text = textParts.join('\n\n');
 		} catch {
 			// Do nothing
 		}

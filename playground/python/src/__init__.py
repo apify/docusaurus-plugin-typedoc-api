@@ -5,6 +5,11 @@ class Bar:
     """
     The bar class is a simple
     class that prints "Bar" when it is initialized and "foo" when the foo method is called.
+
+    Tip:
+        This is an admonition.
+
+    There is some more text below here.
     """
 
     def __init__(self):
@@ -21,9 +26,11 @@ class Bar:
             count: The number of times to print "foo".
                 This comment is multiline, and contains
                 some urls too, look: https://apify.com
+
+        Returns:
+            Foo: The foo object.
         """
         print("foo " * count)
-    
     def foo2(self, count: int, second_arg: str) -> Foo:
         """
         The foo2 method of the bar class, prints "foo2".
