@@ -1,36 +1,77 @@
 {
-  "private": true,
-  "name": "docusaurus-plugin-typedoc-api-root",
+  "name": "@apify/docusaurus-plugin-typedoc-api",
+  "version": "5.0.0",
+  "description": "Docusaurus plugin that provides source code API documentation powered by TypeDoc.",
+  "keywords": [
+    "docusaurus",
+    "plugin",
+    "typedoc",
+    "api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:apify/docusaurus-plugin-typedoc-api.git"
+  },
+  "author": "Miles Johnson, Apify Technologies",
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "python-scripts/**/*",
+    "src/**/*"
+  ],
+  "engines": {
+    "node": ">=16.12.0"
+  },
   "scripts": {
-    "check": "yarn run type && yarn run lint",
-    "clean": "packemon clean --cwd packages/plugin",
-    "docs": "yarn run build && cd website && yarn run start",
-    "build": "packemon build --addEngines --cwd packages/plugin && node ./scripts/revertPackemon.js",
-    "build:deploy": "packemon build --addEngines --cwd packages/plugin",
-    "pack": "rimraf packages/plugin/tsconfig.lib.tsbuildinfo && packemon pack --addEngines --declaration --cwd packages/plugin && node ./scripts/revertPackemon.js",
+    "clean": "rimraf lib",
+    "build": "yarn clean && tsc -p tsconfig.build.json && cp src/components/styles.css lib/components/",
+    "check": "yarn type && yarn lint",
+    "type": "tsc --noEmit",
+    "lint": "eslint --cache --color --fix --ext .ts,.tsx src/",
     "format": "prettier --write .",
-    "lint": "eslint --cache --color --fix --ext .ts,.tsx ./packages/*/{src,tests}",
-    "type": "tsc --build",
-    "release": "yarn run pack && yarn run check && lerna-release"
+    "release": "yarn build && yarn check && npm publish"
+  },
+  "peerDependencies": {
+    "@docusaurus/core": "^3.8.1",
+    "@docusaurus/mdx-loader": "^3.8.1",
+    "@docusaurus/plugin-content-docs": "^3.8.1",
+    "@docusaurus/preset-classic": "^3.8.1",
+    "@docusaurus/types": "^3.8.1",
+    "@docusaurus/utils": "^3.8.1",
+    "@types/react": "^18.3.11 || >=19.0.0",
+    "react": ">=18.0.0 || >=19.0.0",
+    "react-dom": "^18.2.0 || >=19.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@vscode/codicons": "^0.0.35",
+    "html-entities": "2.3.2",
+    "marked": "^9.1.6",
+    "marked-smartypants": "^1.1.5",
+    "typedoc": "^0.26.11",
+    "zx": "^8.1.4"
   },
   "devDependencies": {
-    "@moonrepo/dev": "^2.0.1",
+    "@docusaurus/mdx-loader": "^3.9.2",
+    "@docusaurus/module-type-aliases": "^3.8.1",
+    "@docusaurus/plugin-content-docs": "^3.8.1",
+    "@docusaurus/preset-classic": "^3.9.2",
+    "@docusaurus/theme-classic": "^3.9.2",
+    "@docusaurus/tsconfig": "^3.8.1",
+    "@docusaurus/types": "^3.8.1",
+    "@docusaurus/utils": "^3.8.1",
     "@types/marked": "^6.0.0",
     "@types/react": "^18.3.3",
     "eslint": "^8.56.0",
     "eslint-config-moon": "^2.0.14",
-    "lerna": "^7.4.2",
-    "packemon": "^3.2.3",
     "prettier": "^3.3.3",
     "prettier-config-moon": "^1.1.2",
     "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "rimraf": "^5.0.5",
-    "tsconfig-moon": "^1.3.0",
     "typescript": "^5.5.4"
   },
-  "workspaces": [
-    "packages/*",
-    "playground/website"
-  ],
   "packageManager": "yarn@4.9.2"
 }
