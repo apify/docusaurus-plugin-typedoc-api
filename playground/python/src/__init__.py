@@ -5,6 +5,11 @@ class Bar:
     """
     The bar class is a simple
     class that prints "Bar" when it is initialized and "foo" when the foo method is called.
+
+    Tip:
+        This is an admonition.
+
+    There is some more text below here.
     """
 
     def __init__(self):
@@ -23,7 +28,6 @@ class Bar:
                 some urls too, look: https://apify.com
         """
         print("foo " * count)
-    
     def foo2(self, count: int, second_arg: str) -> Foo:
         """
         The foo2 method of the bar class, prints "foo2".

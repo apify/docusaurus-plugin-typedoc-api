@@ -71,11 +71,10 @@ export interface TypeDocDocstring {
 	sections?: Record<string, any[]>[];
 }
 
+export type DocspecDocstringContentItem = string | Record<string, any[]>;
+
 export interface DocspecDocstring {
-	text: string;
-	returns?: string;
-	args?: { param: string; desc: string }[];
-	sections?: Record<string, any[]>[];
+	content: DocspecDocstringContentItem[];
 }
 
 export type TypeDocType =

@@ -95,8 +95,6 @@ class ApifyGoogleProcessor(Processor):
         "Keyword Args:": "Arguments",
         "Keyword Arguments:": "Arguments",
         "Methods:": "Methods",
-        "Note:": "Notes",
-        "Notes:": "Notes",
         "Other Parameters:": "Arguments",
         "Parameters:": "Arguments",
         "Return:": "Returns",
@@ -105,8 +103,11 @@ class ApifyGoogleProcessor(Processor):
         "References:": "References",
         "See Also:": "See Also",
         "Todo:": "Todo",
-        "Warning:": "Warnings",
-        "Warnings:": "Warnings",
+        "Note:": "Note",
+        "Tip:": "Tip",
+        "Info:": "Info",
+        "Warning:": "Warning",
+        "Danger:": "Danger",
         "Warns:": "Warns",
         "Yield:": "Yields",
         "Yields:": "Yields",
@@ -128,69 +129,102 @@ class ApifyGoogleProcessor(Processor):
         if not node.docstring:
             return
 
-        lines = []
-        sections = []
-        current_lines: t.List[str] = []
+        content = []  # Interleaved list of text strings and section dicts
+        current_text_lines: t.List[str] = []
+        current_section_lines: t.List[str] = []
         in_codeblock = False
         keyword = None
+        keyword_indent = None
         multiline_argument_offset = -1
         state = { 'param_indent': None }
 
-        def _commit():
+        def _commit_text():
+            """Commit accumulated text lines to content."""
+            if current_text_lines:
+                text = "\n".join(current_text_lines)
+                if text.strip():
+                    content.append(text)
+                current_text_lines.clear()
+
+        def _commit_section():
+            """Commit accumulated section to content."""
+            nonlocal keyword, keyword_indent
             if keyword:
-                sections.append({keyword: list(current_lines)})
+                content.append({keyword: list(current_section_lines)})
+            current_section_lines.clear()
+            keyword = None
+            keyword_indent = None
+
+        def _commit():
+            nonlocal keyword, keyword_indent
+            if keyword:
+                _commit_section()
             else:
-                lines.extend(current_lines)
-            current_lines.clear()
+                _commit_text()
 
         def is_continuation(line: str) -> bool:
             if state.get('param_indent') is None:
                 state['param_indent'] = self.get_indent_size(line)
                 return False
-            
+
             return self.get_indent_size(line) > state.get('param_indent')
 
         for line in node.docstring.content.split("\n"):
             multiline_argument_offset += 1
             if line.lstrip().startswith("```"):
                 in_codeblock = not in_codeblock
-                current_lines.append(line)
+                if keyword:
+                    current_section_lines.append(line)
+                else:
+                    current_text_lines.append(line)
                 if not in_codeblock:
                     _commit()
                 continue
 
             if in_codeblock:
-                current_lines.append(line)
+                if keyword:
+                    current_section_lines.append(line)
+                else:
+                    current_text_lines.append(line)
                 continue
 
             stripped = line.strip()
+            line_indent = self.get_indent_size(line)
+
             if stripped in self._keywords_map:
                 _commit()
                 keyword = self._keywords_map[stripped]
+                keyword_indent = line_indent
+                continue
+
+            # Check if we've exited the current section (line at same or less indent than keyword)
+            if keyword is not None and stripped and line_indent <= keyword_indent:
+                _commit()
+                # Process this line as regular text
+                current_text_lines.append(stripped)
                 continue
 
             if keyword is None:
-                lines.append(stripped)
+                current_text_lines.append(stripped)
                 continue
 
             for param_re in self._param_res:
                 param_match = param_re.match(stripped)
                 if param_match and not is_continuation(line):
-                    current_lines.append(param_match.groupdict())
+                    current_section_lines.append(param_match.groupdict())
                     multiline_argument_offset = 0
                     break
 
             if not param_match:
                 if multiline_argument_offset == 1:
-                    current_lines[-1]["desc"] += "\n" + stripped
+                    current_section_lines[-1]["desc"] += "\n" + stripped
                     multiline_argument_offset = 0
                 else:
-                    current_lines.append(stripped)
+                    current_section_lines.append(stripped)
 
         _commit()
         node.docstring.content = json.dumps({
-            "text": "\n".join(lines),
-            "sections": sections,
+            "content": content,
         }, indent=None)
-        
+
 
