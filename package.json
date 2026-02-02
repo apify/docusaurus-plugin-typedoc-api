@@ -2,6 +2,9 @@
   "name": "@apify/docusaurus-plugin-typedoc-api",
   "version": "5.0.0",
   "description": "Docusaurus plugin that provides source code API documentation powered by TypeDoc.",
+  "workspaces": [
+    "playground/website"
+  ],
   "keywords": [
     "docusaurus",
     "plugin",
@@ -46,7 +49,9 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@docusaurus/theme-common": "^3.9.2",
     "@vscode/codicons": "^0.0.35",
+    "cheerio": "^1.2.0",
     "html-entities": "2.3.2",
     "marked": "^9.1.6",
     "marked-smartypants": "^1.1.5",
