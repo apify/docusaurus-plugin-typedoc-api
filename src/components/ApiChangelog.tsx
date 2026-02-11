@@ -13,7 +13,7 @@ export default function ApiChangelog({ changelog: Changelog, route }: ApiChangel
 	return (
 		<ApiItemLayout
 			heading="Changelog"
-			pageMetadata={<PageMetadata description={Changelog.contentTitle} title="Changelog | API" />}
+			pageMetadata={<PageMetadata description={Changelog.contentTitle} title="Changelog" />}
 			route={route}
 			toc={Changelog.toc ?? emptyToc}
 		>
