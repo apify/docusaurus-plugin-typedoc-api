@@ -12,8 +12,16 @@ export interface SourceLinkProps {
 	sources?: JSONOutput.SourceReference[];
 }
 
-export function resolveGithubUrl(source: JSONOutput.SourceReference & { gitRevision?: string }, siteConfig: DocusaurusConfig, gitRefName: string): string {
-	return source.url ?? `https://${siteConfig.githubHost}${siteConfig.githubPort ? `:${siteConfig.githubPort}` : ''}/${siteConfig.organizationName}/${siteConfig.projectName}/blob/${source.gitRevision ?? gitRefName}/${replaceWithSrc(source.fileName)}#L${source.line}`;
+export function resolveGithubUrl(source: JSONOutput.SourceReference & { gitRevision?: string }, siteConfig: DocusaurusConfig, gitRefName: string): string | undefined {
+	if (source.url) {
+		return source.url;
+	}
+
+	if (!siteConfig.githubHost || !siteConfig.organizationName || !siteConfig.projectName) {
+		return undefined;
+	}
+
+	return `https://${siteConfig.githubHost}${siteConfig.githubPort ? `:${siteConfig.githubPort}` : ''}/${siteConfig.organizationName}/${siteConfig.projectName}/blob/${source.gitRevision ?? gitRefName}/${replaceWithSrc(source.fileName)}#L${source.line}`;
 }
 
 export function SourceLink({ sources = [] }: SourceLinkProps) {
@@ -26,17 +34,25 @@ export function SourceLink({ sources = [] }: SourceLinkProps) {
 
 	return (
 		<>
-			{sources.map((source) => (
-				<a
-					key={source.fileName}
-					className="tsd-anchor"
-					href={resolveGithubUrl(source, siteConfig as never, gitRefName)}
-					rel="noreferrer"
-					target="_blank"
-				>
-					<i className="codicon codicon-file-code" />
-				</a>
-			))}
+			{sources.map((source) => {
+				const url = resolveGithubUrl(source, siteConfig as never, gitRefName);
+
+				if (!url) {
+					return null;
+				}
+
+				return (
+					<a
+						key={source.fileName}
+						className="tsd-anchor"
+						href={url}
+						rel="noreferrer"
+						target="_blank"
+					>
+						<i className="codicon codicon-file-code" />
+					</a>
+				);
+			})}
 		</>
 	);
 }
