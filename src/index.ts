@@ -292,6 +292,7 @@ Overwriting with relative path from siteDir (${context.siteDir}).`);
 
 			actions.setGlobalData({
 				isPython: !!(options.python || (Object.keys(options.pythonOptions).length > 0)),
+				versions: content.loadedVersions,
 			} as GlobalData);
 
 			const docs: PropVersionDocs = {};
