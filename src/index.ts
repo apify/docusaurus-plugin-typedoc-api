@@ -296,6 +296,7 @@ Overwriting with relative path from siteDir (${context.siteDir}).`);
 					isLast: x.isLast,
 					path: x.versionPath,
 				})),
+				routeBasePath: options.routeBasePath ?? 'api',
 			} as GlobalData);
 
 			const docs: PropVersionDocs = {};
