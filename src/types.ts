@@ -61,6 +61,7 @@ export interface DocusaurusPluginTypeDocApiOptions
 
 export interface GlobalData {
 	isPython: boolean;
+	routeBasePath: string;
 }
 
 // CONFIG
