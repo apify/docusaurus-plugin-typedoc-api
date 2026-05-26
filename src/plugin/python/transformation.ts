@@ -150,8 +150,12 @@ export class DocspecTransformer {
 			docspecModules as unknown as { name: string },
 		);
 
+		// Sort modules by name so the sequential IDs assigned by `SymbolIdTracker` are deterministic across
+        // runs (`PythonLoader` traversal order is filesystem-dependent and reshuffles IDs across CI machines).
+		const sortedModules = [...docspecModules].sort((a, b) => a.name.localeCompare(b.name));
+
 		// Convert all the modules, store them in the root object
-		for (const module of docspecModules) {
+		for (const module of sortedModules) {
 			this.walkAndTransform({
 				currentDocspecNode: module,
 				moduleName: module.name,
