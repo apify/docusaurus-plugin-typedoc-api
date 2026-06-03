@@ -31,7 +31,13 @@ export function processPythonDocs({
 	]);
 
 	if (out.error) {
-		throw new Error(out.error.message);
+		throw new Error(`Failed to spawn the generate_ast.py script: ${out.error.message}`);
+	}
+
+	if (out.status !== 0) {
+		throw new Error(
+			`The generate_ast.py script failed with exit code ${out.status}:\n${out.stderr.toString()}`,
+		);
 	}
 
 	const moduleShortcuts = JSON.parse(fs.readFileSync(moduleShortcutsPath, 'utf8')) as Record<
