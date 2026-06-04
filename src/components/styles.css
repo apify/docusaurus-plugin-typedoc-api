@@ -196,6 +196,11 @@ html[data-theme='light'] .tsd-panel-content {
 	margin-bottom: var(--tsd-spacing-vertical-full);
 }
 
+.tsd-added-in {
+	display: inline-block;
+	margin-bottom: var(--tsd-spacing-vertical);
+}
+
 /* SOURCES */
 
 .tsd-sources,
