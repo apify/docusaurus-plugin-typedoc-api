@@ -194,7 +194,9 @@ html[data-theme='light'] .tsd-panel-content {
 .tsd-comment-since {
 	font-style: italic;
 	font-size: 90%;
-	margin-top: 1em;
+	margin-top: 0.5em;
+	padding-top: 0.5em;
+	border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .tsd-comment-root {

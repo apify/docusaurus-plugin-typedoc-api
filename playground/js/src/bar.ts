@@ -13,18 +13,21 @@ export interface BarOptions<NameType extends string> {
 	 * The age of the `Bar` instance.
 	 *
 	 * @default 0
+	 * @since Added in 1.2.3
 	 */
 	age: number;
 	/**
 	 * Favourite numbers of the `Bar` instance.
 	 *
 	 * @default [1, 2, Infinity]
+	 * @since Added in 1.2.0
 	 */
 	numbers: number[];
 	/**
 	 * Favourite words of the `Bar` instance.
 	 *
 	 * @default ['foo', 'bar', 'jabberwocky']
+	 * @since Added in 1.1.0
 	 */
 	strings: string[];
 }
