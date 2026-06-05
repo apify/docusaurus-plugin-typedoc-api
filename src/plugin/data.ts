@@ -120,8 +120,6 @@ export async function generateJson(
 					'@apilink',
 					'@doclink',
 				] as `@${string}`[],
-				// Recognize the @added_in tag (rendered as a pill) on top of the defaults.
-				blockTags: [...TypeDoc.OptionDefaults.blockTags, '@added_in'] as `@${string}`[],
 				...options.typedocOptions,
 				// Control how config and packages are detected
 				tsconfig,

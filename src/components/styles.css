@@ -191,14 +191,15 @@ html[data-theme='light'] .tsd-panel-content {
 	margin-bottom: 0;
 }
 
+.tsd-comment-since {
+	font-style: italic;
+	font-size: 90%;
+	margin-top: 1em;
+}
+
 .tsd-comment-root {
 	margin-top: 0;
 	margin-bottom: var(--tsd-spacing-vertical-full);
-}
-
-.tsd-added-in {
-	display: inline-block;
-	margin-bottom: var(--tsd-spacing-vertical);
 }
 
 /* SOURCES */

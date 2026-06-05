@@ -32,18 +32,6 @@ export function displayPartsToMarkdown(parts: JSONOutput.CommentDisplayPart[]): 
 		.join('');
 }
 
-const ADDED_IN_TAG = '@added_in';
-
-function getAddedInVersion(comment: JSONOutput.Comment): string | null {
-	const tag = comment.blockTags?.find((blockTag) => blockTag.tag === ADDED_IN_TAG);
-
-	if (!tag) {
-		return null;
-	}
-
-	return displayPartsToMarkdown(tag.content).trim() || null;
-}
-
 export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 	if (!comment || !hasComment(comment)) {
 		return null;
@@ -51,8 +39,7 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 
 	// Hide custom tags.
 	hideTags.push('@reference');
-
-	const addedIn = getAddedInVersion(comment);
+	hideTags.push('@since');
 
 	const blockTags =
 		comment.blockTags?.filter((tag) => {
@@ -60,15 +47,11 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 				return false;
 			}
 
-			return tag.tag !== '@default' && tag.tag !== ADDED_IN_TAG;
+			return tag.tag !== '@default';
 		}) ?? [];
 
 	return (
 		<div className={`tsd-comment tsd-typography ${root ? 'tsd-comment-root' : ''}`}>
-			{addedIn && (
-				<span className="badge badge--secondary tsd-added-in">Added in: {addedIn}</span>
-			)}
-
 			{!!comment.summary && (
 				<div className="lead">
 					<Markdown content={displayPartsToMarkdown(comment.summary)} />
@@ -89,6 +72,14 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 					))}
 				</dl>
 			)}
+
+			{
+				comment.blockTags.some((tag) => tag.tag === '@since') && (
+					<div className="tsd-comment-since">
+						<Markdown content={displayPartsToMarkdown(comment.blockTags.find((tag) => tag.tag === '@since')?.content)} />
+					</div>
+				)
+			}
 		</div>
 	);
 }

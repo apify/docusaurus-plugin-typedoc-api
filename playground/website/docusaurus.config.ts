@@ -48,12 +48,8 @@ const config: Config = {
 		(context, options) =>
 			typedocApiPlugin(context, {
 				...(options as any),
-				projectRoot: '.',
+				projectRoot: '../js',
 				packages: [{ path: '.' }],
-				pythonOptions: {
-					moduleShortcutsPath: __dirname + '/../python/module_shortcuts.json',
-					pythonModulePath: __dirname + '/../python/src',
-				},
                 reexports: [
                     {
                         url: 'https://crawlee.dev/python/api/class/Dataset',
