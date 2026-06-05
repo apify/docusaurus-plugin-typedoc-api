@@ -39,6 +39,7 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 
 	// Hide custom tags.
 	hideTags.push('@reference');
+	hideTags.push('@since');
 
 	const blockTags =
 		comment.blockTags?.filter((tag) => {
@@ -71,6 +72,14 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 					))}
 				</dl>
 			)}
+
+			{
+				comment.blockTags.some((tag) => tag.tag === '@since') && (
+					<div className="tsd-comment-since">
+						<Markdown content={displayPartsToMarkdown(comment.blockTags.find((tag) => tag.tag === '@since')?.content)} />
+					</div>
+				)
+			}
 		</div>
 	);
 }

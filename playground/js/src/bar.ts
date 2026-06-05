@@ -1,8 +1,12 @@
+/**
+ * @since Added in 1.2.0
+ */
 export interface BarOptions<NameType extends string> {
 	/**
 	 * The name of the `Bar` instance.
 	 *
 	 * @default 'Karl'
+	 * @since Added in 1.0.0
 	 */
 	name: NameType;
 	/**
@@ -27,6 +31,8 @@ export interface BarOptions<NameType extends string> {
 
 /**
  * This is a simple class called `Bar`
+ *
+ * @since Added in 1.1.0-beta.23
  */
 export class Bar {
 	private constructor() {
@@ -38,6 +44,7 @@ export class Bar {
 	 *
 	 * @param {BarOptions} options
 	 * @returns {Bar}
+	 * @since Added in 1.0.0, 1.1.0-beta.23
 	 */
 	static create<TypeParamName extends string = 'Karl'>(options: BarOptions<TypeParamName> = {} as BarOptions<TypeParamName>): Bar {
 		return new Bar();
