@@ -74,9 +74,9 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 			)}
 
 			{
-				comment.blockTags.some((tag) => tag.tag === '@since') && (
+				comment.blockTags?.some((tag) => tag.tag === '@since') && (
 					<div className="tsd-comment-since">
-						<Markdown content={displayPartsToMarkdown(comment.blockTags.find((tag) => tag.tag === '@since')?.content)} />
+						<Markdown content={displayPartsToMarkdown(comment?.blockTags?.find((tag) => tag.tag === '@since')?.content)} />
 					</div>
 				)
 			}
