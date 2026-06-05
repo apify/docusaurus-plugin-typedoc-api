@@ -3,9 +3,10 @@
 import { useMinimalLayout } from '../hooks/useMinimalLayout';
 import { useRequiredReflection } from '../hooks/useReflection';
 import { escapeMdx } from '../utils/helpers';
-import { Comment, hasComment } from './Comment';
+import { Comment, displayPartsToMarkdown, hasComment } from './Comment';
 import { DefaultValue } from './DefaultValue';
 import { Icon } from './Icon';
+import { Markdown } from './Markdown';
 import { MemberSources } from './MemberSources';
 import { Parameter } from './Parameter';
 import { extractDeclarationFromType, Type } from './Type';
@@ -21,6 +22,7 @@ export function MemberDeclaration({ id }: MemberDeclarationProps) {
 	const minimal = useMinimalLayout();
 	const showTypes = reflection.typeParameters && reflection.typeParameters.length > 0;
 	const showDeclaration = !minimal && extractDeclarationFromType(reflection.type);
+	const showSince = reflection.comment?.blockTags?.some((tag) => tag.tag === '@since');
 
 	return (
 		<>
@@ -59,6 +61,12 @@ export function MemberDeclaration({ id }: MemberDeclarationProps) {
 					<div className="tsd-type-declaration">
 						<h4>Type declaration</h4>
 						<Parameter param={extractDeclarationFromType(reflection.type)} />
+					</div>
+				)}
+
+				{showSince && (
+						<div className="tsd-comment-since">
+						<Markdown content={displayPartsToMarkdown(reflection.comment?.blockTags?.find((tag) => tag.tag === '@since')?.content)} />
 					</div>
 				)}
 			</div>
