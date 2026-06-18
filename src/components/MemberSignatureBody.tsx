@@ -7,15 +7,15 @@ import { usePluginData } from '@docusaurus/useGlobalData';
 import { useMinimalLayout } from '../hooks/useMinimalLayout';
 import type { TSDSignatureReflection } from '../types';
 import { ApiDataContext } from './ApiDataContext';
-import { Comment, displayPartsToMarkdown, hasComment } from './Comment';
+import { Comment, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
 import { CommentBadges, isCommentWithModifiers } from './CommentBadges';
 import { DefaultValue } from './DefaultValue';
 import { Flags } from './Flags';
+import { Markdown } from './Markdown';
 import { hasSources, MemberSources } from './MemberSources';
 import { Parameter } from './Parameter';
 import { extractDeclarationFromType, Type } from './Type';
 import { TypeParameters } from './TypeParameters';
-import { Markdown } from './Markdown';
 
 export function hasSigBody(
 	sig: TSDSignatureReflection | undefined,
@@ -63,9 +63,9 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 	const showTypes = sig.typeParameter && sig.typeParameter.length > 0;
 	const showParams = !minimal && sig.parameters && sig.parameters.length > 0;
 	const showReturn = !minimal && sig.type;
-	const showSince = sig.comment?.blockTags?.some((tag) => tag.tag === '@since');
 
 	const { reflections } = useContext(ApiDataContext);
+	const sinceContent = getSinceContent(sig);
 	const { isPython } = usePluginData('docusaurus-plugin-typedoc-api') as GlobalData;
 
 	if (isPython) {
@@ -218,10 +218,10 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 			)}
 
 			{
-				showSince && (
+				sinceContent && (
 					<>
 						<div className="tsd-comment-since">
-							<Markdown content={displayPartsToMarkdown(sig.comment.blockTags?.find((tag) => tag.tag === '@since')?.content)} />
+							<Markdown content={displayPartsToMarkdown(sinceContent)} />
 						</div>
 					</>
 				)

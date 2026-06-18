@@ -3,11 +3,12 @@
 import { useMemo } from 'react';
 import type { TSDDeclarationReflection, TSDReflection, TSDSignatureReflection } from '../types';
 import { createHierarchy } from '../utils/hierarchy';
-import { Comment, hasComment } from './Comment';
+import { Comment, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
 import { CommentBadges, isCommentWithModifiers } from './CommentBadges';
 import { Hierarchy } from './Hierarchy';
 import { Icon } from './Icon';
 import { Index } from './Index';
+import { Markdown } from './Markdown';
 import { Members } from './Members';
 import { MemberSignatures } from './MemberSignatures';
 import { Parameter } from './Parameter';
@@ -20,11 +21,23 @@ export interface ReflectionProps {
 
 export function Reflection({ reflection }: ReflectionProps) {
 	const hierarchy = useMemo(() => createHierarchy(reflection), [reflection]);
+	// Callable top-level symbols (functions) render `@since` on their signatures
+	// below, so only surface it here for non-callable symbols (classes,
+	// interfaces, enums, type aliases, ...) where it would otherwise be missing.
+	const hasOwnSignatures =
+		'signatures' in reflection && !!reflection.signatures && reflection.signatures.length > 0;
+	const sinceContent = hasOwnSignatures ? undefined : getSinceContent(reflection);
 
 	return (
 		<>
 			{isCommentWithModifiers(reflection.comment) && <CommentBadges comment={reflection.comment} />}
 			{hasComment(reflection.comment) && <Comment root comment={reflection.comment} />}
+
+			{sinceContent && (
+				<div className="tsd-comment-since">
+					<Markdown content={displayPartsToMarkdown(sinceContent)} />
+				</div>
+			)}
 
 			{'typeParameter' in reflection &&
 				reflection.typeParameter &&
