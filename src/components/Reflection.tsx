@@ -34,7 +34,7 @@ export function Reflection({ reflection }: ReflectionProps) {
 			{hasComment(reflection.comment) && <Comment root comment={reflection.comment} />}
 
 			{sinceContent && (
-				<div className="tsd-comment-since">
+				<div className="tsd-comment-since tsd-comment-since-root">
 					<Markdown content={displayPartsToMarkdown(sinceContent)} />
 				</div>
 			)}
