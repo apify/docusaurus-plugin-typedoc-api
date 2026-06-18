@@ -7,7 +7,6 @@ This script generates an AST from the Python source code in the `src` directory 
 from pydoc_markdown.interfaces import Context
 from pydoc_markdown.contrib.loaders.python import PythonLoader
 from pydoc_markdown.contrib.processors.filter import FilterProcessor
-from pydoc_markdown.contrib.processors.crossref import CrossrefProcessor
 from google_docstring_processor import ApifyGoogleProcessor
 from docspec import dump_module
 
@@ -43,15 +42,20 @@ def main():
         documented_only=False,
         skip_empty_modules=False,
     )
-    crossref = CrossrefProcessor()
     google = ApifyGoogleProcessor()
 
     loader.init(context)
     filter.init(context)
     google.init(context)
-    crossref.init(context)
 
-    processors = [filter, google, crossref]
+    # NOTE: pydoc-markdown's CrossrefProcessor is intentionally omitted. It is always run with
+    # resolver=None here, so it can never turn a `#ref` into an actual link — it only falls back to
+    # wrapping the ref in backticks. Worse, its regex matches any `#word` preceded by a non-word
+    # char (e.g. the `/#` in `.../dockerfile_best-practices/#leverage-build-cache`), corrupting URL
+    # fragments into broken links like ``...best-practices/`leverage`-build-cache``. The Apify
+    # docstrings don't use `#ref` cross-references, so dropping it is pure win (and matches the
+    # griffe-based extractor, which doesn't run it either).
+    processors = [filter, google]
 
     dump = []
 
