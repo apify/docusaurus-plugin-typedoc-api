@@ -199,6 +199,12 @@ html[data-theme='light'] .tsd-panel-content {
 	border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+/* Top-level symbols render the tag inline above other sections, so it needs a
+   bottom margin to sit evenly; member tags close out a panel and don't. */
+.tsd-comment-since-root {
+	margin-bottom: 1em;
+}
+
 .tsd-comment-root {
 	margin-top: 0;
 	margin-bottom: var(--tsd-spacing-vertical-full);
