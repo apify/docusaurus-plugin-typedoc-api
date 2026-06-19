@@ -48,13 +48,6 @@ def main():
     filter.init(context)
     google.init(context)
 
-    # NOTE: pydoc-markdown's CrossrefProcessor is intentionally omitted. It is always run with
-    # resolver=None here, so it can never turn a `#ref` into an actual link — it only falls back to
-    # wrapping the ref in backticks. Worse, its regex matches any `#word` preceded by a non-word
-    # char (e.g. the `/#` in `.../dockerfile_best-practices/#leverage-build-cache`), corrupting URL
-    # fragments into broken links like ``...best-practices/`leverage`-build-cache``. The Apify
-    # docstrings don't use `#ref` cross-references, so dropping it is pure win (and matches the
-    # griffe-based extractor, which doesn't run it either).
     processors = [filter, google]
 
     dump = []
