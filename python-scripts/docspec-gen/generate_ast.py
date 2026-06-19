@@ -7,7 +7,6 @@ This script generates an AST from the Python source code in the `src` directory 
 from pydoc_markdown.interfaces import Context
 from pydoc_markdown.contrib.loaders.python import PythonLoader
 from pydoc_markdown.contrib.processors.filter import FilterProcessor
-from pydoc_markdown.contrib.processors.crossref import CrossrefProcessor
 from google_docstring_processor import ApifyGoogleProcessor
 from docspec import dump_module
 
@@ -43,15 +42,13 @@ def main():
         documented_only=False,
         skip_empty_modules=False,
     )
-    crossref = CrossrefProcessor()
     google = ApifyGoogleProcessor()
 
     loader.init(context)
     filter.init(context)
     google.init(context)
-    crossref.init(context)
 
-    processors = [filter, google, crossref]
+    processors = [filter, google]
 
     dump = []
 
