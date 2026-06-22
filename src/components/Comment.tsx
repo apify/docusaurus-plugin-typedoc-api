@@ -14,15 +14,17 @@ const TAG_PREFIX: Record<string, string> = {
 	'@see': 'See more at ',
 };
 
-const ALWAYS_HIDDEN = ['@reference', '@since'];
+const ALWAYS_HIDDEN = new Set(['@reference', '@since']);
+const EMPTY_TAGS: string[] = [];
 
 function filterBlockTags(
 	blockTags: JSONOutput.CommentTag[],
 	hideTags: string[],
 ): JSONOutput.CommentTag[] {
-	const hidden = [...ALWAYS_HIDDEN, ...hideTags];
+	const hidden =
+		hideTags.length === 0 ? ALWAYS_HIDDEN : new Set([...ALWAYS_HIDDEN, ...hideTags]);
 
-	return blockTags.filter((tag) => !hidden.includes(tag.tag) && tag.tag !== '@default');
+	return blockTags.filter((tag) => !hidden.has(tag.tag) && tag.tag !== '@default');
 }
 
 export interface CommentProps {
@@ -116,7 +118,7 @@ export interface CommentTagsProps {
 	hideTags?: string[];
 }
 
-export function CommentTags({ comment, hideTags = [] }: CommentTagsProps) {
+export function CommentTags({ comment, hideTags = EMPTY_TAGS }: CommentTagsProps) {
 	const blockTags = filterBlockTags(comment?.blockTags ?? [], hideTags);
 
 	return (
@@ -136,12 +138,10 @@ export function CommentTags({ comment, hideTags = [] }: CommentTagsProps) {
 	);
 }
 
-export function Comment({ comment, root, hideTags = [], noBlockTags = false }: CommentProps) {
+export function Comment({ comment, root, hideTags = EMPTY_TAGS, noBlockTags = false }: CommentProps) {
 	if (!comment || !hasComment(comment)) {
 		return null;
 	}
-
-	const blockTags = noBlockTags ? [] : filterBlockTags(comment.blockTags ?? [], hideTags);
 
 	return (
 		<div className={`tsd-comment tsd-typography ${root ? 'tsd-comment-root' : ''}`}>
@@ -151,17 +151,7 @@ export function Comment({ comment, root, hideTags = [], noBlockTags = false }: C
 				</div>
 			)}
 
-			{blockTags.map((tag) => {
-				const content = resolveTagContent(tag);
-
-				if (!content) return null;
-
-				return (
-					<div key={`${tag.tag}-${content}`} className="tsd-comment-since">
-						<Markdown content={content} />
-					</div>
-				);
-			})}
+			{!noBlockTags && <CommentTags comment={comment} hideTags={hideTags} />}
 		</div>
 	);
 }
