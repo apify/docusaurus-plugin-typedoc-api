@@ -11,6 +11,7 @@ const TAG_DEFAULT_MESSAGES: Record<string, string> = {
 
 const TAG_PREFIX: Record<string, string> = {
 	'@deprecated': 'Deprecated - ',
+	'@see': 'See more at ',
 };
 
 const ALWAYS_HIDDEN = ['@reference', '@since', '@example'];
