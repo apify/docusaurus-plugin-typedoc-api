@@ -1,12 +1,37 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/comment.hbs
-import { Fragment } from 'react';
 import type { JSONOutput } from 'typedoc';
 import { Markdown } from './Markdown';
+
+// Tags that carry meaning even without a user-supplied message get a sensible
+// default so the section is never empty.
+const TAG_DEFAULT_MESSAGES: Record<string, string> = {
+	'@deprecated': 'This API is deprecated and may be removed in a future version.',
+	'@see': 'See the related documentation.',
+};
+
+const TAG_PREFIX: Record<string, string> = {
+	'@deprecated': 'Deprecated - ',
+	'@see': 'See more at ',
+};
+
+const ALWAYS_HIDDEN = new Set(['@reference', '@since']);
+const EMPTY_TAGS: string[] = [];
+
+function filterBlockTags(
+	blockTags: JSONOutput.CommentTag[],
+	hideTags: string[],
+): JSONOutput.CommentTag[] {
+	const hidden =
+		hideTags.length === 0 ? ALWAYS_HIDDEN : new Set([...ALWAYS_HIDDEN, ...hideTags]);
+
+	return blockTags.filter((tag) => !hidden.has(tag.tag) && tag.tag !== '@default');
+}
 
 export interface CommentProps {
 	comment?: JSONOutput.Comment;
 	root?: boolean;
 	hideTags?: string[];
+	noBlockTags?: boolean;
 }
 
 export function hasComment(comment?: JSONOutput.Comment): boolean {
@@ -78,22 +103,45 @@ export function displayPartsToMarkdown(parts: JSONOutput.CommentDisplayPart[]): 
 		.join('');
 }
 
-export function Comment({ comment, root, hideTags = [] }: CommentProps) {
+function resolveTagContent(tag: JSONOutput.CommentTag): string {
+	const raw = displayPartsToMarkdown(tag.content).trim();
+
+	if (raw) {
+		return TAG_PREFIX[tag.tag] ? `${TAG_PREFIX[tag.tag]}${raw}` : raw;
+	}
+
+	return TAG_DEFAULT_MESSAGES[tag.tag] || '';
+}
+
+export interface CommentTagsProps {
+	comment?: JSONOutput.Comment;
+	hideTags?: string[];
+}
+
+export function CommentTags({ comment, hideTags = EMPTY_TAGS }: CommentTagsProps) {
+	const blockTags = filterBlockTags(comment?.blockTags ?? [], hideTags);
+
+	return (
+		<>
+			{blockTags.map((tag) => {
+				const content = resolveTagContent(tag);
+
+				if (!content) return null;
+
+				return (
+					<div key={`${tag.tag}-${content}`} className="tsd-comment-since">
+						<Markdown content={content} />
+					</div>
+				);
+			})}
+		</>
+	);
+}
+
+export function Comment({ comment, root, hideTags = EMPTY_TAGS, noBlockTags = false }: CommentProps) {
 	if (!comment || !hasComment(comment)) {
 		return null;
 	}
-
-	// Hide custom tags.
-	hideTags.push('@reference', '@since');
-
-	const blockTags =
-		comment.blockTags?.filter((tag) => {
-			if (hideTags.includes(tag.tag)) {
-				return false;
-			}
-
-			return tag.tag !== '@default';
-		}) ?? [];
 
 	return (
 		<div className={`tsd-comment tsd-typography ${root ? 'tsd-comment-root' : ''}`}>
@@ -103,20 +151,7 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 				</div>
 			)}
 
-			{blockTags.length > 0 && (
-				<dl className="tsd-comment-tags">
-					{blockTags.map((tag) => (
-						<Fragment key={tag.tag}>
-							<dt>
-								<strong>{tag.tag}</strong>
-							</dt>
-							<dd>
-								<Markdown content={displayPartsToMarkdown(tag.content)} />
-							</dd>
-						</Fragment>
-					))}
-				</dl>
-			)}
+			{!noBlockTags && <CommentTags comment={comment} hideTags={hideTags} />}
 		</div>
 	);
 }

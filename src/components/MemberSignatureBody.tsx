@@ -7,7 +7,7 @@ import { usePluginData } from '@docusaurus/useGlobalData';
 import { useMinimalLayout } from '../hooks/useMinimalLayout';
 import type { TSDSignatureReflection } from '../types';
 import { ApiDataContext } from './ApiDataContext';
-import { Comment, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
+import { Comment, CommentTags, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
 import { CommentBadges, isCommentWithModifiers } from './CommentBadges';
 import { DefaultValue } from './DefaultValue';
 import { Flags } from './Flags';
@@ -109,7 +109,7 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 
 			{isCommentWithModifiers(sig.comment) && <CommentBadges comment={sig.comment} />}
 
-			<Comment comment={sig.comment} hideTags={HIDE_TAGS} />
+			<Comment noBlockTags comment={sig.comment} hideTags={HIDE_TAGS} />
 
 			{hasComment(sig.comment) && (showTypes || showParams || showReturn) && (
 				<hr className="tsd-divider" />
@@ -217,15 +217,13 @@ export function MemberSignatureBody({ hideSources, sig }: MemberSignatureBodyPro
 				</>
 			)}
 
-			{
-				sinceContent && (
-					<>
-						<div className="tsd-comment-since">
-							<Markdown content={displayPartsToMarkdown(sinceContent)} />
-						</div>
-					</>
-				)
-			}
+			<CommentTags comment={sig.comment} hideTags={HIDE_TAGS} />
+
+			{sinceContent && (
+				<div className="tsd-comment-since">
+					<Markdown content={displayPartsToMarkdown(sinceContent)} />
+				</div>
+			)}
 		</>
 	);
 }

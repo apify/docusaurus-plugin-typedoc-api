@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { TSDDeclarationReflection, TSDReflection, TSDSignatureReflection } from '../types';
 import { createHierarchy } from '../utils/hierarchy';
-import { Comment, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
+import { Comment, CommentTags, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
 import { CommentBadges, isCommentWithModifiers } from './CommentBadges';
 import { Hierarchy } from './Hierarchy';
 import { Icon } from './Icon';
@@ -31,13 +31,7 @@ export function Reflection({ reflection }: ReflectionProps) {
 	return (
 		<>
 			{isCommentWithModifiers(reflection.comment) && <CommentBadges comment={reflection.comment} />}
-			{hasComment(reflection.comment) && <Comment root comment={reflection.comment} />}
-
-			{sinceContent && (
-				<div className="tsd-comment-since tsd-comment-since-root">
-					<Markdown content={displayPartsToMarkdown(sinceContent)} />
-				</div>
-			)}
+			{hasComment(reflection.comment) && <Comment noBlockTags root comment={reflection.comment} />}
 
 			{'typeParameter' in reflection &&
 				reflection.typeParameter &&
@@ -137,6 +131,16 @@ export function Reflection({ reflection }: ReflectionProps) {
 					</div>
 				</section>
 			)}
+
+			<div className="tsd-tags-root">
+				<CommentTags comment={reflection.comment} />
+
+				{sinceContent && (
+					<div className="tsd-comment-since">
+						<Markdown content={displayPartsToMarkdown(sinceContent)} />
+					</div>
+				)}
+			</div>
 
 			<Index reflection={reflection as TSDDeclarationReflection} />
 
