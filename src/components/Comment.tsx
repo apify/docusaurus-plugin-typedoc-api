@@ -12,6 +12,13 @@ const TAG_LABELS: Record<string, string> = {
 	'@throws': 'Throws',
 };
 
+// Tags that carry meaning even without a user-supplied message get a sensible
+// default so the section is never empty.
+const TAG_DEFAULT_MESSAGES: Record<string, string> = {
+	'@deprecated': 'This is deprecated and should not be used in new code.',
+	'@see': 'See the related documentation.',
+};
+
 function getTagLabel(tag: string): string {
 	if (TAG_LABELS[tag]) {
 		return TAG_LABELS[tag];
@@ -122,12 +129,17 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 				</div>
 			)}
 
-			{blockTags.map((tag, index) => (
-				<div className="tsd-comment-tag" key={`${tag.tag}-${index}`}>
-					<span className="tsd-comment-tag-label">{getTagLabel(tag.tag)}</span>
-					<Markdown content={displayPartsToMarkdown(tag.content)} />
-				</div>
-			))}
+			{blockTags.map((tag, index) => {
+				const content =
+					displayPartsToMarkdown(tag.content).trim() || TAG_DEFAULT_MESSAGES[tag.tag] || '';
+
+				return (
+					<div className="tsd-comment-tag" key={`${tag.tag}-${index}`}>
+						<span className="tsd-comment-tag-label">{getTagLabel(tag.tag)}</span>
+						<Markdown content={content} />
+					</div>
+				);
+			})}
 		</div>
 	);
 }
