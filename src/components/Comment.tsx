@@ -12,6 +12,7 @@ const TAG_DEFAULT_MESSAGES: Record<string, string> = {
 const TAG_PREFIX: Record<string, string> = {
 	'@deprecated': 'Deprecated - ',
 	'@see': 'See more at ',
+	'@throws': 'Throws - '
 };
 
 const ALWAYS_HIDDEN = new Set(['@reference', '@since']);
@@ -118,22 +119,27 @@ export interface CommentTagsProps {
 	hideTags?: string[];
 }
 
+function renderTag(tag: JSONOutput.CommentTag) {
+	const content = resolveTagContent(tag);
+
+	if (!content) return null;
+
+	return (
+		<div key={`${tag.tag}-${content}`} className="tsd-comment-since">
+			<Markdown content={content} />
+		</div>
+	);
+}
+
 export function CommentTags({ comment, hideTags = EMPTY_TAGS }: CommentTagsProps) {
 	const blockTags = filterBlockTags(comment?.blockTags ?? [], hideTags);
+	const examples = blockTags.filter((tag) => tag.tag === '@example');
+	const rest = blockTags.filter((tag) => tag.tag !== '@example');
 
 	return (
 		<>
-			{blockTags.map((tag) => {
-				const content = resolveTagContent(tag);
-
-				if (!content) return null;
-
-				return (
-					<div key={`${tag.tag}-${content}`} className="tsd-comment-since">
-						<Markdown content={content} />
-					</div>
-				);
-			})}
+			{examples.map(renderTag)}
+			{rest.map(renderTag)}
 		</>
 	);
 }
