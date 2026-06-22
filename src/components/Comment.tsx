@@ -9,6 +9,10 @@ const TAG_DEFAULT_MESSAGES: Record<string, string> = {
 	'@see': 'See the related documentation.',
 };
 
+const TAG_PREFIX: Record<string, string> = {
+	'@deprecated': 'Deprecated - ',
+};
+
 const ALWAYS_HIDDEN = ['@reference', '@since', '@example'];
 
 function filterBlockTags(
@@ -96,6 +100,16 @@ export function displayPartsToMarkdown(parts: JSONOutput.CommentDisplayPart[]): 
 		.join('');
 }
 
+function resolveTagContent(tag: JSONOutput.CommentTag): string {
+	const raw = displayPartsToMarkdown(tag.content).trim();
+
+	if (raw) {
+		return TAG_PREFIX[tag.tag] ? `${TAG_PREFIX[tag.tag]}${raw}` : raw;
+	}
+
+	return TAG_DEFAULT_MESSAGES[tag.tag] || '';
+}
+
 export interface CommentTagsProps {
 	comment?: JSONOutput.Comment;
 	hideTags?: string[];
@@ -107,8 +121,7 @@ export function CommentTags({ comment, hideTags = [] }: CommentTagsProps) {
 	return (
 		<>
 			{blockTags.map((tag) => {
-				const content =
-					displayPartsToMarkdown(tag.content).trim() || TAG_DEFAULT_MESSAGES[tag.tag] || '';
+				const content = resolveTagContent(tag);
 
 				if (!content) return null;
 
@@ -138,8 +151,7 @@ export function Comment({ comment, root, hideTags = [], noBlockTags = false }: C
 			)}
 
 			{blockTags.map((tag) => {
-				const content =
-					displayPartsToMarkdown(tag.content).trim() || TAG_DEFAULT_MESSAGES[tag.tag] || '';
+				const content = resolveTagContent(tag);
 
 				if (!content) return null;
 
