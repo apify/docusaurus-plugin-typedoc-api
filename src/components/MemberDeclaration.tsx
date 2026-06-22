@@ -3,7 +3,7 @@
 import { useMinimalLayout } from '../hooks/useMinimalLayout';
 import { useRequiredReflection } from '../hooks/useReflection';
 import { escapeMdx } from '../utils/helpers';
-import { Comment, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
+import { Comment, CommentTags, displayPartsToMarkdown, getSinceContent, hasComment } from './Comment';
 import { DefaultValue } from './DefaultValue';
 import { Icon } from './Icon';
 import { Markdown } from './Markdown';
@@ -44,7 +44,7 @@ export function MemberDeclaration({ id }: MemberDeclarationProps) {
 			<div className="tsd-panel-content">
 				<MemberSources reflection={reflection} />
 
-				<Comment comment={reflection.comment} />
+				<Comment noBlockTags comment={reflection.comment} />
 
 				{hasComment(reflection.comment) && (showTypes || showDeclaration) && (
 					<hr className="tsd-divider" />
@@ -64,8 +64,10 @@ export function MemberDeclaration({ id }: MemberDeclarationProps) {
 					</div>
 				)}
 
+				<CommentTags comment={reflection.comment} />
+
 				{sinceContent && (
-						<div className="tsd-comment-since">
+					<div className="tsd-comment-since">
 						<Markdown content={displayPartsToMarkdown(sinceContent)} />
 					</div>
 				)}
