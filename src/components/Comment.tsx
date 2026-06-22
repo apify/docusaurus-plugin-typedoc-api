@@ -14,7 +14,7 @@ const TAG_PREFIX: Record<string, string> = {
 	'@see': 'See more at ',
 };
 
-const ALWAYS_HIDDEN = ['@reference', '@since', '@example'];
+const ALWAYS_HIDDEN = ['@reference', '@since'];
 
 function filterBlockTags(
 	blockTags: JSONOutput.CommentTag[],
