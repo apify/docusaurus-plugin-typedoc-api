@@ -1,7 +1,26 @@
 // https://github.com/TypeStrong/typedoc-default-themes/blob/master/src/default/partials/comment.hbs
-import { Fragment } from 'react';
 import type { JSONOutput } from 'typedoc';
 import { Markdown } from './Markdown';
+
+// Human-friendly headings for the tags we render as their own section. Tags not
+// listed fall back to their name with the leading `@` stripped and capitalised.
+const TAG_LABELS: Record<string, string> = {
+	'@deprecated': 'Deprecated',
+	'@remarks': 'Remarks',
+	'@returns': 'Returns',
+	'@see': 'See',
+	'@throws': 'Throws',
+};
+
+function getTagLabel(tag: string): string {
+	if (TAG_LABELS[tag]) {
+		return TAG_LABELS[tag];
+	}
+
+	const name = tag.replace(/^@/, '');
+
+	return name.charAt(0).toUpperCase() + name.slice(1);
+}
 
 export interface CommentProps {
 	comment?: JSONOutput.Comment;
@@ -103,20 +122,12 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 				</div>
 			)}
 
-			{blockTags.length > 0 && (
-				<dl className="tsd-comment-tags">
-					{blockTags.map((tag) => (
-						<Fragment key={tag.tag}>
-							<dt>
-								<strong>{tag.tag}</strong>
-							</dt>
-							<dd>
-								<Markdown content={displayPartsToMarkdown(tag.content)} />
-							</dd>
-						</Fragment>
-					))}
-				</dl>
-			)}
+			{blockTags.map((tag, index) => (
+				<div className="tsd-comment-tag" key={`${tag.tag}-${index}`}>
+					<span className="tsd-comment-tag-label">{getTagLabel(tag.tag)}</span>
+					<Markdown content={displayPartsToMarkdown(tag.content)} />
+				</div>
+			))}
 		</div>
 	);
 }

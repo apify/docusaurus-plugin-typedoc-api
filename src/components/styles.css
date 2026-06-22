@@ -210,6 +210,23 @@ html[data-theme='light'] .tsd-panel-content {
 	margin-bottom: var(--tsd-spacing-vertical-full);
 }
 
+.tsd-comment-tag {
+	font-size: 90%;
+	margin-top: 0.75em;
+	padding-top: 0.5em;
+	border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.tsd-comment-tag-label {
+	display: block;
+	margin-bottom: 0.25em;
+	font-size: 85%;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--tsd-muted-text);
+}
+
 /* SOURCES */
 
 .tsd-sources,
