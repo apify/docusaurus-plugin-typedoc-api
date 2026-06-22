@@ -33,12 +33,6 @@ export function Reflection({ reflection }: ReflectionProps) {
 			{isCommentWithModifiers(reflection.comment) && <CommentBadges comment={reflection.comment} />}
 			{hasComment(reflection.comment) && <Comment noBlockTags root comment={reflection.comment} />}
 
-			{sinceContent && (
-				<div className="tsd-comment-since tsd-comment-since-root">
-					<Markdown content={displayPartsToMarkdown(sinceContent)} />
-				</div>
-			)}
-
 			{'typeParameter' in reflection &&
 				reflection.typeParameter &&
 				reflection.typeParameter.length > 0 &&
@@ -138,7 +132,15 @@ export function Reflection({ reflection }: ReflectionProps) {
 				</section>
 			)}
 
-			<CommentTags comment={reflection.comment} />
+			<div className="tsd-tags-root">
+				<CommentTags comment={reflection.comment} />
+
+				{sinceContent && (
+					<div className="tsd-comment-since">
+						<Markdown content={displayPartsToMarkdown(sinceContent)} />
+					</div>
+				)}
+			</div>
 
 			<Index reflection={reflection as TSDDeclarationReflection} />
 
