@@ -129,12 +129,12 @@ export function Comment({ comment, root, hideTags = [] }: CommentProps) {
 				</div>
 			)}
 
-			{blockTags.map((tag, index) => {
+			{blockTags.map((tag) => {
 				const content =
 					displayPartsToMarkdown(tag.content).trim() || TAG_DEFAULT_MESSAGES[tag.tag] || '';
 
 				return (
-					<div className="tsd-comment-tag" key={`${tag.tag}-${index}`}>
+					<div key={`${tag.tag}-${content}`} className="tsd-comment-tag">
 						<span className="tsd-comment-tag-label">{getTagLabel(tag.tag)}</span>
 						<Markdown content={content} />
 					</div>
